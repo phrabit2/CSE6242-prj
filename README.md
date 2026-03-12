@@ -96,13 +96,14 @@ pip install -r requirements.txt
 ### 3. Fetch Statcast data
 
 ```bash
-python -m src.data.fetch_statcast
+python src.data.fetch_statcast
 ```
 
 ### 4. Run the dashboard
 
 ```bash
-python -m dashboard.app
+cd dashboard
+python app.py
 ```
 
 Then open [http://localhost:8050](http://localhost:8050) in your browser.
