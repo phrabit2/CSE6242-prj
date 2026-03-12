@@ -42,3 +42,6 @@ reports/figures/*.jpg
 # Environment variables
 .env
 .env.local
+
+# Infra
+infra/
