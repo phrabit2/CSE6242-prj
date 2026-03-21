@@ -35,7 +35,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to EC2 via SSH
+      - name: Deploy code to EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -64,19 +64,34 @@ jobs:
             pip install -r requirements.txt
             echo "✅ Package installation complete"
 
-            # ── 3. Restart server ──
+      - name: Restart Dash server on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          command_timeout: 30s
+          script_stop: false
+          script: |
+            echo "🔄 Restarting Dash server..."
+            pkill -f "python.*dashboard/app.py" || true
+            sleep 2
+
             # Uncomment the section matching your framework.
 
             # --- Dash (current project default) ---
-            pkill -f "python.*dashboard/app.py" || true
-            sleep 2
-            setsid ${{ env.EC2_VENV_DIR }}/bin/python -m dashboard.app > /tmp/dashboard.log 2>&1 < /dev/null &
+            cd ${{ env.EC2_PROJECT_DIR }}
+            nohup ${{ env.EC2_VENV_DIR }}/bin/python -m dashboard.app \
+              > /tmp/dashboard.log 2>&1 < /dev/null &
             sleep 3
-            echo "✅ Dash server restarted"
+            if pgrep -f "python.*dashboard/app.py" > /dev/null; then
+              echo "✅ Dash server is running"
+            else
+              echo "⚠️ Dash server may not have started — check /tmp/dashboard.log"
+            fi
 
             # --- Django ---
-            # pkill -f "gunicorn" || true
-            # sleep 2
             # cd ${{ env.EC2_PROJECT_DIR }}
             # nohup ${{ env.EC2_VENV_DIR }}/bin/gunicorn myproject.wsgi:application \
             #   --bind 0.0.0.0:8000 --workers 3 --daemon \
@@ -84,19 +99,15 @@ jobs:
             #   --error-logfile /tmp/gunicorn-error.log
 
             # --- Flask ---
-            # pkill -f "gunicorn.*app:app" || true
-            # sleep 2
             # nohup ${{ env.EC2_VENV_DIR }}/bin/gunicorn app:app \
             #   --bind 0.0.0.0:5000 --workers 3 --daemon \
             #   --access-logfile /tmp/flask-access.log \
             #   --error-logfile /tmp/flask-error.log
 
             # --- Streamlit ---
-            # pkill -f "streamlit run" || true
-            # sleep 2
             # nohup ${{ env.EC2_VENV_DIR }}/bin/streamlit run app.py \
             #   --server.port 8501 --server.headless true \
-            #   > /tmp/streamlit.log 2>&1 &
+            #   > /tmp/streamlit.log 2>&1 < /dev/null &
 
             echo "=========================================="
             echo "🎉 EC2 deployment complete: $(date '+%Y-%m-%d %H:%M:%S')"
