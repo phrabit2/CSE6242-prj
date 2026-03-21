@@ -70,10 +70,9 @@ jobs:
             # --- Dash (current project default) ---
             pkill -f "python.*dashboard/app.py" || true
             sleep 2
-            nohup ${{ env.EC2_VENV_DIR }}/bin/python -m dashboard.app > /tmp/dashboard.log 2>&1 &
-            disown
+            setsid ${{ env.EC2_VENV_DIR }}/bin/python -m dashboard.app > /tmp/dashboard.log 2>&1 < /dev/null &
             sleep 3
-            echo "✅ Dash server restarted (PID: $!)"
+            echo "✅ Dash server restarted"
 
             # --- Django ---
             # pkill -f "gunicorn" || true
