@@ -64,50 +64,10 @@ jobs:
             pip install -r requirements.txt
             echo "✅ Package installation complete"
 
-      - name: Restart Dash server on EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          command_timeout: 30s
-          script_stop: false
-          script: |
-            echo "🔄 Restarting Dash server..."
-            pkill -f "python.*dashboard/app.py" || true
-            sleep 2
-
-            # Uncomment the section matching your framework.
-
-            # --- Dash (current project default) ---
-            cd ${{ env.EC2_PROJECT_DIR }}
-            nohup ${{ env.EC2_VENV_DIR }}/bin/python -m dashboard.app \
-              > /tmp/dashboard.log 2>&1 < /dev/null &
+            # ── 3. Restart dashboard via systemd ──
+            sudo systemctl restart dashboard.service
             sleep 3
-            if pgrep -f "python.*dashboard/app.py" > /dev/null; then
-              echo "✅ Dash server is running"
-            else
-              echo "⚠️ Dash server may not have started — check /tmp/dashboard.log"
-            fi
-
-            # --- Django ---
-            # cd ${{ env.EC2_PROJECT_DIR }}
-            # nohup ${{ env.EC2_VENV_DIR }}/bin/gunicorn myproject.wsgi:application \
-            #   --bind 0.0.0.0:8000 --workers 3 --daemon \
-            #   --access-logfile /tmp/gunicorn-access.log \
-            #   --error-logfile /tmp/gunicorn-error.log
-
-            # --- Flask ---
-            # nohup ${{ env.EC2_VENV_DIR }}/bin/gunicorn app:app \
-            #   --bind 0.0.0.0:5000 --workers 3 --daemon \
-            #   --access-logfile /tmp/flask-access.log \
-            #   --error-logfile /tmp/flask-error.log
-
-            # --- Streamlit ---
-            # nohup ${{ env.EC2_VENV_DIR }}/bin/streamlit run app.py \
-            #   --server.port 8501 --server.headless true \
-            #   > /tmp/streamlit.log 2>&1 < /dev/null &
+            sudo systemctl is-active --quiet dashboard.service && echo "✅ Dash server is running" || echo "❌ Dash server failed to start"
 
             echo "=========================================="
             echo "🎉 EC2 deployment complete: $(date '+%Y-%m-%d %H:%M:%S')"
