@@ -1,6 +1,8 @@
 # ⚾ Change-Point-Based Detection and Visual Analysis of Baseball Performance Shifts
 
 > **CSE 6242 — Data and Visual Analytics | Spring 2026 | Team 026**
+>
+> CI/CD: Auto-deploy to EC2 & S3 via GitHub Actions
 
 **Team Members:** Hsiang Wen Hsiao(Ethan), I Lin Tsai(Irene), Qixiang Goh(Eric), Xueying Jin(Clara), Suho Lee(Suho)
 
