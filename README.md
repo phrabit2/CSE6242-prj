@@ -4,7 +4,7 @@
 >
 > CI/CD: Auto-deploy to EC2 & S3 via GitHub Actions
 
-**Team Members:** Hsiang Wen Hsiao(Ethan), I Lin Tsai(Irene), Qixiang Goh(Eric), Xueying Jin(Clara), Suho Lee(Suho)
+**Team Members:** Hsiang Wen Hsiao(Eric), I Lin Tsai(Irene), Qixiang Goh(Ethan), Xueying Jin(Clara), Suho Lee(Suho)
 
 ---
 
