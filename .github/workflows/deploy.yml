@@ -42,6 +42,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
+          command_timeout: 15m
           script_stop: true
           script: |
             set -e
@@ -70,7 +71,9 @@ jobs:
             pkill -f "python.*dashboard/app.py" || true
             sleep 2
             nohup ${{ env.EC2_VENV_DIR }}/bin/python -m dashboard.app > /tmp/dashboard.log 2>&1 &
-            echo "✅ Dash server restarted"
+            disown
+            sleep 3
+            echo "✅ Dash server restarted (PID: $!)"
 
             # --- Django ---
             # pkill -f "gunicorn" || true
@@ -145,7 +148,7 @@ jobs:
       - name: Verify S3 sync
         run: |
           echo "📋 S3 bucket data listing:"
-          aws s3 ls ${{ env.S3_BUCKET }}/data/ --recursive --human-readable --summarize
+          aws s3 ls ${{ env.S3_BUCKET }}/data/ --recursive --human-readable --summarize || echo "ℹ️ No data files synced yet (data directories may be empty)"
 
   # ════════════════════════════
   # Job 3: Deployment notification
