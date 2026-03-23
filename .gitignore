@@ -45,3 +45,6 @@ reports/figures/*.jpg
 
 # Infra
 infra/
+
+# Private keys
+team26-key.pem
