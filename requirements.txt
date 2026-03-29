@@ -15,7 +15,7 @@ dash-bootstrap-components>=1.5.0
 streamlit>=1.30.0
 matplotlib>=3.7.0
 seaborn>=0.13.0
-
+gdown
 # Notebooks
 jupyter>=1.0.0
 notebook>=7.0.0
