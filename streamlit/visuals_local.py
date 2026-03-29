@@ -172,7 +172,8 @@ def games_label(n_pitches):
 # def load_data():
 #     base = os.path.dirname(os.path.abspath(__file__))
 #     path = os.path.join(base, "..", "data", "processed",
-#                         "qualified_hitters_statcast_2021_2025_batted_ball.csv")
+#                         # "qualified_hitters_statcast_2021_2025_batted_ball.csv")
+#                         "filtered_mlb_data.csv")
 #     df = pd.read_csv(path, low_memory=False)
 #     df["game_date"] = pd.to_datetime(df["game_date"])
 #     df = df.sort_values(["Name", "game_date"]).reset_index(drop=True)
@@ -195,13 +196,35 @@ def games_label(n_pitches):
 #         df["is_batted_ball"] = df["exit_velocity"].notna().astype(int)
 #     if "is_in_play" not in df.columns:
 #         df["is_in_play"] = df["events"].notna().astype(int)
-
+#     # df=df[[
+#     #     "Name", "game_date", "Season", "events", 
+#     #     "launch_speed", "launch_angle", "estimated_woba_using_speedangle",
+#     #     "release_speed", "effective_speed", "release_spin_rate", 
+#     #     "release_extension", "pfx_x", "pfx_z", "plate_x", "plate_z"
+#     # # ]] 
+#     # df=df[[
+#     # "Name",                       # player identifier
+#     # "game_date",                  # for rolling plots / timelines
+#     # "Season",                     # for filtering per season
+#     # "events",                     # outcome labels for ML
+#     # "launch_speed",               # exit_velocity
+#     # "launch_angle",               # launch_angle_metric
+#     # "estimated_woba_using_speedangle",  # xwOBA est
+#     # 'exit_velocity','launch_angle_metric',
+#     # "plate_x",'xwoba_est','is_hard_hit',
+#     # "plate_z",'is_barrel_proxy',
+#     # "sz_top",
+#     # "sz_bot"]]
 #     return df
 
 def load_data():
-    # https://drive.google.com/file/d/1G8eA6gX8hdCwWp1YWddAMmwt6R62tcmA/view?usp=share_link
+    
+   
     # file_id = "1-ueHmB1xBscgx-Zqkp4vF-nRHkXcYcXx"
-    file_id = "1G8eA6gX8hdCwWp1YWddAMmwt6R62tcmA"
+   
+    # https://drive.google.com/file/d/1CmKAQetOiPgCZ9eL3Xg40a_BzCYGRiJN/view?usp=share_link
+    # https://drive.google.com/file/d/142uq2WYlHGGmyBSzkti3fP2ipk_MtoA3/view?usp=share_link
+    file_id = "142uq2WYlHGGmyBSzkti3fP2ipk_MtoA3"
     url = f'https://drive.google.com/uc?id={file_id}'
     output = 'large_mlb_data.csv'
     
@@ -211,12 +234,12 @@ def load_data():
     
     # 2. Define ONLY the columns we need to save massive amounts of RAM
     # If your CSV has 50 columns but we only use 15, we save ~70% memory here.
-    keep_cols = [
-        "Name", "game_date", "Season", "events", 
-        "launch_speed", "launch_angle", "estimated_woba_using_speedangle",
-        "release_speed", "effective_speed", "release_spin_rate", 
-        "release_extension", "pfx_x", "pfx_z", "plate_x", "plate_z"
-    ]
+    # keep_cols = [
+    #     "Name", "game_date", "Season", "events", 
+    #     "launch_speed", "launch_angle", "estimated_woba_using_speedangle",
+    #     "release_speed", "effective_speed", "release_spin_rate", 
+    #     "release_extension", "pfx_x", "pfx_z", "plate_x", "plate_z"
+    # ]
 
     # 3. Load with explicit dtypes to prevent memory bloat
     # float32 uses half the memory of the default float64
@@ -230,13 +253,17 @@ def load_data():
     try:
         df = pd.read_csv(
             output, 
-            usecols=lambda c: c in keep_cols, # Dynamic check for columns
-            dtype=dtype_dict,
-            low_memory=False
+            # usecols=lambda c: c in keep_cols, # Dynamic check for columns
+            # dtype=dtype_dict,
+            # low_memory=False
         )
+        st.write(df.columns.tolist())
+        # st.write("Columns actually loaded:", df.columns.tolist())
+        # st.dataframe(df.head())
+    
     except Exception as e:
-        st.error(f"Pandas failed to load the 1.3GB file: {e}")
-        st.stop()
+        st.error(f"Pandas failed to load the 1.3GB file: {df.columns}")
+        # st.stop()
 
     # 4. Canonical column aliases (Standardizing column names)
     if "exit_velocity" not in df.columns and "launch_speed" in df.columns:
@@ -260,27 +287,7 @@ def load_data():
     df["is_barrel_proxy"] = ((df["exit_velocity"] >= 98) & 
                              (df["launch_angle_metric"].between(26, 30))).astype(np.int8)
     
-    df=df[[
-    "Name",                       # player identifier
-    "game_date",                  # for rolling plots / timelines
-    "Season",                     # for filtering per season
-    "events",                     # outcome labels for ML
-    "launch_speed",               # exit_velocity
-    "launch_angle",               # launch_angle_metric
-    "estimated_woba_using_speedangle",  # xwOBA est
-    "release_speed",
-    "effective_speed",
-    "release_spin_rate",
-    "release_extension",
-    "spin_axis",
-    "pfx_x",
-    "pfx_z",
-    "plate_x",
-    "plate_z",
-    "sz_top",
-    "sz_bot"
-]]
-    
+
     return df
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -485,7 +492,8 @@ def generate_narrative(player, metric_label, roll_df, cp_st, b_last, b_leag_m, w
 # ══════════════════════════════════════════════════════════════════════════════
 # LOAD DATA
 # ══════════════════════════════════════════════════════════════════════════════
-df      = load_data()
+df  = load_data()
+
 players = sorted(df["Name"].dropna().unique())
 avail_events = sorted([e for e in ALL_EVENTS if e in df["events"].dropna().unique()])
 avail_feats  = [f for f in FEATURE_WHITELIST if f in df.columns]
@@ -1040,7 +1048,7 @@ elif "Peer" in page:
     peers = st.multiselect(
         "Comparison players (up to 3)",
         [p for p in players if p != sel_player],
-        default=[p for p in players if p != sel_player][:2],
+        default=[p for p in players if p != sel_player][1:4],
         max_selections=3,
     )
     all_sel = [sel_player] + peers
