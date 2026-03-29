@@ -7,6 +7,8 @@ Pitch-by-pitch Statcast data · 2021-2025 · 420 qualified hitters
 import os
 import warnings
 warnings.filterwarnings("ignore")
+import gdown
+import os
 
 import numpy as np
 import pandas as pd
@@ -166,7 +168,7 @@ def games_label(n_pitches):
 # ══════════════════════════════════════════════════════════════════════════════
 # DATA
 # ══════════════════════════════════════════════════════════════════════════════
-@st.cache_data(show_spinner="Loading pitch data…")
+# @st.cache_data(show_spinner="Loading pitch data…")
 # def load_data():
 #     base = os.path.dirname(os.path.abspath(__file__))
 #     path = os.path.join(base, "..", "data", "processed",
@@ -196,28 +198,45 @@ def games_label(n_pitches):
 
 #     return df
 
-@st.cache_data(show_spinner="Downloading data from Google Drive...")
 def load_data():
-    # 1. The ID from your link
     file_id = "1-ueHmB1xBscgx-Zqkp4vF-nRHkXcYcXx"
+    url = f'https://drive.google.com/uc?id={file_id}'
+    output = 'large_mlb_data.csv'
     
-    # 2. Construct the direct download URL
-    url = f'https://drive.google.com/uc?export=download&id={file_id}'
+    # 1. Download via gdown to bypass Google's "Virus Scan" interstitial
+    if not os.path.exists(output):
+        gdown.download(url, output, quiet=False, fuzzy=True)
     
-    # 3. Read directly into pandas
+    # 2. Define ONLY the columns we need to save massive amounts of RAM
+    # If your CSV has 50 columns but we only use 15, we save ~70% memory here.
+    keep_cols = [
+        "Name", "game_date", "Season", "events", 
+        "launch_speed", "launch_angle", "estimated_woba_using_speedangle",
+        "release_speed", "effective_speed", "release_spin_rate", 
+        "release_extension", "pfx_x", "pfx_z", "plate_x", "plate_z"
+    ]
+
+    # 3. Load with explicit dtypes to prevent memory bloat
+    # float32 uses half the memory of the default float64
+    dtype_dict = {
+        "launch_speed": "float32",
+        "launch_angle": "float32",
+        "release_speed": "float32",
+        "Season": "int16"
+    }
+
     try:
-        df = pd.read_csv(url, low_memory=False)
+        df = pd.read_csv(
+            output, 
+            usecols=lambda c: c in keep_cols, # Dynamic check for columns
+            dtype=dtype_dict,
+            low_memory=False
+        )
     except Exception as e:
-        st.error(f"Failed to load data from Google Drive. Error: {e}")
-        # Fallback to local if Drive fails (optional)
-        # df = pd.read_csv("data/processed/your_file.csv")
+        st.error(f"Pandas failed to load the 1.3GB file: {e}")
         st.stop()
 
-    # --- Keep your existing processing logic below ---
-    df["game_date"] = pd.to_datetime(df["game_date"])
-    df = df.sort_values(["Name", "game_date"]).reset_index(drop=True)
-
-    # Canonical column aliases
+    # 4. Canonical column aliases (Standardizing column names)
     if "exit_velocity" not in df.columns and "launch_speed" in df.columns:
         df["exit_velocity"] = df["launch_speed"]
     if "launch_angle_metric" not in df.columns and "launch_angle" in df.columns:
@@ -225,15 +244,20 @@ def load_data():
     if "xwoba_est" not in df.columns and "estimated_woba_using_speedangle" in df.columns:
         df["xwoba_est"] = df["estimated_woba_using_speedangle"]
 
-    # Fill xwoba nulls
+    # 5. Essential cleaning
+    df["game_date"] = pd.to_datetime(df["game_date"])
+    df = df.sort_values(["Name", "game_date"]).reset_index(drop=True)
+
+    # Fill xwoba nulls with player-season mean
     df["xwoba_est"] = df.groupby(["Name", "Season"])["xwoba_est"].transform(
         lambda x: x.fillna(x.mean())
     )
 
-    # Flags
-    df["is_batted_ball"] = df["exit_velocity"].notna().astype(int)
-    df["is_in_play"] = df["events"].notna().astype(int)
-
+    # Calculate derived flags
+    df["is_hard_hit"] = (df["exit_velocity"] >= 95).astype(np.int8)
+    df["is_barrel_proxy"] = ((df["exit_velocity"] >= 98) & 
+                             (df["launch_angle_metric"].between(26, 30))).astype(np.int8)
+    
     return df
 
 # ══════════════════════════════════════════════════════════════════════════════
