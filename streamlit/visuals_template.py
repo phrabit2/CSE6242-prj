@@ -49,12 +49,16 @@ h1,h2,h3 {{ color: {TEXT}; }}
 """, unsafe_allow_html=True)
 
 # ── Data & CPD ─────────────────────────────────────────────────────────────────
+S3_BUCKET = "team26-cpd-data-294342039761"
+S3_KEY = "data/processed/qualified_hitters_statcast_2021_2025_batted_ball.csv"
+
 @st.cache_data
 def load_data():
-    base = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(base, '..', 'data', 'processed',
-                        'qualified_hitters_statcast_2021_2025_batted_ball.csv')
-    df = pd.read_csv(path, low_memory=False)
+    import boto3
+    from io import StringIO
+    s3 = boto3.client("s3", region_name="ap-northeast-2")
+    obj = s3.get_object(Bucket=S3_BUCKET, Key=S3_KEY)
+    df = pd.read_csv(StringIO(obj["Body"].read().decode("utf-8")), low_memory=False)
     df['game_date'] = pd.to_datetime(df['game_date'])
     df = df.sort_values(['Name', 'game_date']).reset_index(drop=True)
     return df
