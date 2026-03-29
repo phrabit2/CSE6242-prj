@@ -314,7 +314,7 @@ def train_rf(df, selected_events, selected_features):
     le = LabelEncoder()
     y  = le.fit_transform(mdf["events"])
     X  = mdf[feat]
-    clf = RandomForestClassifier(n_estimators=300, max_depth=8, n_jobs=-1, random_state=42)
+    clf = RandomForestClassifier(n_estimators=50, max_depth=5, n_jobs=-1, random_state=42, max_samples=0.5)
     clf.fit(X, y)
     cv = cross_val_score(clf, X, y, cv=5, scoring="accuracy", n_jobs=-1)
     return clf, feat, le, cv
