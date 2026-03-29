@@ -260,6 +260,27 @@ def load_data():
     df["is_barrel_proxy"] = ((df["exit_velocity"] >= 98) & 
                              (df["launch_angle_metric"].between(26, 30))).astype(np.int8)
     
+    df=df[[
+    "Name",                       # player identifier
+    "game_date",                  # for rolling plots / timelines
+    "Season",                     # for filtering per season
+    "events",                     # outcome labels for ML
+    "launch_speed",               # exit_velocity
+    "launch_angle",               # launch_angle_metric
+    "estimated_woba_using_speedangle",  # xwOBA est
+    "release_speed",
+    "effective_speed",
+    "release_spin_rate",
+    "release_extension",
+    "spin_axis",
+    "pfx_x",
+    "pfx_z",
+    "plate_x",
+    "plate_z",
+    "sz_top",
+    "sz_bot"
+]]
+    
     return df
 
 # ══════════════════════════════════════════════════════════════════════════════
