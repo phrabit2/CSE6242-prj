@@ -199,7 +199,9 @@ def games_label(n_pitches):
 #     return df
 
 def load_data():
-    file_id = "1-ueHmB1xBscgx-Zqkp4vF-nRHkXcYcXx"
+    # https://drive.google.com/file/d/1G8eA6gX8hdCwWp1YWddAMmwt6R62tcmA/view?usp=share_link
+    # file_id = "1-ueHmB1xBscgx-Zqkp4vF-nRHkXcYcXx"
+    file_id = "1G8eA6gX8hdCwWp1YWddAMmwt6R62tcmA"
     url = f'https://drive.google.com/uc?id={file_id}'
     output = 'large_mlb_data.csv'
     
