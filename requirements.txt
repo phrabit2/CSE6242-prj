@@ -19,6 +19,7 @@ seaborn>=0.13.0
 # Notebooks
 jupyter>=1.0.0
 notebook>=7.0.0
+gdown
 
 # Testing
 pytest>=7.4.0
