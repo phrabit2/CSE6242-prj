@@ -167,11 +167,53 @@ def games_label(n_pitches):
 # DATA
 # ══════════════════════════════════════════════════════════════════════════════
 @st.cache_data(show_spinner="Loading pitch data…")
+# def load_data():
+#     base = os.path.dirname(os.path.abspath(__file__))
+#     path = os.path.join(base, "..", "data", "processed",
+#                         "qualified_hitters_statcast_2021_2025_batted_ball.csv")
+#     df = pd.read_csv(path, low_memory=False)
+#     df["game_date"] = pd.to_datetime(df["game_date"])
+#     df = df.sort_values(["Name", "game_date"]).reset_index(drop=True)
+
+#     # Canonical column aliases
+#     if "exit_velocity" not in df.columns and "launch_speed" in df.columns:
+#         df["exit_velocity"] = df["launch_speed"]
+#     if "launch_angle_metric" not in df.columns and "launch_angle" in df.columns:
+#         df["launch_angle_metric"] = df["launch_angle"]
+#     if "xwoba_est" not in df.columns and "estimated_woba_using_speedangle" in df.columns:
+#         df["xwoba_est"] = df["estimated_woba_using_speedangle"]
+
+#     # Fill xwoba nulls with player-season mean (not zero — zero distorts CPD)
+#     df["xwoba_est"] = df.groupby(["Name", "Season"])["xwoba_est"].transform(
+#         lambda x: x.fillna(x.mean())
+#     )
+
+#     # Flags
+#     if "is_batted_ball" not in df.columns:
+#         df["is_batted_ball"] = df["exit_velocity"].notna().astype(int)
+#     if "is_in_play" not in df.columns:
+#         df["is_in_play"] = df["events"].notna().astype(int)
+
+#     return df
+
+@st.cache_data(show_spinner="Downloading data from Google Drive...")
 def load_data():
-    base = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(base, "..", "data", "processed",
-                        "qualified_hitters_statcast_2021_2025_batted_ball.csv")
-    df = pd.read_csv(path, low_memory=False)
+    # 1. The ID from your link
+    file_id = "1-ueHmB1xBscgx-Zqkp4vF-nRHkXcYcXx"
+    
+    # 2. Construct the direct download URL
+    url = f'https://drive.google.com/uc?export=download&id={file_id}'
+    
+    # 3. Read directly into pandas
+    try:
+        df = pd.read_csv(url, low_memory=False)
+    except Exception as e:
+        st.error(f"Failed to load data from Google Drive. Error: {e}")
+        # Fallback to local if Drive fails (optional)
+        # df = pd.read_csv("data/processed/your_file.csv")
+        st.stop()
+
+    # --- Keep your existing processing logic below ---
     df["game_date"] = pd.to_datetime(df["game_date"])
     df = df.sort_values(["Name", "game_date"]).reset_index(drop=True)
 
@@ -183,19 +225,16 @@ def load_data():
     if "xwoba_est" not in df.columns and "estimated_woba_using_speedangle" in df.columns:
         df["xwoba_est"] = df["estimated_woba_using_speedangle"]
 
-    # Fill xwoba nulls with player-season mean (not zero — zero distorts CPD)
+    # Fill xwoba nulls
     df["xwoba_est"] = df.groupby(["Name", "Season"])["xwoba_est"].transform(
         lambda x: x.fillna(x.mean())
     )
 
     # Flags
-    if "is_batted_ball" not in df.columns:
-        df["is_batted_ball"] = df["exit_velocity"].notna().astype(int)
-    if "is_in_play" not in df.columns:
-        df["is_in_play"] = df["events"].notna().astype(int)
+    df["is_batted_ball"] = df["exit_velocity"].notna().astype(int)
+    df["is_in_play"] = df["events"].notna().astype(int)
 
     return df
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MODELS
