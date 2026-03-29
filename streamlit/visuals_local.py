@@ -248,11 +248,14 @@ def load_data():
         "launch_angle": "float32",
         "release_speed": "float32",
         "Season": "int16"
+        
     }
     df = pd.read_csv(output, low_memory=False)
     cols_to_drop = ['index', 'Unnamed: 0', 'Unnamed: 0.1']
     df = df.drop(columns=[c for c in cols_to_drop if c in df.columns])
 
+    #for now restrict to 2023 onwards
+    df=df[df['Season']>=2023]
     # try:
     #     df = pd.read_csv(
     #         output, 
