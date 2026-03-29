@@ -249,7 +249,7 @@ def load_data():
         "release_speed": "float32",
         "Season": "int16"
     }
-
+    df.drop(columns=['index','Unnamed: 0','Unnamed: 0.1'])
     try:
         df = pd.read_csv(
             output, 
