@@ -249,7 +249,7 @@ def load_data():
         "release_speed": "float32",
         "Season": "int16"
     }
-    df.drop(columns=['index','Unnamed: 0','Unnamed: 0.1'])
+    
     try:
         df = pd.read_csv(
             output, 
@@ -264,7 +264,7 @@ def load_data():
     except Exception as e:
         st.error(f"Pandas failed to load the 1.3GB file: {df.columns}")
         # st.stop()
-
+    df.drop(columns=['index','Unnamed: 0','Unnamed: 0.1'])
     # 4. Canonical column aliases (Standardizing column names)
     if "exit_velocity" not in df.columns and "launch_speed" in df.columns:
         df["exit_velocity"] = df["launch_speed"]
