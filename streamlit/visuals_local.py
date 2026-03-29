@@ -257,7 +257,7 @@ def load_data():
             # dtype=dtype_dict,
             # low_memory=False
         )
-        st.write(df.columns.tolist())
+        # st.write(df.columns.tolist())
         # st.write("Columns actually loaded:", df.columns.tolist())
         # st.dataframe(df.head())
     
