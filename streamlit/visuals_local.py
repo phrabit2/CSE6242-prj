@@ -64,16 +64,17 @@ ALL_EVENTS = [
     "sac_fly_double_play", "sac_bunt_double_play",
     "catcher_interf", "triple_play",
 ]
-DEFAULT_EVENTS  = ["home_run", "single", "double", "triple", "field_out"]
-SENSITIVITY_MAP = {"Low": 8, "Medium": 3, "High": 1}
+# DEFAULT_EVENTS  = ["home_run", "single", "double", "triple", "field_out"]
 
-# ── Google Drive IDs ───────────────────────────────────────────────────────────
-DATA_FILE_ID  = "142uq2WYlHGGmyBSzkti3fP2ipk_MtoA3"
-MODEL_FILE_ID = "1dW-p3UOBWHA7Jp66FKK4xIDutRE9irS3"
+SENSITIVITY_MAP = {"Low": 15, "Medium": 3, "High": 1}# penalty values for PELT change point detection — lower is more sensitive
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # STYLES
 # ══════════════════════════════════════════════════════════════════════════════
+
+
+
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
@@ -81,16 +82,20 @@ html, body, [class*="css"] {{
     font-family: 'IBM Plex Sans', sans-serif;
     background-color: {DARK}; color: {TEXT};
 }}
+
 h1,h2,h3 {{ font-family:'Bebas Neue',sans-serif; letter-spacing:0.06em; color:{TEXT}; }}
 .block-container {{ padding-top:1.2rem; background-color:{DARK}; max-width:1400px; }}
 [data-testid="stSidebar"] {{ background-color:{PANEL}; border-right:1px solid {BORDER}; }}
 [data-testid="stSidebar"] * {{ color:{TEXT} !important; }}
+
 .stRadio label,.stSelectbox label,.stMultiSelect label,.stSlider label {{
     color:{TEXT_MUTED} !important; font-size:0.72rem;
     text-transform:uppercase; letter-spacing:0.1em;
     font-family:'IBM Plex Mono',monospace;
 }}
+
 .card-row {{ display:flex; gap:10px; margin-bottom:1rem; flex-wrap:wrap; }}
+
 .card {{
     background:{PANEL}; border:1px solid {BORDER};
     border-top:3px solid {GOLD}; border-radius:4px;
@@ -172,11 +177,14 @@ def games_label(n_pitches):
 
 # ══════════════════════════════════════════════════════════════════════════════
 # DATA — download from Google Drive, cache in /tmp so reruns skip the download
+# and load into a DataFrame, with some cleaning and derived columns
 # ══════════════════════════════════════════════════════════════════════════════
 @st.cache_data(show_spinner="Loading pitch data…")
 def load_data():
+    '''Downloads the dataset from Google Drive if not already cached, then loads it into a DataFrame.'''
+
     # /tmp persists for the lifetime of the Streamlit Cloud container run
-    data_path = "/tmp/mlb_data.csv"
+    data_path = "/tmp/mlb_data.csv" #name of cleaned csv file
     if not os.path.exists(data_path):
         url = f"https://drive.google.com/uc?id={DATA_FILE_ID}"
         gdown.download(url, data_path, quiet=False, fuzzy=True)
@@ -186,13 +194,13 @@ def load_data():
     # Drop leftover index columns
     df = df.drop(columns=[c for c in ["index", "Unnamed: 0", "Unnamed: 0.1"] if c in df.columns])
 
-    # Restrict to 2023+ to keep memory manageable
-    df = df[df["Season"] >= 2023].copy()
+    # Restrict to 2023+ to keep memory manageable as needed
+    #df = df[df["Season"] >= 2023].copy()
 
-    df["game_date"] = pd.to_datetime(df["game_date"])
-    df = df.sort_values(["Name", "game_date"]).reset_index(drop=True)
+    df["game_date"] = pd.to_datetime(df["game_date"]) # date time formatting
+    df = df.sort_values(["Name", "game_date"]).reset_index(drop=True) 
 
-    # Canonical column aliases
+    # Create unified columns for key metrics, filling from alternate names if needed for older seasons
     if "exit_velocity" not in df.columns and "launch_speed" in df.columns:
         df["exit_velocity"] = df["launch_speed"]
     if "launch_angle_metric" not in df.columns and "launch_angle" in df.columns:
@@ -206,10 +214,10 @@ def load_data():
     )
 
     # Derived flags
-    df["is_hard_hit"]    = (df["exit_velocity"] >= 95).astype(np.int8)
+    df["is_hard_hit"]    = (df["exit_velocity"] >= 95).astype(np.int8) # define hard hit as 95+ mph exit velocity
     df["is_barrel_proxy"] = (
         (df["exit_velocity"] >= 98) &
-        (df["launch_angle_metric"].between(26, 30))
+        (df["launch_angle_metric"].between(26, 30)) #define barrel proxy as 98+ mph exit velocity and optimal launch angle range (26°–30°)
     ).astype(np.int8)
 
     return df
@@ -217,6 +225,7 @@ def load_data():
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MODELS — download from Google Drive once, load with pickle
+# Cached in /tmp to avoid repeated downloads on reruns, returns None if download fails
 # ══════════════════════════════════════════════════════════════════════════════
 @st.cache_resource(show_spinner="Loading pre-trained models…")
 def load_models():
@@ -230,23 +239,24 @@ def load_models():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PERFORMANCE INDEX
+# PERFORMANCE INDEX - page
 # ══════════════════════════════════════════════════════════════════════════════
 @st.cache_data(show_spinner="Computing performance index…")
 def build_perf_index(_df, weights_tuple):
+    '''Builds a composite performance index from the DataFrame and a tuple of (feature, weight) pairs.'''
     # NOTE: _df is prefixed with _ so Streamlit doesn't try to hash the DataFrame.
     # weights_tuple is a sorted tuple of (feature, weight) pairs — fully hashable.
-    weights = dict(weights_tuple)
-    feats   = [f for f in weights if f in _df.columns]
+    weights = dict(weights_tuple) # convert back to dict
+    feats   = [f for f in weights if f in _df.columns] # only keep features that are actually present in the DataFrame
     if not feats:
-        out = _df.copy(); out["perf_index"] = np.nan; return out
+        out = _df.copy(); out["perf_index"] = np.nan; return out # no valid features, return perf_index as NaN   
 
     sub = _df[feats].copy()
     for f in feats:
-        lo, hi = sub[f].quantile(0.01), sub[f].quantile(0.99)
-        sub[f] = sub[f].clip(lo, hi)
+        lo, hi = sub[f].quantile(0.01), sub[f].quantile(0.99) # clip outliers to 1st and 99th percentile to reduce noise impact on normalization
+        sub[f] = sub[f].clip(lo, hi) #
 
-    normed = sub.apply(lambda c: (c - c.min()) / (c.max() - c.min() + 1e-9))
+    normed = sub.apply(lambda c: (c - c.min()) / (c.max() - c.min() + 1e-9))#
     w = pd.Series(weights)[feats]; w = w / w.sum()
     out = _df.copy()
     out["perf_index"] = (normed * w).sum(axis=1) * 100
@@ -255,12 +265,12 @@ def build_perf_index(_df, weights_tuple):
 
 def get_weights():
     """RF importances from pickle, or equal weights as fallback."""
-    if models is not None and "rf_importances" in models:
-        return dict(zip(models["rf_importances"].index, models["rf_importances"].values))
-    return {f: 1.0 / len(avail_feats) for f in avail_feats}
+    if models is not None and "rf_importances" in models:#
+        return dict(zip(models["rf_importances"].index, models["rf_importances"].values)) # use RF importances as weights
+    return {f: 1.0 / len(avail_feats) for f in avail_feats} # fallback to equal weights if RF importances not available
 
 
-def get_df_with_index():
+def get_df_with_index(): # add performance index to DataFrame
     return build_perf_index(df, tuple(sorted(get_weights().items())))
 
 
@@ -270,7 +280,7 @@ def get_df_with_index():
 def detect_cpd(series, penalty):
     try:
         import ruptures as rpt
-        sig  = series.values.reshape(-1, 1)
+        sig  = series.values.reshape(-1, 1) 
         algo = rpt.Pelt(model="rbf").fit(sig)
         bkps = algo.predict(pen=penalty)
         return [b for b in bkps[:-1] if 0 < b < len(series)]
@@ -355,7 +365,6 @@ def add_season_dividers(ax, ymax):
                 color=TEXT_MUTED, fontsize=7, ha="left", va="top",
                 fontfamily="monospace")
 
-
 def generate_narrative(player, metric_label, roll_df, cp_st, b_last, b_leag_m, window):
     metric_col = roll_df.columns[1]
     current    = roll_df[metric_col].iloc[-1] if len(roll_df) else np.nan
@@ -397,7 +406,7 @@ def generate_narrative(player, metric_label, roll_df, cp_st, b_last, b_leag_m, w
 # LOAD DATA + MODELS  (single call each — cached, no duplicates)
 # ══════════════════════════════════════════════════════════════════════════════
 df     = load_data()
-models = load_models()   # returns None gracefully if download fails
+models = load_models()   # returns None if download fails
 
 players      = sorted(df["Name"].dropna().unique())
 avail_events = sorted([e for e in ALL_EVENTS if e in df["events"].dropna().unique()])
@@ -413,12 +422,18 @@ CPD_METRICS = {k: v for k, v in {
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SIDEBAR
+# SIDEBAR #reviewed
+    ##may want to remove pages
+    ##may want to change CPD sensitivity values. 
 # ══════════════════════════════════════════════════════════════════════════════
+
+
 with st.sidebar:
     st.markdown("## ⚾ MLB Batting Pulse")
     st.caption("Real-time performance change detection")
     st.markdown("---")
+
+    ##may want to remove pages
     page = st.radio("Navigation", [
         "🏠  Welcome",
         "👤  Player Snapshot",
@@ -429,14 +444,14 @@ with st.sidebar:
         "👥  Peer Comparison",
     ], label_visibility="collapsed")
     st.markdown("---")
-
-    sel_player = st.selectbox("Player", players)
-    cpd_window = st.slider("Rolling window (pitches)", 20, 80, 40, 5)
+    default_index = players.index("Aaron Judge") if "Aaron Judge" in players else 0
+    sel_player = st.selectbox("Player", players, index=default_index) #defaults to Aaron Judge since he's the most popular player in the dataset, but users can select any qualified hitter from the dropdown. The sidebar will then update with that player's data and change point detection results across the pages.
+    cpd_window = st.slider("Rolling window (pitches)", 40, 100, 40, 5)
     st.caption(f"{games_label(cpd_window)} of plate appearances")
 
     sensitivity  = st.radio("CPD Sensitivity", ["Low", "Medium", "High"], index=1, horizontal=True)
     penalty      = SENSITIVITY_MAP[sensitivity]
-    show_history = st.toggle("Show full history (2021–present)", value=False)
+    show_history = st.toggle(f"Show full history ({df['Season'].min()}–{CURRENT_SEASON})", value=False) # maybe remove this
 
     st.markdown("---")
     n_curr = len(df[(df["Name"] == sel_player) & (df["Season"] == CURRENT_SEASON)])
@@ -451,9 +466,10 @@ with st.sidebar:
 player_df = df[df["Name"] == sel_player].copy()
 cpd_df    = player_df if show_history else player_df[player_df["Season"] == CURRENT_SEASON].copy()
 
-
 # ══════════════════════════════════════════════════════════════════════════════
-# PAGE 1 — WELCOME
+# PAGE 1 — WELCOME #reviewed
+        ## may want to add in additional high-level insights about the dataset here, like distribution of events, or top players by pitch count, etc.
+        ## to update accoordingly depending on eventual algo and vistualisation choices
 # ══════════════════════════════════════════════════════════════════════════════
 if "Welcome" in page:
     st.markdown("# MLB Batting Pulse")
@@ -465,12 +481,14 @@ if "Welcome" in page:
     batting average are calculated as season-long rolling averages. By the time a meaningful
     decline shows up in the box score, a player may have been struggling for weeks —
     costing teams games and fans their confidence in a favourite star.<br><br>
-    <b>What this dashboard does:</b> Using pitch-by-pitch Statcast data from 2021 to {CURRENT_SEASON},
+                
+    <b>What this dashboard does:</b> Using pitch-by-pitch Statcast data from {df['Season'].min()} to {df['Season'].max()},
     we apply machine learning to identify <b>which contact quality metrics</b> (exit velocity,
     launch angle, etc.) most strongly predict batting outcomes — then monitor those metrics
     in real time using <b>change point detection (PELT)</b> to flag when a player's performance
     has shifted, how large that shift is, and whether it's a genuine decline or noise.<br><br>
     <b>Who it's for:</b><br>
+
     ⚾ <b>Fans</b> — understand when your favourite player is actually in a slump, not just unlucky.<br>
     📋 <b>Coaches</b> — pinpoint exactly which contact component changed to target coaching advice.<br>
     📊 <b>Managers / GMs</b> — compare players against league baselines and peers with confidence.<br><br>
@@ -483,24 +501,41 @@ if "Welcome" in page:
     st.markdown(f"""<div class="card-row">
         {card("Players",        f"{df['Name'].nunique():,}",  "qualified hitters",       "gold")}
         {card("Total pitches",  f"{len(df):,}",               "batted ball contacts",    "teal")}
-        {card("Seasons",        str(df['Season'].nunique()),   f"2021–{CURRENT_SEASON}",  "grey")}
+        {card("Seasons",        str(df['Season'].nunique()),   f"{df['Season'].min()}–{CURRENT_SEASON}",  "grey")}
         {card(f"{CURRENT_SEASON} pitches", f"{len(df[df['Season']==CURRENT_SEASON]):,}", "current season", "teal")}
     </div>""", unsafe_allow_html=True)
 
     sec("Event distribution — all players · all seasons")
-    ev_all  = df["events"].value_counts().head(12)
-    fig, ax = mpl_fig(11, 3.8)
+    ev_all  = df["events"].value_counts()
+    fig, ax = mpl_fig(12, 3.8)
     bcolors = [GOLD if e in ["home_run","single","double","triple"] else GREY
                for e in ev_all.index]
     ax.barh(ev_all.index[::-1], ev_all.values[::-1],
             color=bcolors[::-1], edgecolor="none", height=0.65)
     ax.set_xlabel("Count")
-    ax.set_title(f"Batted Ball Events (all players · 2021–{CURRENT_SEASON})",
-                 color=TEXT, fontsize=11)
+    ax.set_title(f"Batted Ball Events (all players · {df['Season'].min()}–{CURRENT_SEASON})",
+                 color=TEXT, fontsize=12)
     for i, (v, _) in enumerate(zip(ev_all.values[::-1], ev_all.index[::-1])):
-        ax.text(v + ev_all.max() * 0.005, i, f"{v:,}",
-                va="center", color=TEXT_MUTED, fontsize=8, fontfamily="monospace")
+        ax.text(v + ev_all.max() * 0.005, i, f"{v:,}", # add count labels to bars
+                va="center", color=TEXT_MUTED, fontsize=9, fontfamily="monospace")
     fig.tight_layout(); st.pyplot(fig); plt.close()
+
+
+
+    # sec("Player distribution — all players · all seasons")
+    # ev_all  = df["Name"].value_counts().head(20) # top 20 most common players in the dataset
+    # fig, ax = mpl_fig(12, 3.8)
+    # # bcolors = [GOLD if e in ["home_run","single","double","triple"] else GREY
+    # #            for e in ev_all.index]
+    # ax.barh(ev_all.index[::-1], ev_all.values[::-1],
+    #         color=bcolors[::-1], edgecolor="none", height=0.65)
+    # ax.set_xlabel("Count")
+    # ax.set_title(f"Player Distribution (all players · {df['Season'].min()}–{CURRENT_SEASON})",
+    #              color=TEXT, fontsize=12)
+    # for i, (v, _) in enumerate(zip(ev_all.values[::-1], ev_all.index[::-1])):
+    #     ax.text(v + ev_all.max() * 0.005, i, f"{v:,}", # add count labels to bars
+    #             va="center", color=TEXT_MUTED, fontsize=9, fontfamily="monospace")
+    # fig.tight_layout(); st.pyplot(fig); plt.close()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -536,21 +571,27 @@ elif "Snapshot" in page:
     st.dataframe(summ, use_container_width=True, hide_index=True)
 
     sec("Exit velocity vs launch angle by season")
-    plot_df = player_df[["exit_velocity","launch_angle_metric","Season"]].dropna()
+    plot_df = player_df[["exit_velocity","launch_angle_metric",'events',"Season"]].dropna()
+
     seasons = sorted(plot_df["Season"].unique())
+    # Add a Streamlit multiselect for year filtering
+    selected_seasons = st.multiselect("Filter by Year (Season)", seasons, default=seasons)
+    filtered_df = plot_df[plot_df["Season"].isin(selected_seasons)]
     pal     = [GOLD, TEAL_LT, RED_LT, "#a8d8a8", GREY]
     fig, ax = mpl_fig(11, 4.5)
     for i, s in enumerate(seasons):
-        sub = plot_df[plot_df["Season"] == s]
+        sub = filtered_df[filtered_df["Season"] == s]
         ax.scatter(sub["exit_velocity"], sub["launch_angle_metric"],
                    color=pal[i % len(pal)], alpha=0.3, s=10, label=str(s))
     ax.axhspan(8, 32, alpha=0.07, color=GOLD, zorder=0, label="Optimal LA (8°–32°)")
-    ax.axvline(95, color=GREY, lw=0.8, ls="--", alpha=0.5, label="95 mph EV threshold")
+    ax.axvline(95, color=GREY, lw=2.5, ls="--", alpha=0.5, label="95 mph EV threshold")
     ax.set_xlabel("Exit Velocity (mph)"); ax.set_ylabel("Launch Angle (°)")
     ax.set_title(f"{sel_player} — Contact Profile by Season", color=TEXT, fontsize=11)
     ax.legend(fontsize=8, framealpha=0.2, facecolor=PANEL, edgecolor=BORDER, labelcolor=TEXT)
     fig.tight_layout(); st.pyplot(fig); plt.close()
 
+    
+    
     sec("Event breakdown — all seasons")
     ev_p      = player_df["events"].value_counts()
     fig2, ax2 = mpl_fig(10, 3.2)
@@ -559,7 +600,6 @@ elif "Snapshot" in page:
     ax2.set_xlabel("Count")
     ax2.set_title(f"{sel_player} — Event Distribution", color=TEXT, fontsize=10)
     fig2.tight_layout(); st.pyplot(fig2); plt.close()
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE 3 — WHAT DRIVES OUTCOMES  (pre-trained pickle only — no in-app training)
@@ -871,7 +911,7 @@ elif "Timeline" in page:
     st.markdown(f"""<div class="preamble">
     Current season view with annotated change points and the baseline trinity:
     player's previous season average (dashed gold), league average ± 1 std (grey band),
-    and the rolling current season line (teal). Toggle history in the sidebar to extend back to 2021.
+    and the rolling current season line (teal). Toggle history in the sidebar to extend back to {df['Season'].min()}.
     </div>""", unsafe_allow_html=True)
 
     st.markdown(
@@ -933,7 +973,7 @@ elif "Timeline" in page:
     ax.set_xlabel("Date"); ax.set_ylabel(tl_metric_label)
     ax.set_title(
         f"{sel_player} — {tl_metric_label} · "
-        f"{'2021–' + str(CURRENT_SEASON) if show_history else str(CURRENT_SEASON)} · "
+        f"{'{df["Season"].min()}–' + str(CURRENT_SEASON) if show_history else str(CURRENT_SEASON)} · "
         f"{sensitivity} sensitivity",
         color=TEXT, fontsize=12
     )
