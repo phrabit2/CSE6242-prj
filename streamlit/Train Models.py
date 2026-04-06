@@ -48,7 +48,7 @@ Pickle bundle keys
     lr_classes        – list[str]
     lr_coef_df        – pd.DataFrame (outcomes × features)
 
-  
+    selected_events   – list[str]
     selected_features – list[str]
     trained_at        – ISO timestamp string
 """
@@ -75,10 +75,9 @@ DATA_PATH  = os.path.join(SCRIPT_DIR, "..", "data", "processed",
 MODEL_DIR  = os.path.join(SCRIPT_DIR, "..", "models")
 MODEL_PATH = os.path.join(MODEL_DIR, "batting_models.pkl")
 
-#removed selected events filter to train on all events, not just hits. This allows the model to learn to distinguish between different types of outcomes, including outs, which is important for a more comprehensive model of batting performance.
-# SELECTED_EVENTS = [
-#     "home_run", "single", "double", "triple", "field_out",
-# ]
+SELECTED_EVENTS = [
+    "home_run", "single", "double", "triple", "field_out",
+]
 
 FEATURE_WHITELIST = [
     "exit_velocity", "launch_angle_metric",
