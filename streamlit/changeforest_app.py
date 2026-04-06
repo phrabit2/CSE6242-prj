@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+import gdown
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -25,9 +25,33 @@ def get_data_path() -> Path:
     base = Path(__file__).resolve().parent
     return base.parent / "data" / "processed" / "Qualified_hitters_statcast_2021_2025_pa_master.csv"
 
+#comment out in favor of pulling data from google drive.
+# @st.cache_data(show_spinner="Loading plate appearance data...")
+# def load_data() -> pd.DataFrame:
+#     cols = [
+#         "batter",
+#         "pa_uid",
+#         "game_date",
+#         "power_woba_seq_id",
+#         "power_efficiency",
+#         "woba_residual",
+#     ]
+#     df = pd.read_csv(get_data_path(), usecols=cols)
+#     df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+#     return df
+#comment out in favor of pulling data from google drive.
+#load data from google drive, with caching
 
-@st.cache_data(show_spinner="Loading plate appearance data...")
-def load_data() -> pd.DataFrame:
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DATA — download from Google Drive, cache in /tmp so reruns skip the download
+# ══════════════════════════════════════════════════════════════════════════════
+
+@st.cache_data(show_spinner="Loading pitch data…")
+def load_data():
+    DATA_FILE_ID  = "1G8eA6gX8hdCwWp1YWddAMmwt6R62tcmA"
+    # /tmp persists for the lifetime of the Streamlit Cloud container run
+    data_path = "/tmp/mlb_data.csv"
     cols = [
         "batter",
         "pa_uid",
@@ -36,7 +60,11 @@ def load_data() -> pd.DataFrame:
         "power_efficiency",
         "woba_residual",
     ]
-    df = pd.read_csv(get_data_path(), usecols=cols)
+    if not os.path.exists(data_path):
+        url = f"https://drive.google.com/uc?id={DATA_FILE_ID}"
+        gdown.download(url, data_path, quiet=False, fuzzy=True)
+
+    df = pd.read_csv(data_path, usecols=cols)
     df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
     return df
 
