@@ -42,6 +42,7 @@ summary_df["pct_of_total"] = (summary_df["rows_with_value"] / len(df) * 100).rou
 
 print(f"Total rows: {len(df):,}  |  Total batters: {df['batter'].nunique()}")
 print(summary_df.to_string(index=False))
+print("Rows with cf_seq_id:", df["cf_seq_id"].notna().sum())
 
 
 # ============================================================
@@ -51,50 +52,65 @@ print(summary_df.to_string(index=False))
 def changeforest_subdataset_generator(df, selected_player_id, window=50, min_periods=None):
     """
     Generate one aligned multivariate CPD subdataset for ChangeForest
-    using power_efficiency + woba_residual.
-
-    min_periods defaults to `window` so the rolling mean is only computed
-    once a full window of data is available, avoiding noisy estimates near
-    the start of the series.  Pass an explicit value to override.
+    using cf_seq_id where all four variables are available.
     """
     if min_periods is None:
         min_periods = window
 
     base_cols = ["batter", "pa_uid", "game_date", "game_pk", "at_bat_number"]
-    feature_cols = ["power_woba_seq_id", "power_efficiency", "woba_residual"]
+    feature_cols = [
+        "cf_seq_id",
+        "hitting_decisions_score",
+        "power_efficiency",
+        "woba_residual",
+        "launch_angle_stability_50pa",
+    ]
 
     subdf = (
         df.loc[df["batter"] == selected_player_id, base_cols + feature_cols]
-          .dropna(subset=["power_woba_seq_id", "power_efficiency", "woba_residual"])
-          .sort_values("power_woba_seq_id")
+          .dropna(subset=feature_cols)
+          .sort_values("cf_seq_id")
           .reset_index(drop=True)
     )
 
+    subdf[f"hitting_decisions_score_rollmean_{window}"] = (
+        subdf["hitting_decisions_score"].rolling(window=window, min_periods=min_periods).mean()
+    )
     subdf[f"power_efficiency_rollmean_{window}"] = (
         subdf["power_efficiency"].rolling(window=window, min_periods=min_periods).mean()
     )
     subdf[f"woba_residual_rollmean_{window}"] = (
         subdf["woba_residual"].rolling(window=window, min_periods=min_periods).mean()
     )
+    subdf[f"launch_angle_stability_50pa_rollmean_{window}"] = (
+        subdf["launch_angle_stability_50pa"].rolling(window=window, min_periods=min_periods).mean()
+    )
 
-    # Drop rows where rolling mean is NaN (first `window-1` rows when min_periods=window)
-    rollmean_cols = [f"power_efficiency_rollmean_{window}", f"woba_residual_rollmean_{window}"]
+    rollmean_cols = [
+        f"hitting_decisions_score_rollmean_{window}",
+        f"power_efficiency_rollmean_{window}",
+        f"woba_residual_rollmean_{window}",
+        f"launch_angle_stability_50pa_rollmean_{window}",
+    ]
     subdf = subdf.dropna(subset=rollmean_cols).reset_index(drop=True)
 
     return subdf
 
 
-def changeforest_subdataset_graph_generator(subdf, selected_player_id=None, window=50, figsize=(14, 5)):
+def changeforest_subdataset_graph_generator(subdf, selected_player_id=None, window=50, figsize=(16, 10)):
     """
-    Plot the 2 ChangeForest indicators as a 1x2 panel,
+    Plot the 4 ChangeForest indicators as a 2x2 panel,
     showing raw signal and rolling mean.
     """
     plot_specs = [
-        ("power_woba_seq_id", "power_efficiency", "Power Efficiency", "#1f77b4"),
-        ("power_woba_seq_id", "woba_residual", "wOBA Residual", "#ff7f0e"),
+        ("cf_seq_id", "hitting_decisions_score", "Hitting Decisions Score", "#2ca02c"),
+        ("cf_seq_id", "power_efficiency", "Power Efficiency", "#1f77b4"),
+        ("cf_seq_id", "woba_residual", "wOBA Residual", "#ff7f0e"),
+        ("cf_seq_id", "launch_angle_stability_50pa", "Launch Angle Stability 50PA", "#d62728"),
     ]
 
-    fig, axes = plt.subplots(1, 2, figsize=figsize, constrained_layout=True)
+    fig, axes = plt.subplots(2, 2, figsize=figsize, constrained_layout=True)
+    axes = axes.flatten()
     fig.patch.set_facecolor("#f7f8fa")
 
     for ax, (x_col, y_col, title, color) in zip(axes, plot_specs):
@@ -102,14 +118,13 @@ def changeforest_subdataset_graph_generator(subdf, selected_player_id=None, wind
 
         if subdf is None or subdf.empty:
             ax.set_title(f"{title} (no data)", fontsize=12, fontweight="bold")
-            ax.set_xlabel("Plate Appearance Sequence")
+            ax.set_xlabel("Common CF Sequence")
             ax.set_ylabel(y_col)
             ax.grid(axis="y", alpha=0.25, linewidth=0.8)
             continue
 
         smooth_col = f"{y_col}_rollmean_{window}"
 
-        # Raw observations are de-emphasized so trend lines are easier to read.
         ax.scatter(
             subdf[x_col],
             subdf[y_col],
@@ -131,7 +146,7 @@ def changeforest_subdataset_graph_generator(subdf, selected_player_id=None, wind
             )
 
         ax.set_title(f"{title} (n={len(subdf):,})", fontsize=12, fontweight="bold")
-        ax.set_xlabel("Plate Appearance Sequence")
+        ax.set_xlabel("Common CF Sequence")
         ax.set_ylabel(y_col)
         ax.grid(axis="y", alpha=0.25, linewidth=0.8)
 
@@ -165,29 +180,24 @@ def run_changeforest(
     minimal_relative_segment_length=0.05,
 ):
     """
-    Run ChangeForest on one player's aligned 2-feature dataset.
-
-    Fixed:
-    ------
-    model_selection_alpha = 0.02
-
-    User can change:
-    ----------------
-    - window
-    - minimal_relative_segment_length
+    Run ChangeForest on one player's aligned 4-feature dataset.
     """
     if subdf is None or subdf.empty:
         return None, [], None, None
 
     if use_rollmean:
         feature_names = [
+            f"hitting_decisions_score_rollmean_{window}",
             f"power_efficiency_rollmean_{window}",
             f"woba_residual_rollmean_{window}",
+            f"launch_angle_stability_50pa_rollmean_{window}",
         ]
     else:
         feature_names = [
+            "hitting_decisions_score",
             "power_efficiency",
             "woba_residual",
+            "launch_angle_stability_50pa",
         ]
 
     missing_cols = [c for c in feature_names if c not in subdf.columns]
@@ -231,22 +241,28 @@ def plot_changeforest_result(
     figsize=(14, 6),
 ):
     """
-    Plot both ChangeForest signals on a single time-series chart using game_date as X-axis.
+    Plot all 4 ChangeForest signals on a single time-series chart using game_date as X-axis.
     """
     if use_rollmean:
         y_cols = [
+            f"hitting_decisions_score_rollmean_{window}",
             f"power_efficiency_rollmean_{window}",
             f"woba_residual_rollmean_{window}",
+            f"launch_angle_stability_50pa_rollmean_{window}",
         ]
     else:
         y_cols = [
+            "hitting_decisions_score",
             "power_efficiency",
             "woba_residual",
+            "launch_angle_stability_50pa",
         ]
 
     line_specs = [
-        (y_cols[0], "Power Efficiency", "#1f77b4"),
-        (y_cols[1], "wOBA Residual", "#ff7f0e"),
+        (y_cols[0], "Hitting Decisions Score", "#2ca02c"),
+        (y_cols[1], "Power Efficiency", "#1f77b4"),
+        (y_cols[2], "wOBA Residual", "#ff7f0e"),
+        (y_cols[3], "Launch Angle Stability 50PA", "#d62728"),
     ]
 
     dates = pd.to_datetime(subdf["game_date"])
@@ -254,7 +270,7 @@ def plot_changeforest_result(
     fig.patch.set_facecolor("#f7f8fa")
     ax.set_facecolor("#ffffff")
 
-    label_offsets = [8, -65]  # horizontal offsets to reduce overlap
+    label_offsets = [8, -65, 8, -65]
     for (y_col, label, color), x_offset in zip(line_specs, label_offsets):
         ax.plot(
             dates,
@@ -379,7 +395,7 @@ def build_cp_eval_dfs(subdf, cps, feature_names, compare_window=50):
     return eval_dfs
 
 
-def plot_cp_eval_comparison(eval_dfs, figsize=(12, 4)):
+def plot_cp_eval_comparison(eval_dfs, figsize=(16, 4)):
     """
     Plot CP vs non-CP comparison for each feature.
     """
@@ -468,7 +484,7 @@ if __name__ == "__main__":
     print("Detected change points:", cps)
 
     if len(cps) > 0:
-        print(subdf.iloc[cps][["power_woba_seq_id", "game_date", "pa_uid"]])
+        print(subdf.iloc[cps][["cf_seq_id", "game_date", "pa_uid"]])
 
     fig, axes = plot_changeforest_result(
         subdf,
@@ -481,12 +497,11 @@ if __name__ == "__main__":
     plt.show()
 
     # 1. Before vs After Statistical Difference
-    # evaluation should follow actual feature_names
     eval_dfs = build_cp_eval_dfs(
         subdf=subdf,
         cps=cps,
         feature_names=feature_names,
-        compare_window=100,  # this is evaluation window, not rolling window
+        compare_window=100,
     )
 
     fig, axes = plot_cp_eval_comparison(eval_dfs)

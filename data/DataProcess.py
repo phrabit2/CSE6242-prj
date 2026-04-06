@@ -23,6 +23,8 @@ print("Raw shape:", df.shape)
 
 df = df.rename(columns={
     "Season": "season",
+    "Name": "player_name",
+    "player_name": "pitcher_name",
 })
 
 RAW_COLS = [
@@ -30,6 +32,7 @@ RAW_COLS = [
     "game_date",
     "game_pk",
     "batter",
+    "player_name",
     "at_bat_number",
     "pitch_number",
     "balls",
@@ -185,6 +188,7 @@ PA_WORK_COLS = [
     "game_date",
     "game_pk",
     "batter",
+    "player_name",
     "at_bat_number",
     "pitch_number",
     "balls",
@@ -233,6 +237,7 @@ group_cols = [
 ]
 
 agg_dict = {
+    "player_name": first_value,
     "pitch_number": "max",
     "balls": last_value,
     "strikes": last_value,
@@ -358,6 +363,24 @@ for batter_id, g in pa_df.groupby("batter"):
 
 print("Launch angle rolling stability added")
 
+# 2.6.3 Common Sequence ID for Change Forest
+# Keep only rows where all four CPD variables are available.
+# =====================================================
+valid_cf = (
+    pa_df["power_efficiency"].notna() &
+    pa_df["woba_residual"].notna() &
+    pa_df["launch_angle_stability_50pa"].notna() &
+    pa_df["hitting_decisions_score"].notna()
+)
+
+pa_df["cf_seq_id"] = pd.Series([pd.NA] * len(pa_df), dtype="Int64")
+
+for batter_id, g in pa_df.groupby("batter"):
+    cf_idx = g[valid_cf.loc[g.index]].index
+    pa_df.loc[cf_idx, "cf_seq_id"] = np.arange(1, len(cf_idx) + 1)
+
+print("Change Forest common sequence ID added")
+
 # 2.7 Final PA MASTER Reduction
 # Keep only final analysis-ready columns.
 # Tail feature order follows the requested layout.
@@ -367,6 +390,7 @@ FINAL_COLS = [
     "game_date",
     "game_pk",
     "batter",
+    "player_name",
     "at_bat_number",
     "pa_uid",
     "pa_seq_id",
@@ -395,6 +419,7 @@ FINAL_COLS = [
     "launch_angle_seq_id",
     "launch_angle_stability_50pa",
     "hitting_decisions_score",
+    "cf_seq_id",
 ]
 
 pa_df = pa_df[FINAL_COLS].copy()
