@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+import os
+>>>>>>> b2cae515a25feb4e7708cb0c453224f86ec7ca34
 from pathlib import Path
 
 import matplotlib.dates as mdates
@@ -8,7 +12,11 @@ from sklearn.preprocessing import StandardScaler
 
 try:
     from changeforest import Control, changeforest
+<<<<<<< HEAD
 except Exception:
+=======
+except Exception:  # pragma: no cover - runtime dependency check
+>>>>>>> b2cae515a25feb4e7708cb0c453224f86ec7ca34
     Control = None
     changeforest = None
 
@@ -90,6 +98,11 @@ def run_changeforest(
     )
 
     result = changeforest(X_used, method="random_forest", control=control)
+<<<<<<< HEAD
+=======
+
+    # Some implementations may include the final index; keep valid in-range indices only.
+>>>>>>> b2cae515a25feb4e7708cb0c453224f86ec7ca34
     cps = [int(cp) for cp in result.split_points() if 0 <= int(cp) < len(subdf)]
     return result, cps, X_used, feature_names
 
@@ -135,7 +148,11 @@ def plot_changeforest_result(
 
 
 def main():
+<<<<<<< HEAD
     st.set_page_config(page_title="ChangeForest CPD", page_icon="CF", layout="wide")
+=======
+    st.set_page_config(page_title="ChangeForest CPD", page_icon="\U0001F332", layout="wide")
+>>>>>>> b2cae515a25feb4e7708cb0c453224f86ec7ca34
     st.title("ChangeForest Streamlit App")
     st.caption("Player ID-first CPD with rolling window and sensitivity mapping")
 
