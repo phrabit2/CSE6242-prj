@@ -51,7 +51,7 @@ def get_data_path() -> Path:
 def load_data():
     DATA_FILE_ID  = "1G8eA6gX8hdCwWp1YWddAMmwt6R62tcmA"
     # /tmp persists for the lifetime of the Streamlit Cloud container run
-    data_path = "/tmp/mlb_data.csv"
+    data_path = "/tmp/Qualified_hitters_statcast_2021_2025_pa_master.csv"
     cols = [
         "batter",
         "pa_uid",
@@ -64,19 +64,19 @@ def load_data():
         url = f"https://drive.google.com/uc?id={DATA_FILE_ID}"
         gdown.download(url, data_path, quiet=False, fuzzy=True)
 
-    df = pd.read_csv(data_path, usecols=cols)
-    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
-    return df
+    df_pa = pd.read_csv(data_path, usecols=cols)
+    df_pa["game_date"] = pd.to_datetime(df_pa["game_date"], errors="coerce")
+    return df_pa
 
 
 def changeforest_subdataset_generator(
-    df: pd.DataFrame,
+    df_pa: pd.DataFrame,
     selected_player_id: int,
     window: int = 50,
     min_periods: int = 1,
 ) -> pd.DataFrame:
     subdf = (
-        df.loc[df["batter"] == selected_player_id].copy()
+        df_pa.loc[df_pa["batter"] == selected_player_id].copy()
         .dropna(subset=["power_woba_seq_id", "power_efficiency", "woba_residual"])
         .sort_values("power_woba_seq_id")
         .reset_index(drop=True)
@@ -177,12 +177,12 @@ def main():
         )
         st.stop()
 
-    df = load_data()
-    if df.empty:
+    df_pa = load_data()
+    if df_pa.empty:
         st.error("No data loaded.")
         st.stop()
 
-    player_ids = sorted(df["batter"].dropna().astype(int).unique().tolist())
+    player_ids = sorted(df_pa["batter"].dropna().astype(int).unique().tolist())
 
     with st.sidebar:
         st.header("Controls")
@@ -192,7 +192,7 @@ def main():
         min_rel_seg_len = SENSITIVITY_TO_MIN_SEG[sensitivity]
 
     subdf = changeforest_subdataset_generator(
-        df=df,
+        df=df_pa,
         selected_player_id=selected_player_id,
         window=rolling_window,
     )
