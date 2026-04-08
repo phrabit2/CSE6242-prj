@@ -59,140 +59,6 @@ INDICATOR_COLORS = {
 }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# HELPERS
-# ══════════════════════════════════════════════════════════════════════════════
-
-# ── Palette ────────────────────────────────────────────────────────────────────
-DARK       = "#0d1117"
-PANEL      = "#161b22"
-BORDER     = "#30363d"
-GOLD       = "#d4a017"
-GOLD_LT    = "#f0c040"
-TEAL       = "#238b8b"
-TEAL_LT    = "#3eb8b8"
-RED        = "#c0392b"
-RED_LT     = "#e74c3c"
-GREY       = "#6e7681"
-TEXT       = "#e6edf3"
-TEXT_MUTED = "#8b949e"
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# BUG FIX 1 — st.set_page_config() MUST be the very first Streamlit call.
-#             It was buried inside main() while st.markdown(CSS) ran first.
-# ══════════════════════════════════════════════════════════════════════════════
-st.set_page_config(page_title="MLB Batting Pulse", page_icon="⚾", layout="wide")
-
-# ══════════════════════════════════════════════════════════════════════════════
-# STYLES  (CSS injection — safe here, after set_page_config)
-# ══════════════════════════════════════════════════════════════════════════════
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
-html, body, [class*="css"] {{
-    font-family: 'IBM Plex Sans', sans-serif;
-    background-color: {DARK}; color: {TEXT};
-}}
-h1,h2,h3 {{ font-family:'Bebas Neue',sans-serif; letter-spacing:0.06em; color:{TEXT}; }}
-.block-container {{ padding-top:1.2rem; background-color:{DARK}; max-width:1400px; }}
-[data-testid="stSidebar"] {{ background-color:{PANEL}; border-right:1px solid {BORDER}; }}
-[data-testid="stSidebar"] * {{ color:{TEXT} !important; }}
-.stRadio label,.stSelectbox label,.stMultiSelect label,.stSlider label {{
-    color:{TEXT_MUTED} !important; font-size:0.72rem;
-    text-transform:uppercase; letter-spacing:0.1em;
-    font-family:'IBM Plex Mono',monospace;
-}}
-.card-row {{ display:flex; gap:10px; margin-bottom:1rem; flex-wrap:wrap; }}
-.card {{
-    background:{PANEL}; border:1px solid {BORDER};
-    border-top:3px solid {GOLD}; border-radius:4px;
-    padding:0.9rem 1.1rem; flex:1; min-width:130px;
-}}
-.card.teal {{ border-top-color:{TEAL_LT}; }}
-.card.red  {{ border-top-color:{RED_LT}; }}
-.card.grey {{ border-top-color:{GREY}; }}
-.card-label {{
-    font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em;
-    color:{TEXT_MUTED}; font-family:'IBM Plex Mono',monospace; margin-bottom:4px;
-}}
-.card-val {{
-    font-size:1.6rem; font-weight:600; color:{TEXT};
-    font-family:'Bebas Neue',sans-serif; letter-spacing:0.04em; line-height:1.1;
-}}
-.card-sub {{ font-size:0.72rem; color:{TEXT_MUTED}; font-family:'IBM Plex Mono',monospace; margin-top:2px; }}
-.sec {{
-    font-size:0.65rem; text-transform:uppercase; letter-spacing:0.15em;
-    color:{TEAL_LT}; font-family:'IBM Plex Mono',monospace;
-    border-bottom:1px solid {BORDER}; padding-bottom:4px; margin:1.1rem 0 0.7rem 0;
-}}
-.cpd-minor {{ display:inline-block; background:#30363d; color:{TEXT_MUTED}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
-.cpd-mod   {{ display:inline-block; background:#3a2f00; color:{GOLD_LT}; border:1px solid {GOLD}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
-.cpd-sig   {{ display:inline-block; background:#3b0d0d; color:{RED_LT}; border:1px solid {RED}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
-.preamble {{
-    background:{PANEL}; border:1px solid {BORDER}; border-left:4px solid {GOLD};
-    border-radius:4px; padding:1.2rem 1.4rem; margin-bottom:1.4rem;
-    font-size:0.92rem; line-height:1.7; color:{TEXT_MUTED};
-}}
-.preamble b {{ color:{TEXT}; }}
-.narrative {{
-    background:#161b22; border:1px solid {BORDER}; border-radius:4px;
-    padding:1rem 1.2rem; font-family:'IBM Plex Mono',monospace;
-    font-size:0.82rem; line-height:1.6; color:{TEXT}; margin-bottom:1rem;
-}}
-.rel-high {{ color:{TEAL_LT}; font-family:'IBM Plex Mono',monospace; font-size:0.75rem; }}
-.rel-med  {{ color:{GOLD_LT}; font-family:'IBM Plex Mono',monospace; font-size:0.75rem; }}
-.rel-low  {{ color:{RED_LT};  font-family:'IBM Plex Mono',monospace; font-size:0.75rem; }}
-</style>
-""", unsafe_allow_html=True)
-
-
-# ── UI helper functions ────────────────────────────────────────────────────────
-def card(label, val, sub="", color="gold"):
-    cls = {"gold": "card", "teal": "card teal", "red": "card red", "grey": "card grey"}[color]
-    return (f'<div class="{cls}"><div class="card-label">{label}</div>'
-            f'<div class="card-val">{val}</div><div class="card-sub">{sub}</div></div>')
-
-
-def sec(title):
-    st.markdown(f'<div class="sec">{title}</div>', unsafe_allow_html=True)
-
-
-def mpl_fig(w=11, h=4):
-    fig, ax = plt.subplots(figsize=(w, h))
-    fig.patch.set_facecolor(DARK)
-    ax.set_facecolor(PANEL)
-    ax.tick_params(colors=TEXT, labelsize=8.5)
-    for sp in ax.spines.values():
-        sp.set_edgecolor(BORDER)
-    ax.xaxis.label.set_color(TEXT_MUTED)
-    ax.yaxis.label.set_color(TEXT_MUTED)
-    ax.title.set_color(TEXT)
-    ax.grid(color=BORDER, linewidth=0.4, linestyle="--", alpha=0.5)
-    return fig, ax
-
-
-def effect_size_label(d):
-    ad = abs(d)
-    if ad < 0.2:
-        return "minor", "cpd-minor"
-    if ad < 0.5:
-        return "moderate", "cpd-mod"
-    return "significant", "cpd-sig"
-
-
-def reliability_badge(n):
-    if n >= 200:
-        return f'<span class="rel-high">● High reliability</span>'
-    if n >= 100:
-        return f'<span class="rel-med">● Medium reliability</span>'
-    return f'<span class="rel-low">● Low reliability (few pitches this season)</span>'
-
-
-def games_label(n_pitches):
-    return f"≈{max(1, round(n_pitches / 2.6))} games"
-
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Data loading
 # ──────────────────────────────────────────────────────────────────────────────
@@ -228,8 +94,9 @@ def load_data() -> pd.DataFrame:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CPD pipeline
+# CPD pipeline  (ported from cdp_changeforest.py)
 # ──────────────────────────────────────────────────────────────────────────────
+
 def changeforest_subdataset_generator(
     df: pd.DataFrame,
     selected_player_id: int,
@@ -301,6 +168,7 @@ def run_changeforest(
 
 
 # ── Plot A: Input Signal 2×2 panel ────────────────────────────────────────────
+
 def plot_input_signals(subdf: pd.DataFrame, window: int, player_name: str = "") -> plt.Figure:
     """2×2 panel: raw scatter + rolling mean for all 4 indicators."""
     fig, axes = plt.subplots(2, 2, figsize=(16, 8), constrained_layout=True)
@@ -343,7 +211,8 @@ def plot_input_signals(subdf: pd.DataFrame, window: int, player_name: str = "") 
     return fig
 
 
-# ── Plot B: ChangeForest result ────────────────────────────────────────────────
+# ── Plot B: ChangeForest result (all 4 signals + CP vertical lines) ───────────
+
 def plot_changeforest_result(
     subdf: pd.DataFrame,
     cps: list,
@@ -405,12 +274,17 @@ def plot_changeforest_result(
 
 
 # ── Before / After Eval ────────────────────────────────────────────────────────
+
 def build_cp_eval_dfs(
     subdf: pd.DataFrame,
     cps: list,
     feature_names: list,
     compare_window: int = 50,
 ) -> dict:
+    """
+    For every position i in [compare_window, n-compare_window], compute
+    before/after statistics and flag whether i is a detected CP.
+    """
     n = len(subdf)
     if n <= 2 * compare_window:
         return {}
@@ -421,8 +295,8 @@ def build_cp_eval_dfs(
     for col in feature_names:
         rows = []
         for i in range(compare_window, n - compare_window):
-            before = subdf[col].iloc[i - compare_window: i]
-            after  = subdf[col].iloc[i: i + compare_window]
+            before = subdf[col].iloc[i - compare_window : i]
+            after  = subdf[col].iloc[i : i + compare_window]
             rows.append({
                 "feature":       col,
                 "cp":            "Y" if i in cps_set else "N",
@@ -474,6 +348,7 @@ def plot_cp_eval_comparison(eval_dfs: dict) -> plt.Figure | None:
 
 
 # ── Parameter Stability ────────────────────────────────────────────────────────
+
 def run_parameter_stability(
     subdf: pd.DataFrame,
     window: int,
@@ -481,6 +356,7 @@ def run_parameter_stability(
     use_rollmean: bool = True,
     standardize: bool = True,
 ) -> pd.DataFrame:
+    """Run ChangeForest for each sensitivity level and collect CP counts."""
     inv_map = {v: k for k, v in SENSITIVITY_TO_MIN_SEG.items()}
     rows = []
 
@@ -496,10 +372,10 @@ def run_parameter_stability(
             st.warning(f"Stability run failed for min_rel_seg_len={val}: {exc}")
 
         rows.append({
-            "Sensitivity":     inv_map.get(val, str(val)),
-            "min_rel_seg_len": val,
-            "# Change Points": n_cp,
-            "CP Indices":      str(cp_list),
+            "Sensitivity":      inv_map.get(val, str(val)),
+            "min_rel_seg_len":  val,
+            "# Change Points":  n_cp,
+            "CP Indices":       str(cp_list),
         })
 
     return pd.DataFrame(rows)
@@ -534,39 +410,44 @@ def plot_parameter_stability(stability_df: pd.DataFrame) -> plt.Figure:
     return fig
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# BUG FIX 2 — Load data ONCE at module level so every page can use df,
-#             min_year, and max_year.  Previously only loaded inside main().
-# ══════════════════════════════════════════════════════════════════════════════
-df = load_data()
-df["year"] = df["game_date"].dt.year
-max_year = int(df["year"].max())
-min_year = int(df["year"].min())
+# ──────────────────────────────────────────────────────────────────────────────
+# Main Streamlit App
+# ──────────────────────────────────────────────────────────────────────────────
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# BUG FIX 3 — Sidebar lives at module level (not inside main()).
-#             A single `with st.sidebar:` block renders the nav radio +
-#             page-specific controls in sequence.
-# ══════════════════════════════════════════════════════════════════════════════
-with st.sidebar:
-    st.header("⚙️ Controls")
-    page = st.radio(
-        "Navigation",
-        ["🏠  Welcome", "👤  Player Snapshot", "📊  ChangeForest CPD"],
-        label_visibility="collapsed",
+def main():
+    st.set_page_config(page_title="ChangeForest CPD v2", page_icon="🌲", layout="wide")
+    st.title("🌲 ChangeForest Change-Point Detection")
+    st.caption(
+        "Multi-feature CPD for MLB hitters · 4 indicators · rolling window · sensitivity tuning"
     )
-    st.markdown("---")
 
-    # ── CPD-specific sidebar controls (only shown on that page) ──────────────
-    if "ChangeForest CPD" in page:
-        name_id_map = (
-            df[["player_name", "batter"]]
-            .dropna()
-            .drop_duplicates()
-            .sort_values("player_name")
+    # ── Dependency check ─────────────────────────────────────────────────────
+    if changeforest is None or Control is None:
+        st.error(
+            "The `changeforest` package is not installed. "
+            "Run `pip install changeforest` and restart the app."
         )
-        player_names = sorted(name_id_map["player_name"].unique().tolist())
+        st.stop()
+
+    # ── Load data ─────────────────────────────────────────────────────────────
+    df = load_data()
+    if df.empty:
+        st.error("No data loaded.")
+        st.stop()
+
+    # ── Build player name list ─────────────────────────────────────────────────
+    name_id_map = (
+        df[["player_name", "batter"]]
+        .dropna()
+        .drop_duplicates()
+        .sort_values("player_name")
+    )
+    player_names = sorted(name_id_map["player_name"].unique().tolist())
+
+    # ── Sidebar controls ──────────────────────────────────────────────────────
+    with st.sidebar:
+        st.header("⚙️ Controls")
+
         default_idx = player_names.index("Trout, Mike") if "Trout, Mike" in player_names else 0
         selected_name = st.selectbox("Player Name", options=player_names, index=default_idx)
 
@@ -575,7 +456,9 @@ with st.sidebar:
         ].tolist()
         selected_player_id = int(matching_ids[0]) if matching_ids else None
 
-        rolling_window = st.slider("Rolling Window (PAs)", min_value=20, max_value=120, value=50, step=5)
+        rolling_window = st.slider(
+            "Rolling Window (PAs)", min_value=20, max_value=120, value=50, step=5
+        )
 
         sensitivity = st.radio(
             "CDP Sensitivity",
@@ -597,77 +480,15 @@ with st.sidebar:
             "| High | 0.02 | more CPs |"
         )
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# BUG FIX 4 — Page routing is a flat if / elif at module level.
-#             Previously the routing was wrapped in def main() which was
-#             never called, making ALL page content unreachable.
-#             Also: the original had `if __name__ == "__main__": main()`
-#             placed BETWEEN the `if "Welcome"` block and `elif "ChangeForest"`
-#             block, which made the elif a syntax/logic error (elif after a
-#             non-if statement).
-# ══════════════════════════════════════════════════════════════════════════════
-
-# ── PAGE: Welcome ─────────────────────────────────────────────────────────────
-if "Welcome" in page:
-    st.markdown("# MLB Batting Pulse")
-    st.markdown("### Real-time batting performance change detection")
-
-    st.markdown(f"""
-    <div class="preamble">
-    <b>The problem with traditional baseball metrics:</b> Statistics like xwOBA, BABIP, and
-    batting average are calculated as season-long rolling averages. By the time a meaningful
-    decline shows up in the box score, a player may have been struggling for weeks —
-    costing teams games and fans their confidence in a favourite star.<br><br>
-    <b>What this dashboard does:</b> Using pitch-by-pitch Statcast data from {min_year} to {max_year},
-    we apply machine learning to identify <b>which contact quality metrics</b> (exit velocity,
-    launch angle, etc.) most strongly predict batting outcomes — then monitor those metrics
-    in real time using <b>change point detection (PELT)</b> to flag when a player's performance
-    has shifted, how large that shift is, and whether it's a genuine decline or noise.<br><br>
-    <b>Who it's for:</b><br>
-    ⚾ <b>Fans</b> — understand when your favourite player is actually in a slump, not just unlucky.<br>
-    📋 <b>Coaches</b> — pinpoint exactly which contact component changed to target coaching advice.<br>
-    📊 <b>Managers / GMs</b> — compare players against league baselines and peers with confidence.<br><br>
-    <b>How to use it:</b> Select a player and rolling window in the sidebar, then work through the
-    pages in order — or jump straight to <i>Performance Index</i> for the headline signal.
-    </div>
-    """, unsafe_allow_html=True)
-
-    sec("Dataset at a glance")
-    st.markdown(f"""<div class="card-row">
-        {card("Players",        f"{df['player_name'].nunique():,}",          "qualified hitters",    "gold")}
-        {card("Total pitches",  f"{len(df):,}",                              "batted ball contacts", "teal")}
-        {card("Seasons",        str(df['year'].nunique()),                   f"{min_year}–{max_year}", "grey")}
-        {card(f"{max_year} PAs", f"{len(df[df['year'] == max_year]):,}",     "current season",       "teal")}
-    </div>""", unsafe_allow_html=True)
-
-# ── PAGE: Player Snapshot (placeholder) ───────────────────────────────────────
-elif "Player Snapshot" in page:
-    st.title("👤 Player Snapshot")
-    st.info("Player Snapshot page — coming soon.")
-
-# ── PAGE: ChangeForest CPD ────────────────────────────────────────────────────
-elif "ChangeForest CPD" in page:
-    st.title("🌲 ChangeForest Change-Point Detection")
-    st.caption(
-        "Multi-feature CPD for MLB hitters · 4 indicators · rolling window · sensitivity tuning"
-    )
-
-    # ── Dependency check ──────────────────────────────────────────────────────
-    if changeforest is None or Control is None:
-        st.error(
-            "The `changeforest` package is not installed. "
-            "Run `pip install changeforest` and restart the app."
-        )
-        st.stop()
-
     if selected_player_id is None:
         st.warning("Player not found in dataset.")
         st.stop()
 
     # ── Prepare subdataset ────────────────────────────────────────────────────
     with st.spinner("Preparing player dataset…"):
-        subdf = changeforest_subdataset_generator(df, selected_player_id, window=rolling_window)
+        subdf = changeforest_subdataset_generator(
+            df, selected_player_id, window=rolling_window
+        )
 
     if subdf.empty:
         st.warning(
@@ -706,20 +527,26 @@ elif "ChangeForest CPD" in page:
             )
 
     # ── Tabs ──────────────────────────────────────────────────────────────────
-    tab1, tab2, tab3 = st.tabs([
-        "📈 ChangeForest Result + Input Signal",
-        "📊 Before / After Eval",
-        "🔧 Parameter Stability",
-    ])
+    tab1, tab2, tab3 = st.tabs(
+        [
+            "📈 ChangeForest Result + Input Signal",
+            "📊 Before / After Eval",
+            "🔧 Parameter Stability",
+        ]
+    )
 
-    # ── Tab 1 ─────────────────────────────────────────────────────────────────
+    # ─────────────────────────────────────────────────────────────────────────
+    # Tab 1 — ChangeForest Result + Input Signal
+    # ─────────────────────────────────────────────────────────────────────────
     with tab1:
         st.subheader("ChangeForest Result")
         st.caption(
             "All 4 standardized rolling-mean signals on a single timeline. "
             "Dashed red vertical lines mark detected change points."
         )
-        fig_result = plot_changeforest_result(subdf, cps, rolling_window, selected_name, min_rel_seg_len)
+        fig_result = plot_changeforest_result(
+            subdf, cps, rolling_window, selected_name, min_rel_seg_len
+        )
         st.pyplot(fig_result, use_container_width=True)
 
         st.markdown("---")
@@ -731,7 +558,9 @@ elif "ChangeForest CPD" in page:
         fig_signals = plot_input_signals(subdf, rolling_window, selected_name)
         st.pyplot(fig_signals, use_container_width=True)
 
-    # ── Tab 2 ─────────────────────────────────────────────────────────────────
+    # ─────────────────────────────────────────────────────────────────────────
+    # Tab 2 — Before / After Eval
+    # ─────────────────────────────────────────────────────────────────────────
     with tab2:
         st.subheader("Before / After Statistical Comparison")
         st.caption(
@@ -750,7 +579,9 @@ elif "ChangeForest CPD" in page:
             )
         else:
             with st.spinner("Computing before/after statistics…"):
-                eval_dfs = build_cp_eval_dfs(subdf, cps, feature_names, compare_window=compare_window)
+                eval_dfs = build_cp_eval_dfs(
+                    subdf, cps, feature_names, compare_window=compare_window
+                )
 
             if not eval_dfs:
                 st.warning("Could not build eval dataframes.")
@@ -765,14 +596,18 @@ elif "ChangeForest CPD" in page:
                         st.write(f"**{INDICATOR_LABELS.get(base, feat)}**")
                         st.dataframe(
                             df_eval.groupby("cp")[
-                                ["mean_before", "mean_after", "mean_diff",
-                                 "std_before", "std_after", "std_diff",
-                                 "abs_mean_diff", "abs_std_diff"]
+                                [
+                                    "mean_before", "mean_after", "mean_diff",
+                                    "std_before",  "std_after",  "std_diff",
+                                    "abs_mean_diff", "abs_std_diff",
+                                ]
                             ].mean().round(4),
                             use_container_width=True,
                         )
 
-    # ── Tab 3 ─────────────────────────────────────────────────────────────────
+    # ─────────────────────────────────────────────────────────────────────────
+    # Tab 3 — Parameter Stability
+    # ─────────────────────────────────────────────────────────────────────────
     with tab3:
         st.subheader("Parameter Stability")
         st.caption(
@@ -785,7 +620,9 @@ elif "ChangeForest CPD" in page:
         stability_vals = sorted(SENSITIVITY_TO_MIN_SEG.values())  # [0.02, 0.05, 0.10]
 
         with st.spinner("Running stability analysis across all sensitivity levels…"):
-            stability_df = run_parameter_stability(subdf, rolling_window, min_rel_seg_len_list=stability_vals)
+            stability_df = run_parameter_stability(
+                subdf, rolling_window, min_rel_seg_len_list=stability_vals
+            )
 
         fig_stability = plot_parameter_stability(stability_df)
         col_chart, col_table = st.columns([3, 2])
@@ -793,3 +630,7 @@ elif "ChangeForest CPD" in page:
             st.pyplot(fig_stability, use_container_width=True)
         with col_table:
             st.dataframe(stability_df, use_container_width=True, hide_index=True)
+
+
+if __name__ == "__main__":
+    main()
