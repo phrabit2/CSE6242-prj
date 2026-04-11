@@ -30,6 +30,8 @@ import matplotlib.dates as mdates
 from matplotlib.lines import Line2D
 import seaborn as sns
 import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
 import gdown
 from sklearn.preprocessing import StandardScaler
 
@@ -68,6 +70,12 @@ PA_LABELS = {
     "woba_residual":               "wOBA Residual",
     "launch_angle_stability_50pa": "Launch Angle Stability",
 }
+PA_TOOLTIPS = {
+    "hitting_decisions_score":     "Plate discipline. Measures swing vs. take quality. Higher is better (Elite: >3.0, League Avg: ~0.3).",
+    "power_efficiency":            "Raw power. Effectiveness of converting swing effort to exit velocity. Higher is better (Elite: >0.0100, League Avg: ~0.0040).",
+    "woba_residual":               "Luck vs Skill. Difference between actual results and physics-based expectation. Positive (>0.15) means outperforming physics (luck/skill); Negative (<-0.15) means 'unlucky'.",
+    "launch_angle_stability_50pa": "Swing consistency. Stability of ball flight path over recent 50 PAs. Higher values indicate a more repeatable, optimized swing path.",
+}
 PA_COLORS = {
     "hitting_decisions_score":     "#2ca02c",
     "power_efficiency":            "#1f77b4",
@@ -78,16 +86,18 @@ PA_COLORS = {
 SENSITIVITY_MAP        = {"Low": 8, "Medium": 3, "High": 1}
 SENSITIVITY_TO_MIN_SEG = {"Low": 0.10, "Medium": 0.05, "High": 0.02}
 
-DARK       = "#0d1117"
-PANEL      = "#161b22"
-BORDER     = "#30363d"
-GOLD       = "#d4a017"
-GOLD_LT    = "#f0c040"
-TEAL_LT    = "#3eb8b8"
-RED_LT     = "#e74c3c"
-GREY       = "#6e7681"
-TEXT       = "#e6edf3"
-TEXT_MUTED = "#8b949e"
+DARK       = "#FFFFFF"
+PANEL      = "#F0F2F6"
+BORDER     = "#D0D7DE"
+GOLD       = "#855D00"
+GOLD_LT    = "#B08800"
+TEAL       = "#0068C9"
+TEAL_LT    = "#004B91"
+RED        = "#D32F2F"
+RED_LT     = "#B71C1C"
+GREY       = "#586069"
+TEXT       = "#111418"
+TEXT_MUTED = "#586069"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -109,7 +119,7 @@ h1,h2,h3 {{ font-family:'Bebas Neue',sans-serif; letter-spacing:0.06em; color:{T
     text-transform:uppercase; letter-spacing:0.1em; font-family:'IBM Plex Mono',monospace;
 }}
 .card-row {{ display:flex; gap:10px; margin-bottom:1rem; flex-wrap:wrap; }}
-.card {{ background:{PANEL}; border:1px solid {BORDER}; border-top:3px solid {GOLD};
+.card {{ background:{DARK}; border:1px solid {BORDER}; border-top:3px solid {GOLD};
     border-radius:4px; padding:0.9rem 1.1rem; flex:1; min-width:130px; }}
 .card.teal {{ border-top-color:{TEAL_LT}; }}
 .card.grey {{ border-top-color:{GREY}; }}
@@ -121,14 +131,14 @@ h1,h2,h3 {{ font-family:'Bebas Neue',sans-serif; letter-spacing:0.06em; color:{T
 .sec {{ font-size:0.65rem; text-transform:uppercase; letter-spacing:0.15em;
     color:{TEAL_LT}; font-family:'IBM Plex Mono',monospace;
     border-bottom:1px solid {BORDER}; padding-bottom:4px; margin:1.1rem 0 0.7rem 0; }}
-.cpd-minor {{ display:inline-block; background:#30363d; color:{TEXT_MUTED}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
-.cpd-mod   {{ display:inline-block; background:#3a2f00; color:{GOLD_LT}; border:1px solid {GOLD}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
-.cpd-sig   {{ display:inline-block; background:#3b0d0d; color:{RED_LT}; border:1px solid #c0392b; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
+.cpd-minor {{ display:inline-block; background:#f0f2f6; color:{TEXT_MUTED}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
+.cpd-mod   {{ display:inline-block; background:#fff5b1; color:{GOLD_LT}; border:1px solid {GOLD}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
+.cpd-sig   {{ display:inline-block; background:#ffeef0; color:{RED_LT}; border:1px solid {RED}; border-radius:3px; padding:2px 8px; font-size:0.7rem; font-family:'IBM Plex Mono',monospace; margin:2px; }}
 .preamble {{ background:{PANEL}; border:1px solid {BORDER}; border-left:4px solid {GOLD};
     border-radius:4px; padding:1.2rem 1.4rem; margin-bottom:1.4rem;
     font-size:0.92rem; line-height:1.7; color:{TEXT_MUTED}; }}
 .preamble b {{ color:{TEXT}; }}
-.narrative {{ background:#161b22; border:1px solid {BORDER}; border-radius:4px;
+.narrative {{ background:{PANEL}; border:1px solid {BORDER}; border-radius:4px;
     padding:1rem 1.2rem; font-family:'IBM Plex Mono',monospace;
     font-size:0.82rem; line-height:1.6; color:{TEXT}; margin-bottom:1rem; }}
 .rel-high {{ color:{TEAL_LT}; font-family:'IBM Plex Mono',monospace; font-size:0.75rem; }}
@@ -383,7 +393,7 @@ def run_changeforest(subdf, window=50, use_rollmean=True, standardize=True,
 def plot_cf_result(subdf, cps, window, player_name, min_rel_seg_len):
     dates = pd.to_datetime(subdf["game_date"])
     fig, ax = plt.subplots(figsize=(14, 6), constrained_layout=True)
-    fig.patch.set_facecolor("#f7f8fa"); ax.set_facecolor("#ffffff")
+    fig.patch.set_facecolor(DARK); ax.set_facecolor(PANEL)
     for col, x_offset in zip(PA_INDICATORS, [8, -68, 8, -68]):
         color = PA_COLORS[col]; label = PA_LABELS[col]
         y_col = f"{col}_rollmean_{window}"
@@ -418,11 +428,11 @@ def plot_cf_result(subdf, cps, window, player_name, min_rel_seg_len):
 
 def plot_cf_input_signals(subdf, window, player_name=""):
     fig, axes = plt.subplots(2, 2, figsize=(16, 8), constrained_layout=True)
-    axes = axes.flatten(); fig.patch.set_facecolor("#f7f8fa")
+    axes = axes.flatten(); fig.patch.set_facecolor(DARK)
     for ax, col in zip(axes, PA_INDICATORS):
         color = PA_COLORS[col]; label = PA_LABELS[col]
         smooth_col = f"{col}_rollmean_{window}"
-        ax.set_facecolor("#ffffff")
+        ax.set_facecolor(PANEL)
         ax.scatter(subdf["cf_seq_id"], subdf[col], s=8, alpha=0.22,
                    color=color, edgecolor="none", label="Raw PA")
         if smooth_col in subdf.columns:
@@ -465,8 +475,10 @@ def plot_cp_eval_comparison(eval_dfs):
     n = len(eval_dfs)
     if n == 0: return None
     fig, axes = plt.subplots(1, n, figsize=(5 * n, 4), constrained_layout=True)
+    fig.patch.set_facecolor(DARK)
     if n == 1: axes = [axes]
     for ax, (feature, df_eval) in zip(axes, eval_dfs.items()):
+        ax.set_facecolor(PANEL)
         if df_eval.empty or "cp" not in df_eval.columns:
             ax.set_title(f"{feature}\n(no data)"); continue
         summary = df_eval.groupby("cp")[["abs_mean_diff","abs_std_diff"]].mean()
@@ -503,7 +515,7 @@ def run_parameter_stability(subdf, window, min_rel_seg_len_list=(0.02, 0.05, 0.1
 
 def plot_parameter_stability(stability_df):
     fig, ax = plt.subplots(figsize=(7, 4), constrained_layout=True)
-    fig.patch.set_facecolor("#f7f8fa"); ax.set_facecolor("#ffffff")
+    fig.patch.set_facecolor(DARK); ax.set_facecolor(PANEL)
     valid    = stability_df.dropna(subset=["# Change Points"])
     x_labels = valid["Sensitivity"] + "\n(min=" + valid["min_rel_seg_len"].astype(str) + ")"
     bars = ax.bar(x_labels, valid["# Change Points"], color="#1f77b4", alpha=0.82, width=0.5)
@@ -527,7 +539,7 @@ with st.sidebar:
     st.caption("Real-time performance change detection · PA-level data")
     st.markdown("---")
     page = st.radio("Navigation", [
-        "Welcome",
+        "🏠 Welcome 2: Welcome Page",
         "Player Snapshot",
         "PA Indicator Correlations",
         "Performance Index",
@@ -538,74 +550,68 @@ with st.sidebar:
     ], label_visibility="collapsed")
     st.markdown("---")
 
-    sel_player   = st.selectbox("Player", players)
-    cpd_window   = st.slider("Rolling window (PAs)", 20, 100, 50, 5)
-    st.caption(f"{games_label(cpd_window)} of plate appearances")
-    sensitivity  = st.radio("CPD Sensitivity", ["Low","Medium","High"],
-                             index=1, horizontal=True)
-    penalty      = SENSITIVITY_MAP[sensitivity]
-    show_history = st.toggle(f"Show full history ({min_year}-present)", value=False)
-    st.markdown("---")
+# Pre-calculate players list with "All Players" option
+players_with_all = ["All Players (League Avg)"] + players
 
-    if "ChangeForest" in page:
-        st.caption("ChangeForest controls")
-        cf_window  = st.slider("CF Rolling Window (PAs)", 20, 120, 50, 5, key="cf_w")
-        cf_sens    = st.radio("CF Sensitivity", ["Low","Medium","High"],
-                               horizontal=True, index=1, key="cf_s")
-        cf_min_seg = SENSITIVITY_TO_MIN_SEG[cf_sens]
-        st.markdown("---")
-        st.caption(f"min_rel_seg_len: `{cf_min_seg}`")
-        st.markdown(
-            "| Level | min_seg | Effect |\n|---|---|---|\n"
-            "| Low | 0.10 | fewer CPs |\n"
-            "| Medium | 0.05 | balanced |\n"
-            "| High | 0.02 | more CPs |"
-        )
-
-    n_curr = len(df[(df["player_name"] == sel_player) & (df["year"] == max_year)])
-    n_all  = len(df[df["player_name"] == sel_player])
-    st.markdown(reliability_badge(n_curr), unsafe_allow_html=True)
-    st.caption(f"{n_all:,} total PAs  {n_curr:,} in {max_year}")
-
-
-# Shared slices
-player_df  = df[df["player_name"] == sel_player].copy()
-player_idx = df_idx[df_idx["player_name"] == sel_player].copy()
-cpd_df     = player_df  if show_history else player_df[player_df["year"]  == max_year].copy()
-cpd_idx    = player_idx if show_history else player_idx[player_idx["year"] == max_year].copy()
-
-
+# Each page will now handle its own top-level filters for better UI.
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE 1 - WELCOME
 # ══════════════════════════════════════════════════════════════════════════════
 if "Welcome" in page:
-    st.markdown("# MLB Batting Pulse")
-    st.markdown("### Real-time batting performance change detection")
-    st.markdown(f"""
-    <div class="preamble">
-    <b>The problem with traditional baseball metrics:</b> Statistics like wOBA, BABIP, and
-    batting average are season-long rolling averages. By the time a decline shows up in the
-    box score, a player may have been struggling for weeks.<br><br>
-    <b>What this dashboard does:</b> Using plate-appearance-level Statcast data from
-    {min_year} to {max_year}, we monitor four engineered contact-quality indicators in real
-    time using <b>PELT</b> and <b>ChangeForest</b> change point detection.<br><br>
-    [suggest that we add in a sentence or two about the intuition behind the indicators and why they are more sensitive to true performance changes than traditional stats]<br><br>
+    st.markdown("# ⚾ MLB Batting Pulse — Welcome 2")
+    st.markdown("### Real-time batting performance change detection using Statcast & Machine Learning")
 
-    <b>Why plate appearances, not raw pitches?</b> Pitch-level events are sparse and
-    outcome-driven. PA-level aggregates capture <i>underlying contact quality</i> independent
-    of luck, giving earlier and more reliable signals of true performance changes.<br><br>
-    <b>The four indicators:</b><br>
-    - <b>Hitting Decisions Score</b> - plate discipline and swing decision quality<br>
-    - <b>Power Efficiency</b> - exit velocity relative to swing effort<br>
-    - <b>wOBA Residual</b> - outcome quality above statistical expectation<br>
-    - <b>Launch Angle Stability</b> - consistency of launch angle over recent PAs
-    </div>
-    """, unsafe_allow_html=True)
+    # ── Motivation & Navigation ────────────────────────────────────────────────
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### 🎯 Why it matters")
+        st.markdown(f"""
+        In baseball, a slump can last weeks before it's visible in traditional box score stats like Batting Average.
+        
+        Using **Statcast** (physics-based pitch tracking) and **Change Point Detection (CPD)**, we monitor 
+        underlying performance signals in real-time. This allows us to catch performance shifts the 
+        moment they happen—often long before the results catch up.
+        """)
+    with col2:
+        st.markdown("#### 🚀 How to use this tool")
+        st.markdown("""
+        1. **Select a Player**: Use the sidebar to pick any qualified hitter from 2021-2025.
+        2. **Tune the Window**: Adjust the 'Rolling window (PAs)' to change the zoom level.
+        3. **Explore Tabs**:
+           - **Performance Index**: The headline composite score for the hitter.
+           - **Metric Drilldown**: See which specific component (power, discipline) shifted.
+           - **Peer Comparison**: Compare trends against other hitters.
+        """)
 
-    sec("Dataset at a glance")
+    st.markdown("---")
+
+    # ── Indicators Grid ───────────────────────────────────────────────────────
+    st.markdown("#### 🔬 The Four Indicators")
+    st.caption("We monitor these four metrics to understand the 'pulse' of a hitter's contact quality.")
+    
+    i1, i2 = st.columns(2)
+    with i1:
+        st.markdown(f"""<div class="card-row">
+            {card("Hitting Decisions", "Plate Discipline", "Are they swinging at strikes and taking balls?", "gold")}
+        </div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="card-row">
+            {card("wOBA Residual", "Luck vs Skill", "Is their actual performance matching the physics of their contact?", "teal")}
+        </div>""", unsafe_allow_html=True)
+    with i2:
+        st.markdown(f"""<div class="card-row">
+            {card("Power Efficiency", "Raw Power", "How well are they converting swing effort into exit velocity?", "teal")}
+        </div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="card-row">
+            {card("Launch Angle Stability", "Swing Consistency", "Is their swing path staying steady or wavering?", "gold")}
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ── Dataset Stats ─────────────────────────────────────────────────────────
+    sec("📊 By the Numbers")
     st.markdown(f"""<div class="card-row">
-        {card("Players",        f"{df['player_name'].nunique():,}", "qualified hitters",     "gold")}
-        {card("Total PAs",      f"{len(df):,}",                    "plate appearances",      "teal")}
+        {card("Players",        f"{df['player_name'].nunique():,}", "unique hitters",     "gold")}
+        {card("Total Records",  f"{len(df):,}",                    "plate appearances",      "teal")}
         {card("Seasons",        str(df['year'].nunique()),         f"{min_year}-{max_year}", "grey")}
         {card(f"{max_year} PAs",f"{len(df[df['year']==max_year]):,}", "current season",      "teal")}
     </div>""", unsafe_allow_html=True)
@@ -637,62 +643,238 @@ if "Welcome" in page:
 # PAGE 2 - PLAYER SNAPSHOT
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Snapshot" in page:
-    st.markdown(f"# {sel_player}")
-    curr = player_df[player_df["year"] == max_year]
-    leag = df[df["year"] == max_year]
-    def _mean(s): return s.dropna().mean()
+    st.markdown("# 👤 Player Snapshot")
+    
+    # ── TOP FILTERS (Reciprocal filtering) ────────────────────────────────────
+    if 'snapshot_player' not in st.session_state:
+        st.session_state.snapshot_player = "All Players (League Avg)"
+    if 'snapshot_year' not in st.session_state:
+        st.session_state.snapshot_year = max_year
 
-    sec(f"{max_year} performance vs league average")
-    st.markdown(f"""<div class="card-row">
-        {card("Hitting Decisions",  f"{_mean(curr['hitting_decisions_score']):.2f}",     f"League {_mean(leag['hitting_decisions_score']):.2f}",     "gold")}
-        {card("Power Efficiency",   f"{_mean(curr['power_efficiency']):.2f}",            f"League {_mean(leag['power_efficiency']):.2f}",            "teal")}
-        {card("wOBA Residual",      f"{_mean(curr['woba_residual']):.2f}",               f"League {_mean(leag['woba_residual']):.2f}",               "gold")}
-        {card("Launch Angle Stab.", f"{_mean(curr['launch_angle_stability_50pa']):.2f}", f"League {_mean(leag['launch_angle_stability_50pa']):.2f}", "teal")}
-        {card("PAs this season",    f"{len(curr):,}",                                   games_label(len(curr)),                                     "grey")}
-    </div>""", unsafe_allow_html=True)
+    # 1. Filter Years based on current player
+    if st.session_state.snapshot_player == "All Players (League Avg)":
+        available_years = sorted(df["year"].unique(), reverse=True)
+    else:
+        available_years = sorted(df[df["player_name"] == st.session_state.snapshot_player]["year"].unique(), reverse=True)
+    
+    if st.session_state.snapshot_year not in available_years:
+        st.session_state.snapshot_year = available_years[0]
 
-    sec("Season-by-season averages")
-    summ = player_df.groupby("year").agg(
-        hitting_decisions =("hitting_decisions_score",     "mean"),
-        power_efficiency  =("power_efficiency",            "mean"),
-        woba_residual     =("woba_residual",               "mean"),
-        launch_angle_stab =("launch_angle_stability_50pa", "mean"),
-        pa_count          =("pa_uid",                      "count"),
-    ).round(3).reset_index().rename(columns={"year": "Season"})
-    st.dataframe(summ, use_container_width=True, hide_index=True)
+    # 2. Filter Players based on current year
+    available_players_for_year = sorted(df[df["year"] == st.session_state.snapshot_year]["player_name"].dropna().unique())
+    player_options = ["All Players (League Avg)"] + available_players_for_year
+    
+    if st.session_state.snapshot_player not in player_options:
+        st.session_state.snapshot_player = "All Players (League Avg)"
 
-    sec("Power efficiency vs wOBA residual - contact quality profile by season")
-    st.caption("Each dot is one plate appearance. The cloud shape reveals the balance "
-               "between power generation and outcome quality.")
-    plot_df = player_df[["power_efficiency","woba_residual","year"]].dropna()
-    seasons = sorted(plot_df["year"].unique())
-    pal     = [GOLD, TEAL_LT, RED_LT, "#a8d8a8", GREY]
-    fig, ax = mpl_fig(11, 4.5)
-    for i, s in enumerate(seasons):
-        sub = plot_df[plot_df["year"] == s]
-        ax.scatter(sub["power_efficiency"], sub["woba_residual"],
-                   color=pal[i % len(pal)], alpha=0.3, s=10, label=str(s))
-    ax.axhline(0, color=GREY, lw=0.8, ls="--", alpha=0.5, label="wOBA residual = 0")
-    ax.set_xlabel("Power Efficiency"); ax.set_ylabel("wOBA Residual")
-    ax.set_title(f"{sel_player} - Contact Quality Profile by Season",
-                 color=TEXT, fontsize=11)
-    ax.legend(fontsize=8, framealpha=0.2, facecolor=PANEL, edgecolor=BORDER, labelcolor=TEXT)
-    fig.tight_layout(); st.pyplot(fig); plt.close()
+    # Filter Layout
+    row1_c1, row1_c2 = st.columns([3, 1])
+    with row1_c1:
+        sel_player = st.selectbox(
+            "Select Player", 
+            player_options, 
+            index=player_options.index(st.session_state.snapshot_player),
+            key="snapshot_player_select"
+        )
+    with row1_c2:
+        sel_year = st.selectbox(
+            "Season", 
+            available_years, 
+            index=available_years.index(st.session_state.snapshot_year),
+            key="snapshot_year_select"
+        )
 
-    sec("All 4 indicators - rolling 30-PA trend")
-    fig2, ax2 = mpl_fig(13, 4)
-    for col in PA_INDICATORS:
-        roll = rolling_with_dates(player_df, col, 30)
-        if len(roll) < 5:
-            continue
-        ax2.plot(roll["game_date"], roll[col],
-                 color=PA_COLORS[col], lw=1.8, label=PA_LABELS[col], alpha=0.9)
-    ax2.set_xlabel("Date"); ax2.set_ylabel("Indicator value (30-PA rolling mean)")
-    ax2.set_title(f"{sel_player} - PA Indicator Trends", color=TEXT, fontsize=11)
-    ax2.legend(fontsize=8, framealpha=0.2, facecolor=PANEL, edgecolor=BORDER, labelcolor=TEXT)
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax2.tick_params(axis="x", rotation=30)
-    fig2.tight_layout(); st.pyplot(fig2); plt.close()
+    # Update session state and rerun if changed
+    if sel_player != st.session_state.snapshot_player or sel_year != st.session_state.snapshot_year:
+        st.session_state.snapshot_player = sel_player
+        st.session_state.snapshot_year = sel_year
+        st.rerun()
+
+    # Data Slicing
+    is_all = (sel_player == "All Players (League Avg)")
+    if is_all:
+        snapshot_df = df[df["year"] == sel_year].copy()
+        display_name = f"League Average — {sel_year}"
+    else:
+        snapshot_df = df[(df["player_name"] == sel_player) & (df["year"] == sel_year)].copy()
+        display_name = f"{sel_player} — {sel_year}"
+
+    # Calculate Metrics
+    def _mean(s): return s.dropna().mean() if not s.empty else 0.0
+    
+    m_discipline = _mean(snapshot_df["hitting_decisions_score"])
+    m_power      = _mean(snapshot_df["power_efficiency"])
+    m_woba_res   = _mean(snapshot_df["woba_residual"])
+    m_la_stab    = _mean(snapshot_df["launch_angle_stability_50pa"])
+    m_pa_count   = len(snapshot_df)
+
+    # Metric Cards with Tooltips
+    st.markdown("---")
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Hitting Decisions", f"{m_discipline:.2f}", help=PA_TOOLTIPS["hitting_decisions_score"])
+    c2.metric("Power Efficiency",  f"{m_power:.4f}",      help=PA_TOOLTIPS["power_efficiency"])
+    c3.metric("wOBA Residual",     f"{m_woba_res:.3f}",   help=PA_TOOLTIPS["woba_residual"])
+    c4.metric("Launch Angle Stab.", f"{m_la_stab:.2f}",   help=PA_TOOLTIPS["launch_angle_stability_50pa"])
+    c5.metric("PAs this Season",   f"{m_pa_count:,}",     help="Total records for the season. More PAs (>200) indicate higher statistical reliability.")
+
+    # ── DYNAMIC INSIGHT ───────────────────────────────────────────────────────
+    if not is_all:
+        season_df = df[df["year"] == sel_year]
+        
+        # Helper to get relative standing
+        def get_stat_insight(col, val):
+            l_mean = season_df[col].mean()
+            l_std  = season_df[col].std()
+            if val > l_mean + l_std: return "Elite", "Performing significantly better than the league average."
+            if val > l_mean: return "Above Average", "Performing better than most of the league."
+            if val < l_mean - l_std: return "Struggling", "Currently performing well below the league benchmark."
+            if val < l_mean: return "Below Average", "Performing slightly below the league average."
+            return "Average", "Performing right in line with the league average."
+
+        st.markdown("---")
+        sec(f"💡 {sel_year} Performance Pulse")
+        st.caption("We analyze these four pillars to identify a player's true performance beyond simple averages.")
+        
+        # 2x2 Grid for Insights
+        i_col1, i_col2 = st.columns(2)
+        
+        with i_col1:
+            # 1. Discipline
+            status, desc = get_stat_insight("hitting_decisions_score", m_discipline)
+            st.markdown(f"🎯 **Discipline**")
+            st.caption("The ability to swing at strikes and take balls.")
+            st.write(f"**{status}**: {desc}")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # 3. Results vs. Physics
+            if m_woba_res > 0.15: status, res_text = "Outpacing Physics", "Results are better than the contact quality suggests (Potential Luck)."
+            elif m_woba_res < -0.15: status, res_text = "Underperforming Physics", "Contact quality is high, but results haven't followed (Unlucky)."
+            else: status, res_text = "Steady", "Actual results are closely matching the physics of the contact."
+            st.markdown(f"🎲 **Results vs. Physics**")
+            st.caption("Whether actual results match the quality of contact.")
+            st.write(f"**{status}**: {res_text}")
+
+        with i_col2:
+            # 2. Power
+            status, desc = get_stat_insight("power_efficiency", m_power)
+            st.markdown(f"💥 **Power**")
+            st.caption("How hard a player hits the ball relative to their effort.")
+            st.write(f"**{status}**: {desc}")
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # 4. Consistency
+            status, desc = get_stat_insight("launch_angle_stability_50pa", m_la_stab)
+            st.markdown(f"📈 **Consistency**")
+            st.caption("How repeatable and steady a player's swing path is.")
+            st.write(f"**{status}**: {desc}")
+
+    # ── VISUALIZATIONS ────────────────────────────────────────────────────────
+    st.markdown("---")
+    v_col1, v_col2 = st.columns([1, 1])
+
+    with v_col1:
+        sec("Player Profile (Radar Chart)")
+        # Normalize data for radar (0-1 range based on season min/max)
+        season_df = df[df["year"] == sel_year]
+        radar_data = []
+        for col in PA_INDICATORS:
+            val = _mean(snapshot_df[col])
+            s_min, s_max = season_df[col].min(), season_df[col].max()
+            norm_val = (val - s_min) / (s_max - s_min + 1e-9)
+            radar_data.append(norm_val)
+        
+        fig_radar = go.Figure()
+        fig_radar.add_trace(go.Scatterpolar(
+            r=radar_data + [radar_data[0]],
+            theta=[PA_LABELS[c] for c in PA_INDICATORS] + [PA_LABELS[PA_INDICATORS[0]]],
+            fill='toself',
+            name=sel_player,
+            line_color=TEAL
+        ))
+        # Add league average line (0.5 because we are normalizing and average is roughly middle)
+        leag_vals = []
+        for col in PA_INDICATORS:
+            l_val = _mean(season_df[col])
+            s_min, s_max = season_df[col].min(), season_df[col].max()
+            norm_l = (l_val - s_min) / (s_max - s_min + 1e-9)
+            leag_vals.append(norm_l)
+        
+        fig_radar.add_trace(go.Scatterpolar(
+            r=leag_vals + [leag_vals[0]],
+            theta=[PA_LABELS[c] for c in PA_INDICATORS] + [PA_LABELS[PA_INDICATORS[0]]],
+            name='League Average',
+            line=dict(dash='dash', color=GREY)
+        ))
+        fig_radar.update_layout(
+            polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+            showlegend=True, height=400, margin=dict(t=40, b=40, l=40, r=40),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color=TEXT)
+        )
+        st.plotly_chart(fig_radar, use_container_width=True)
+
+    with v_col2:
+        sec("Statcast-Style Percentile Rankings")
+        if is_all:
+            st.info("Percentile rankings represent the 50th percentile (average) when 'All Players' is selected.")
+            percentiles = [50] * 4
+        else:
+            # Calculate actual percentiles for the player
+            player_means = df[df["year"] == sel_year].groupby("player_name")[PA_INDICATORS].mean()
+            percentiles = []
+            for col in PA_INDICATORS:
+                p_val = _mean(snapshot_df[col])
+                pct = (player_means[col] < p_val).mean() * 100
+                percentiles.append(pct)
+        
+        fig_pct = go.Figure(go.Bar(
+            x=percentiles,
+            y=[PA_LABELS[c] for c in PA_INDICATORS],
+            orientation='h',
+            marker=dict(color=percentiles, colorscale='RdYlGn', cmin=0, cmax=100),
+            text=[f"{p:.0f}%" for p in percentiles],
+            textposition='auto',
+        ))
+        fig_pct.update_layout(
+            xaxis=dict(range=[0, 100], title="Percentile Rank"),
+            yaxis=dict(autorange="reversed"),
+            height=400, margin=dict(t=40, b=40, l=100, r=40),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color=TEXT)
+        )
+        st.plotly_chart(fig_pct, use_container_width=True)
+
+    st.markdown("---")
+    sec("Contact Quality Profile (Power vs Luck)")
+    st.caption("Each dot is one plate appearance. The cloud shape reveals the balance between power generation and outcome quality.")
+    
+    fig_scatter = px.scatter(
+        snapshot_df.dropna(subset=["power_efficiency", "woba_residual"]),
+        x="power_efficiency", y="woba_residual",
+        color_discrete_sequence=[TEAL],
+        opacity=0.4,
+        labels={"power_efficiency": "Power Efficiency", "woba_residual": "wOBA Residual"},
+        title=f"Distribution for {display_name}"
+    )
+    fig_scatter.add_hline(y=0, line_dash="dash", line_color=GREY)
+    fig_scatter.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color=TEXT), height=500
+    )
+    st.plotly_chart(fig_scatter, use_container_width=True)
+
+    if not is_all:
+        sec("Season-by-Season Progression")
+        player_all_years = df[df["player_name"] == sel_player].groupby("year").agg(
+            hitting_decisions =("hitting_decisions_score",     "mean"),
+            power_efficiency  =("power_efficiency",            "mean"),
+            woba_residual     =("woba_residual",               "mean"),
+            launch_angle_stab =("launch_angle_stability_50pa", "mean"),
+            pa_count          =("pa_uid",                      "count"),
+        ).round(3).reset_index().rename(columns={"year": "Season"})
+        st.dataframe(player_all_years, use_container_width=True, hide_index=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -700,6 +882,11 @@ elif "Snapshot" in page:
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Correlations" in page:
     st.markdown("# PA Indicator Correlations")
+    
+    # Page-specific filters
+    sel_year = st.selectbox("Season", sorted(df["year"].unique(), reverse=True))
+    st.markdown("---")
+
     st.markdown("""<div class="preamble">
     This page answers <b>which of the four PA-level indicators matter most</b> and how
     they relate to each other. A high positive correlation with <b>wOBA Residual</b>
@@ -709,9 +896,9 @@ elif "Correlations" in page:
     reflect genuine structural signals rather than individual player quirks.
     </div>""", unsafe_allow_html=True)
 
-    corr_df = df[PA_INDICATORS].dropna()
+    corr_df = df[df["year"] == sel_year][PA_INDICATORS].dropna()
 
-    sec("Pairwise Pearson correlations - all 4 PA indicators")
+    sec(f"Pairwise Pearson correlations — {sel_year}")
     corr_mat = corr_df.corr()
     corr_mat.index   = [PA_LABELS[c] for c in corr_mat.index]
     corr_mat.columns = [PA_LABELS[c] for c in corr_mat.columns]
@@ -720,8 +907,8 @@ elif "Correlations" in page:
     mask = np.zeros_like(corr_mat, dtype=bool)
     np.fill_diagonal(mask, True)
     sns.heatmap(corr_mat, ax=ax, mask=mask, cmap="RdYlGn", center=0, vmin=-1, vmax=1,
-                annot=True, fmt=".2f", annot_kws={"size": 11, "color": DARK},
-                linewidths=0.5, linecolor=DARK, cbar_kws={"shrink": 0.7})
+                annot=True, fmt=".2f", annot_kws={"size": 11, "color": TEXT},
+                linewidths=0.5, linecolor=BORDER, cbar_kws={"shrink": 0.7})
     ax.set_title("Pairwise Correlations - PA Indicators", color=TEXT, fontsize=12, pad=12)
     ax.tick_params(colors=TEXT, labelsize=9)
     plt.xticks(rotation=30, ha="right")
@@ -804,13 +991,34 @@ elif "Correlations" in page:
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Performance Index" in page:
     st.markdown("# Performance Index")
+    
+    # ── TOP FILTERS ───────────────────────────────────────────────────────────
+    row1_c1, row1_c2 = st.columns([3, 1])
+    with row1_c1:
+        sel_player = st.selectbox("Select Player", players, index=players.index("Trout, Mike") if "Trout, Mike" in players else 0)
+    with row1_c2:
+        sensitivity = st.radio("CPD Sensitivity", ["Low","Medium","High"], index=1, horizontal=True)
+
+    row2_c1, row2_c2 = st.columns([3, 1])
+    with row2_c1:
+        cpd_window = st.slider("Rolling window (PAs)", 20, 100, 50, 5)
+    with row2_c2:
+        show_history = st.toggle("Show full history", value=False)
+    
+    penalty = SENSITIVITY_MAP[sensitivity]
+    st.markdown("---")
+
     st.markdown("""<div class="preamble">
     A <b>composite score (0-100)</b> built from equal-weighted normalised PA indicators.
     Higher = better contact quality. Monitored in real time using
     <b>PELT change point detection</b> with Cohen's d effect size labelling.
     </div>""", unsafe_allow_html=True)
 
-    roll_idx = rolling_with_dates(cpd_idx, "perf_index", cpd_window)
+    # Data slicing
+    p_idx = df_idx[df_idx["player_name"] == sel_player].copy()
+    c_idx = p_idx if show_history else p_idx[p_idx["year"] == max_year].copy()
+
+    roll_idx = rolling_with_dates(c_idx, "perf_index", cpd_window)
     if len(roll_idx) < 10:
         st.warning("Not enough data. Try a larger window or enable full history."); st.stop()
 
@@ -873,11 +1081,32 @@ elif "Performance Index" in page:
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Drilldown" in page:
     st.markdown("# Metric Drilldown")
+
+    # ── TOP FILTERS ───────────────────────────────────────────────────────────
+    row1_c1, row1_c2 = st.columns([3, 1])
+    with row1_c1:
+        sel_player = st.selectbox("Select Player", players, index=players.index("Trout, Mike") if "Trout, Mike" in players else 0)
+    with row1_c2:
+        sensitivity = st.radio("CPD Sensitivity", ["Low","Medium","High"], index=1, horizontal=True)
+
+    row2_c1, row2_c2 = st.columns([3, 1])
+    with row2_c1:
+        cpd_window = st.slider("Rolling window (PAs)", 20, 100, 50, 5)
+    with row2_c2:
+        show_history = st.toggle("Show full history", value=False)
+    
+    penalty = SENSITIVITY_MAP[sensitivity]
+    st.markdown("---")
+
     st.markdown("""<div class="preamble">
     Each PA indicator is monitored independently with PELT change point detection.
     Use this to identify <b>which specific component</b> of a player's contact quality
     has shifted.
     </div>""", unsafe_allow_html=True)
+
+    # Data Slicing
+    p_df = df[df["player_name"] == sel_player].copy()
+    c_df = p_df if show_history else p_df[p_df["year"] == max_year].copy()
 
     fig = plt.figure(figsize=(13, 9)); fig.patch.set_facecolor(DARK)
     gs  = gridspec.GridSpec(2, 2, figure=fig, hspace=0.55, wspace=0.3)
@@ -890,7 +1119,7 @@ elif "Drilldown" in page:
         for sp in ax.spines.values(): sp.set_edgecolor(BORDER)
         ax.grid(color=BORDER, lw=0.3, ls="--", alpha=0.4)
 
-        roll_m = rolling_with_dates(cpd_df, col, cpd_window)
+        roll_m = rolling_with_dates(c_df, col, cpd_window)
         if len(roll_m) < 10:
             ax.text(0.5, 0.5, "Insufficient data", transform=ax.transAxes,
                     ha="center", va="center", color=TEXT_MUTED, fontsize=9)
@@ -934,13 +1163,36 @@ elif "Drilldown" in page:
 # PAGE 6 - SEASON TIMELINE
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Timeline" in page:
-    st.markdown(f"# {max_year} Season Timeline")
+    st.markdown("# Season Timeline")
+
+    # ── TOP FILTERS ───────────────────────────────────────────────────────────
+    row1_c1, row1_c2 = st.columns([3, 1])
+    with row1_c1:
+        sel_player = st.selectbox("Select Player", players, index=players.index("Trout, Mike") if "Trout, Mike" in players else 0)
+    with row1_c2:
+        sensitivity = st.radio("CPD Sensitivity", ["Low","Medium","High"], index=1, horizontal=True)
+
+    row2_c1, row2_c2 = st.columns([3, 1])
+    with row2_c1:
+        cpd_window = st.slider("Rolling window (PAs)", 20, 100, 50, 5)
+    with row2_c2:
+        show_history = st.toggle("Show full history", value=False)
+    
+    penalty = SENSITIVITY_MAP[sensitivity]
+    st.markdown("---")
 
     tl_options = {**{PA_LABELS[c]: c for c in PA_INDICATORS}, "Performance Index": "perf_index"}
-    tl_label   = st.selectbox("Metric", options=list(tl_options.keys()), index=0)
+    tl_label   = st.selectbox("Select Metric to View", options=list(tl_options.keys()), index=0)
     tl_col     = tl_options[tl_label]
 
-    tl_src  = cpd_idx if tl_col == "perf_index" else cpd_df
+    # Data Slicing
+    if tl_col == "perf_index":
+        p_src = df_idx[df_idx["player_name"] == sel_player].copy()
+    else:
+        p_src = df[df["player_name"] == sel_player].copy()
+    
+    tl_src = p_src if show_history else p_src[p_src["year"] == max_year].copy()
+    
     roll_tl = rolling_with_dates(tl_src, tl_col, cpd_window)
 
     if len(roll_tl) < 10:
@@ -1005,6 +1257,23 @@ elif "Timeline" in page:
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Peer" in page:
     st.markdown("# Peer Comparison")
+
+    # ── TOP FILTERS ───────────────────────────────────────────────────────────
+    row1_c1, row1_c2 = st.columns([3, 1])
+    with row1_c1:
+        sel_player = st.selectbox("Select Primary Player", players, index=players.index("Trout, Mike") if "Trout, Mike" in players else 0)
+    with row1_c2:
+        sensitivity = st.radio("CPD Sensitivity", ["Low","Medium","High"], index=1, horizontal=True)
+
+    row2_c1, row2_c2 = st.columns([3, 1])
+    with row2_c1:
+        cpd_window = st.slider("Rolling window (PAs)", 20, 100, 50, 5)
+    with row2_c2:
+        show_history = st.toggle("Show full history", value=False)
+    
+    penalty = SENSITIVITY_MAP[sensitivity]
+    st.markdown("---")
+
     st.markdown("""<div class="preamble">
     Compare the selected player's rolling PA indicator against up to 3 peers.
     Dashed vertical lines mark each player's most recent significant or moderate
@@ -1021,17 +1290,17 @@ elif "Peer" in page:
     all_sel = [sel_player] + peers
 
     peer_options = {PA_LABELS[c]: c for c in PA_INDICATORS}
-    peer_label   = st.selectbox("Metric", options=list(peer_options.keys()), index=1)
+    peer_label   = st.selectbox("Select Metric", options=list(peer_options.keys()), index=1)
     peer_col     = peer_options[peer_label]
     pal_peer     = [GOLD, TEAL_LT, RED_LT, "#a8d8a8"]
 
-    sec(f"{peer_label} - rolling {games_label(cpd_window)} comparison")
+    sec(f"{peer_label} — comparison")
     fig, ax = mpl_fig(13, 5)
     peer_rows = []
 
     for i, pname in enumerate(all_sel):
-        pdf_p  = df[df["player_name"] == pname]
-        pdf_p  = pdf_p if show_history else pdf_p[pdf_p["year"] == max_year]
+        pdf_p  = df[df["player_name"] == pname].copy()
+        pdf_p  = pdf_p if show_history else pdf_p[pdf_p["year"] == max_year].copy()
         roll_p = rolling_with_dates(pdf_p, peer_col, cpd_window)
         if len(roll_p) < 5: continue
 
@@ -1101,7 +1370,19 @@ elif "Peer" in page:
 # PAGE 8 - CHANGEFOREST CPD
 # ══════════════════════════════════════════════════════════════════════════════
 elif "ChangeForest" in page:
-    st.title("ChangeForest Change-Point Detection")
+    st.markdown("# ChangeForest Change-Point Detection")
+    
+    # ── TOP FILTERS ───────────────────────────────────────────────────────────
+    row1_c1, row1_c2 = st.columns([3, 1])
+    with row1_c1:
+        sel_player = st.selectbox("Select Player", players, index=players.index("Trout, Mike") if "Trout, Mike" in players else 0)
+    with row1_c2:
+        cf_sens = st.radio("CF Sensitivity", ["Low","Medium","High"], index=1, horizontal=True)
+
+    cf_window = st.slider("CF Rolling Window (PAs)", 20, 120, 50, 5)
+    cf_min_seg = SENSITIVITY_TO_MIN_SEG[cf_sens]
+    st.markdown("---")
+
     st.markdown("""<div class="preamble">
     <b>Multivariate CPD</b> across all 4 PA indicators simultaneously using the
     ChangeForest random-forest method. Unlike PELT which monitors one signal at a time,
