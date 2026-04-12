@@ -241,6 +241,15 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data):
     """, unsafe_allow_html=True)
 
     st.write("#### 📊 Key Metric Shifts")
+    with st.expander("ℹ️ How are these shifts calculated?"):
+        st.markdown("""
+        - **Effect Size (Cohen’s d):** This measures the magnitude of the shift relative to the player's natural variability. 
+            - **0.2:** Small shift (normal fluctuation).
+            - **0.5:** Medium shift (visible performance change).
+            - **0.8+:** Large shift (major mechanical or approach overhaul).
+        - **Primary Driver:** We identify this by finding the metric with the **highest absolute Effect Size**. It represents the most statistically significant 'break' in the player's performance profile.
+        """)
+    
     cols = st.columns(4)
     for i, col_name in enumerate(PA_INDICATORS):
         s = all_stats[col_name]
@@ -256,6 +265,7 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data):
     fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
     fig.add_trace(go.Histogram(x=after_data[top_col], name="After Shift", marker_color=TEAL, opacity=0.6))
     fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", 
+                      xaxis_title=PA_LABELS[top_col], yaxis_title="Frequency (PA Count)",
                       paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT),
                       height=300, margin=dict(t=40, b=40, l=40, r=40))
     st.plotly_chart(fig, use_container_width=True)
@@ -337,7 +347,7 @@ def rolling_with_dates(pdf, metric, window):
 # TOP NAVIGATION BAR
 # ══════════════════════════════════════════════════════════════════════════════
 if 'nav_page' not in st.session_state:
-    st.session_state.nav_page = "🏠 Welcome"
+    st.session_state.nav_page = "📖 Welcome"
 
 # Custom Top Nav CSS
 st.markdown("""
@@ -402,7 +412,7 @@ with t_col1:
 # Navigation Tabs
 with t_col2:
     nav_cols = st.columns(4)
-    nav_items = ["🏠 Welcome", "👤 Player Snapshot", "👥 Peer Comparison", "📈 Change Analyzer"]
+    nav_items = ["📖 Welcome", "🎯 Player Snapshot", "👥 Peer Comparison", "🔍 Change Analyzer"]
     
     for i, item in enumerate(nav_items):
         is_active = (st.session_state.nav_page == item)
@@ -421,7 +431,7 @@ players_with_all = ["All Players (League Avg)"] + players
 
 # ── PAGE: Welcome ─────────────────────────────────────────────────────────────
 if "Welcome" in page:
-    st.markdown("# 💎 Diamond Insight — Welcome")
+    st.markdown("# 📖 Diamond Insight — Welcome")
     st.markdown("### Advanced Hitter Performance Analytics through Statcast & Machine Learning")
 
     # ── Motivation & Navigation ────────────────────────────────────────────────
@@ -516,7 +526,7 @@ if "Welcome" in page:
 # PAGE 2 - PLAYER SNAPSHOT
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Snapshot" in page:
-    st.markdown("# 👤 Player Snapshot")
+    st.markdown("# 🎯 Player Snapshot")
     
     # ── TOP FILTERS (Reciprocal filtering) ────────────────────────────────────
     if 'snapshot_player' not in st.session_state:
@@ -752,8 +762,8 @@ elif "Snapshot" in page:
                 if disc_elite: return "Discipline-Driven Tactician"
                 return "Steady Contributor"
 
-            first_year = summ.iloc[0]["Season"]
-            last_year = summ.iloc[-1]["Season"]
+            first_year = int(summ.iloc[0]["Season"])
+            last_year = int(summ.iloc[-1]["Season"])
             
             evolution_story = []
             
@@ -766,7 +776,7 @@ elif "Snapshot" in page:
             if len(summ) > 2:
                 growth_notes = []
                 for i in range(1, len(summ) - 1):
-                    y = summ.iloc[i]["Season"]
+                    y = int(summ.iloc[i]["Season"])
                     prev = summ.iloc[i-1]
                     curr = summ.iloc[i]
                     
@@ -921,7 +931,7 @@ elif "Peer" in page:
 # PAGE 4: PERFORMANCE CHANGE ANALYZER
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Change Analyzer" in page:
-    st.markdown("# 📈 Performance Change Analyzer")
+    st.markdown("# 🔍 Performance Change Analyzer")
     st.markdown("Identify significant shifts in a player's performance profile. Select a player and season to see where their performance changed, then deep-dive into the data.")
 
     if 'pca_player' not in st.session_state: st.session_state.pca_player = "Trout, Mike" if "Trout, Mike" in players else players[0]
@@ -1031,28 +1041,12 @@ elif "Change Analyzer" in page:
 
     # ── INTERACTIVE DRILLDOWN ─────────────────────────────────────────────────
     if cp_indices:
-        st.write("### 🔎 Analyze a Performance Shift")
         cp_dates_str = [d.strftime("%Y-%m-%d") for d in cp_dates_raw]
-        
         if st.session_state.pca_selected_date not in ["-- Select Date --"] + cp_dates_str:
             st.session_state.pca_selected_date = "-- Select Date --"
-
-        c1, c2 = st.columns([4, 1])
-        with c1:
-            selected_cp = st.selectbox(
-                "Current selection (click chart to update):", 
-                ["-- Select Date --"] + cp_dates_str,
-                index=(["-- Select Date --"] + cp_dates_str).index(st.session_state.pca_selected_date),
-                key="pca_date_selectbox"
-            )
-        with c2:
-            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-            if st.button("Clear selection", key="clear_pca_sel", use_container_width=True):
-                st.session_state.pca_selected_date = "-- Select Date --"
-                st.rerun()
         
-        if selected_cp != "-- Select Date --":
-            st.session_state.pca_selected_date = selected_cp
+        if st.session_state.pca_selected_date != "-- Select Date --":
+            selected_cp = st.session_state.pca_selected_date
             actual_cp_idx = cp_indices[cp_dates_str.index(selected_cp)]
             render_cp_analysis(selected_cp, sel_player, c_idx.iloc[max(0, actual_cp_idx - 50) : actual_cp_idx], c_idx.iloc[actual_cp_idx : min(len(c_idx), actual_cp_idx + 50)])
     else:

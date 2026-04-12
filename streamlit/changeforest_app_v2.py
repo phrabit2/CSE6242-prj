@@ -239,6 +239,15 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data):
     st.markdown(f'<div class="narrative"><b>🧠 Smart Analyzer Hypothesis:</b><br><br>{"<br><br>".join(insights)}</div>', unsafe_allow_html=True)
 
     st.write("#### 📊 Key Metric Shifts")
+    with st.expander("ℹ️ How are these shifts calculated?"):
+        st.markdown("""
+        - **Effect Size (Cohen’s d):** This measures the magnitude of the shift relative to the player's natural variability. 
+            - **0.2:** Small shift (normal fluctuation).
+            - **0.5:** Medium shift (visible performance change).
+            - **0.8+:** Large shift (major mechanical or approach overhaul).
+        - **Primary Driver:** We identify this by finding the metric with the **highest absolute Effect Size**. It represents the most statistically significant 'break' in the player's performance profile.
+        """)
+    
     cols = st.columns(4)
     for i, col_name in enumerate(PA_INDICATORS):
         s = all_stats[col_name]
@@ -252,7 +261,10 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data):
     fig = go.Figure()
     fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
     fig.add_trace(go.Histogram(x=after_data[top_col], name="After Shift", marker_color=TEAL, opacity=0.6))
-    fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT), height=300, margin=dict(t=40, b=40, l=40, r=40))
+    fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", 
+                      xaxis_title=PA_LABELS[top_col], yaxis_title="Frequency (PA Count)",
+                      paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT),
+                      height=300, margin=dict(t=40, b=40, l=40, r=40))
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -279,12 +291,12 @@ df_idx   = build_perf_index(df)
 # ══════════════════════════════════════════════════════════════════════════════
 # TOP NAVIGATION BAR
 # ══════════════════════════════════════════════════════════════════════════════
-if 'nav_page' not in st.session_state: st.session_state.nav_page = "🏠 Welcome"
+if 'nav_page' not in st.session_state: st.session_state.nav_page = "📖 Welcome"
 t_col1, t_col2 = st.columns([1, 2])
 with t_col1: st.markdown("<div class='nav-logo'>💎 DIAMOND INSIGHT</div>", unsafe_allow_html=True)
 with t_col2:
     nav_cols = st.columns(4)
-    nav_items = ["🏠 Welcome", "👤 Player Snapshot", "👥 Peer Comparison", "📈 Change Analyzer"]
+    nav_items = ["📖 Welcome", "🎯 Player Snapshot", "👥 Peer Comparison", "🔍 Change Analyzer"]
     for i, item in enumerate(nav_items):
         if st.button(item, key=f"top_nav_{item}", type="primary" if st.session_state.nav_page == item else "secondary"):
             st.session_state.nav_page = item; st.rerun()
@@ -296,7 +308,7 @@ players_with_all = ["All Players (League Avg)"] + players
 # PAGE 1 - WELCOME
 # ══════════════════════════════════════════════════════════════════════════════
 if "Welcome" in page:
-    st.markdown("# 💎 Diamond Insight — Welcome")
+    st.markdown("# 📖 Diamond Insight — Welcome")
     st.markdown("### Advanced Hitter Performance Analytics through Statcast & Machine Learning")
     col1, col2 = st.columns(2)
     with col1:
@@ -333,7 +345,7 @@ if "Welcome" in page:
 # PAGE 2 - PLAYER SNAPSHOT
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Snapshot" in page:
-    st.markdown("# 👤 Player Snapshot")
+    st.markdown("# 🎯 Player Snapshot")
     if 'snapshot_player' not in st.session_state: st.session_state.snapshot_player = "All Players (League Avg)"
     if 'snapshot_year' not in st.session_state: st.session_state.snapshot_year = max_year
     if st.session_state.snapshot_player == "All Players (League Avg)": av_yrs = sorted(df.year.unique(), reverse=True)
@@ -481,8 +493,8 @@ elif "Snapshot" in page:
                 if disc_elite: return "Discipline-Driven Tactician"
                 return "Steady Contributor"
 
-            first_year = summ.iloc[0]["Season"]
-            last_year = summ.iloc[-1]["Season"]
+            first_year = int(summ.iloc[0]["Season"])
+            last_year = int(summ.iloc[-1]["Season"])
             evolution_story = []
             
             initial_arch = get_archetype(summ.iloc[0])
@@ -491,7 +503,7 @@ elif "Snapshot" in page:
             if len(summ) > 2:
                 growth_notes = []
                 for i in range(1, len(summ) - 1):
-                    y = summ.iloc[i]["Season"]
+                    y = int(summ.iloc[i]["Season"])
                     prev, curr = summ.iloc[i-1], summ.iloc[i]
                     if curr['power_efficiency'] > prev['power_efficiency'] * 1.1: growth_notes.append(f"a power surge in {y}")
                     if curr['hitting_decisions'] > prev['hitting_decisions'] + 0.5: growth_notes.append(f"improved strike-zone mastery in {y}")
@@ -572,7 +584,7 @@ elif "Peer" in page:
 # PAGE 4 - PERFORMANCE CHANGE ANALYZER
 # ══════════════════════════════════════════════════════════════════════════════
 elif "Change Analyzer" in page:
-    st.markdown("# 📈 Performance Change Analyzer")
+    st.markdown("# 🔍 Performance Change Analyzer")
     if 'pca_p' not in st.session_state: st.session_state.pca_p = "Trout, Mike" if "Trout, Mike" in players else players[0]
     if 'pca_y' not in st.session_state: st.session_state.pca_y = max_year
     if 'pca_selected_v2_date' not in st.session_state: st.session_state.pca_selected_v2_date = "-- Select Date --"
@@ -629,22 +641,12 @@ elif "Change Analyzer" in page:
                         st.rerun()
 
     if cp_idx:
-        st.write("### 🔎 Analyze a Performance Shift")
         cp_dates_str = [d.strftime("%Y-%m-%d") for d in cp_dates_raw]
         if st.session_state.pca_selected_v2_date not in ["-- Select Date --"] + cp_dates_str:
             st.session_state.pca_selected_v2_date = "-- Select Date --"
         
-        c1, c2 = st.columns([4, 1])
-        with c1:
-            sel_cp = st.selectbox("Current selection (click chart to update):", ["-- Select Date --"] + cp_dates_str, index=(["-- Select Date --"] + cp_dates_str).index(st.session_state.pca_selected_v2_date), key="v2_pca_date_sel")
-        with c2:
-            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-            if st.button("Clear selection", key="v2_clear_pca_sel", use_container_width=True):
-                st.session_state.pca_selected_v2_date = "-- Select Date --"
-                st.rerun()
-
-        if sel_cp != "-- Select Date --":
-            st.session_state.pca_selected_v2_date = sel_cp
+        if st.session_state.pca_selected_v2_date != "-- Select Date --":
+            sel_cp = st.session_state.pca_selected_v2_date
             actual_idx = cp_idx[cp_dates_str.index(sel_cp)]
             render_cp_analysis(sel_cp, sel_p, c_i.iloc[max(0, actual_idx-50):actual_idx], c_i.iloc[actual_idx:min(len(c_i), actual_idx+50)])
     else: st.info("No shifts detected.")
