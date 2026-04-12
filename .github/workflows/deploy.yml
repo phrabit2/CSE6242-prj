@@ -64,10 +64,29 @@ jobs:
             pip install -r requirements.txt
             echo "✅ Package installation complete"
 
-            # ── 3. Restart dashboard via systemd ──
+            # ── 3. Update & restart dashboard via systemd ──
+            sudo tee /etc/systemd/system/dashboard.service > /dev/null <<'SVC'
+            [Unit]
+            Description=Baseball CPD Dashboard
+            After=network.target
+
+            [Service]
+            Type=simple
+            User=ubuntu
+            WorkingDirectory=/home/ubuntu/project/repo
+            ExecStart=/home/ubuntu/project/venv/bin/streamlit run streamlit/change_forest_app_v2_irene_orginal.py --server.port 8501 --server.address 0.0.0.0
+            Restart=always
+            RestartSec=10
+
+            [Install]
+            WantedBy=multi-user.target
+            SVC
+            sudo systemctl daemon-reload
+            sudo fuser -k 8501/tcp 2>/dev/null || true
+            sleep 2
             sudo systemctl restart dashboard.service
             sleep 3
-            sudo systemctl is-active --quiet dashboard.service && echo "✅ Dash server is running" || echo "❌ Dash server failed to start"
+            sudo systemctl is-active --quiet dashboard.service && echo "✅ Streamlit server is running" || echo "❌ Streamlit server failed to start"
 
             echo "=========================================="
             echo "🎉 EC2 deployment complete: $(date '+%Y-%m-%d %H:%M:%S')"
