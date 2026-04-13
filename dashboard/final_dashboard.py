@@ -78,7 +78,7 @@ PA_COLORS = {
     "launch_angle_stability_50pa": "#d62728",
 }
 
-SENSITIVITY_MAP        = {"Low": 8, "Medium": 3, "High": 1}
+# SENSITIVITY_MAP        = {"Low": 8, "Medium": 3, "High": 1}
 SENSITIVITY_TO_MIN_SEG = {"Low": 0.10, "Medium": 0.05, "High": 0.02}
 
 DARK       = "#FFFFFF"
@@ -197,19 +197,19 @@ def get_diagnostic_insight(stats_list, player_name):
     res = indicator_summary.get('woba_residual', "Stable")
 
     if "Decline" in pwr and "Decline" in la:
-        findings.append(f"⚠️ <b>Mechanical/Physical Shift:</b> Both Power and Consistency declined. This strongly suggests a mechanical flaw or a physical issue (fatigue/injury) affecting the swing path.")
+        findings.append(f" <b>Mechanical/Physical Shift:</b> Both Power and Consistency declined. This strongly suggests a mechanical flaw or a physical issue (fatigue/injury) affecting the swing path.")
     elif "Improvement" in pwr and "Improvement" in la:
-        findings.append(f"🔥 <b>Optimized Mechanics:</b> Improvements in both Power and Consistency indicate <b>{player_name}</b> has found a repeatable, high-impact swing.")
+        findings.append(f" <b>Optimized Mechanics:</b> Improvements in both Power and Consistency indicate <b>{player_name}</b> has found a repeatable, high-impact swing.")
     
     if "Improvement" in disc and "Decline" in pwr:
-        findings.append(f"🧘 <b>Passive Approach:</b> Discipline improved, but Power dropped. This often happens when a hitter becomes <i>too</i> selective, sacrificing aggression for better take decisions.")
+        findings.append(f" <b>Passive Approach:</b> Discipline improved, but Power dropped. This often happens when a hitter becomes <i>too</i> selective, sacrificing aggression for better take decisions.")
     elif "Decline" in disc and "Improvement" in pwr:
         findings.append(f"⚔️ <b>Aggressive Shift:</b> Discipline dropped while Power rose. The hitter is likely 'selling out' for power, swinging harder at the cost of strike-zone control.")
 
     if "Decline" in res and "Stable" in pwr and "Stable" in la:
-        findings.append(f"📉 <b>Pure Bad Luck:</b> Performance results (wOBA) dropped despite Power and Consistency remaining steady. Physics says the hitter is doing everything right—results should follow.")
+        findings.append(f" <b>Pure Bad Luck:</b> Performance results (wOBA) dropped despite Power and Consistency remaining steady. Physics says the hitter is doing everything right—results should follow.")
     elif "Improvement" in res and "Stable" in pwr and "Stable" in la:
-        findings.append(f"🍀 <b>Results Surge:</b> Results are improving faster than the underlying physics change, indicating a period of high efficiency or favorable luck.")
+        findings.append(f" <b>Results Surge:</b> Results are improving faster than the underlying physics change, indicating a period of high efficiency or favorable luck.")
 
     if not findings:
         sorted_stats = sorted(stats_list.items(), key=lambda x: abs(x[1]['effect_d']), reverse=True)
@@ -324,15 +324,40 @@ df_idx = build_perf_index(df)
 # ══════════════════════════════════════════════════════════════════════════════
 # PELT CPD UTILITIES
 # ══════════════════════════════════════════════════════════════════════════════
-def detect_cpd(series, penalty):
-    try:
-        import ruptures as rpt
-        sig  = series.values.reshape(-1, 1)
-        algo = rpt.Pelt(model="rbf").fit(sig)
-        bkps = algo.predict(pen=penalty)
-        return [b for b in bkps[:-1] if 0 < b < len(series)]
-    except Exception:
+'''
+swaped out for change forest code block in triple quotes to be removed
+   '''
+# def detect_cpd(series, penalty):
+#     try:
+#         import ruptures as rpt
+#         sig  = series.values.reshape(-1, 1)
+#         algo = rpt.Pelt(model="rbf").fit(sig)
+#         bkps = algo.predict(pen=penalty)
+#         return [b for b in bkps[:-1] if 0 < b < len(series)]
+#     except Exception:
+#         return []
+
+def detect_cpd(series, min_seg):
+    if changeforest is None or Control is None:
+        st.warning("changeforest not available — install it with `pip install changeforest`")
         return []
+    try:
+        sig = series.values.astype(np.float64).reshape(-1, 1)
+        if len(sig) < 20:
+            return []
+        result = changeforest(sig, "random_forest", "bs", Control(minimal_relative_segment_length=min_seg))
+        # change_points and split_points are methods, not properties — call them
+        if hasattr(result, "change_points"):
+            cps = result.change_points()
+        elif hasattr(result, "split_points"):
+            cps = result.split_points()
+        else:
+            cps = []
+        return [int(cp) for cp in cps if 0 < int(cp) < len(sig)]
+    except Exception as e:
+        st.warning(f"changeforest error: {e}")
+        return []
+    
 
 def rolling_with_dates(pdf, metric, window):
     sub = pdf[pdf[metric].notna()][["game_date", metric]].sort_values("game_date")
@@ -437,16 +462,17 @@ if "Welcome" in page:
     # ── Motivation & Navigation ────────────────────────────────────────────────
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("#### 🎯 Why it Matters")
+        st.markdown("#### Why it Matters")
         st.markdown(f"""
-        Traditional baseball statistics like **Batting Average** or **OPS** are *lagging indicators*—by the time a slump shows up in the box score, a player may have been struggling for weeks. 
+        Traditional baseball statistics like **Batting Average** or **On-base Plus Slugging (OPS)¹** are *lagging indicators*—by the time a slump shows up in the box score, a player may have been struggling for weeks. 
         
         **Diamond Insight** changes the game by monitoring *leading indicators*. By analyzing the underlying physics of every plate appearance—how hard the ball was hit, the decision to swing, and the consistency of the swing path—we identify performance shifts the moment they happen. 
         
         Our goal is to give you the **true performance pulse** of a hitter, separating pure luck from genuine skill changes.
         """)
+        st.caption("¹ OPS (On-base Plus Slugging) = On-Base Percentage + Slugging Percentage. Measures both contact quality and plate discipline in a single number.")
     with col2:
-        st.markdown("#### 🚀 How to Use Diamond Insight")
+        st.markdown("#### How to Use Diamond Insight")
         st.markdown("""
         1.  **Start with the Snapshot**: Select a player to see their current performance profile and where they rank relative to the league average this season.
         2.  **Benchmark with Peers**: Select up to 3 hitters to see how their performance "fingerprints" differ and who is currently leading in contact quality.
@@ -456,7 +482,7 @@ if "Welcome" in page:
     st.markdown("---")
 
     # ── Indicators Grid ───────────────────────────────────────────────────────
-    st.markdown("#### 🔬 The Four Pillars of Performance")
+    st.markdown("#### The Four Pillars of Performance")
     st.caption("We monitor these core indicators to track a hitter's true performance pulse.")
     
     i1, i2 = st.columns(2)
@@ -966,7 +992,9 @@ elif "Change Analyzer" in page:
     
     if len(roll_idx) < 20: st.warning("Insufficient data for Change Point Detection."); st.stop()
 
-    cp_indices = detect_cpd(roll_idx["perf_index"], SENSITIVITY_MAP[sensitivity])
+    #to remove
+    # cp_indices = detect_cpd(roll_idx["perf_index"], SENSITIVITY_MAP[sensitivity])
+    cp_indices = detect_cpd(roll_idx["perf_index"], SENSITIVITY_TO_MIN_SEG[sensitivity])
     
     # ── MAIN VISUALIZATION (PLOTLY) ───────────────────────────────────────────
     sec(f"Performance Index Trend — {sel_player}")
