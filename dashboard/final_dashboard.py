@@ -2,15 +2,10 @@
 # coding: utf-8
 """
 MLB Batting Pulse
-==================
+
 Single dataset: PA-level engineered features
   pa_master.csv — one row per plate appearance, 420 qualified hitters, 2021-2025
 
-Active Pages:
-1. Welcome 2: Welcome Page
-2. Player Snapshot
-3. Peer Comparison
-4. Performance Change Analyzer
 """
 
 import os
@@ -37,19 +32,18 @@ except Exception:
     changeforest = None
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# MUST BE THE VERY FIRST STREAMLIT CALL
-# ══════════════════════════════════════════════════════════════════════════════
+# Streamlit page configuration
+
 st.set_page_config(
-    page_title="Diamond Insight",
-    page_icon="⚾",
+    page_title="Team 26: Performance Inflection Dashboard",
+    
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # CONSTANTS
-# ══════════════════════════════════════════════════════════════════════════════
+
 CURRENT_SEASON  = 2025
 DATA_CF_FILE_ID = "1G8eA6gX8hdCwWp1YWddAMmwt6R62tcmA"
 
@@ -95,9 +89,9 @@ TEXT       = "#111418"
 TEXT_MUTED = "#586069"
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # STYLES
-# ══════════════════════════════════════════════════════════════════════════════
+
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
@@ -143,9 +137,9 @@ h1,h2,h3 {{ font-family:'Bebas Neue',sans-serif; letter-spacing:0.06em; color:{T
 """, unsafe_allow_html=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # HELPERS
-# ══════════════════════════════════════════════════════════════════════════════
+
 def card(label, val, sub="", color="gold"):
     cls = {"gold":"card","teal":"card teal","grey":"card grey"}.get(color, "card")
     return (f'<div class="{cls}"><div class="card-label">{label}</div>'
@@ -185,10 +179,10 @@ def get_diagnostic_insight(stats_list, player_name):
     for col, s in stats_list.items():
         d = s['effect_d']
         label = "Stable"
-        if d > 0.5: label = "Large Improvement"
-        elif d > 0.2: label = "Small Improvement"
-        elif d < -0.5: label = "Large Decline"
-        elif d < -0.2: label = "Small Decline"
+        if d > 0.5: label = "Significant Gains"
+        elif d > 0.2: label = "Marginal Gains"
+        elif d < -0.5: label = "Significant Decline"
+        elif d < -0.2: label = "Marginal Decline"
         indicator_summary[col] = label
 
     pwr = indicator_summary.get('power_efficiency', "Stable")
@@ -202,9 +196,9 @@ def get_diagnostic_insight(stats_list, player_name):
         findings.append(f"🔥 <b>Optimized Mechanics:</b> Improvements in both Power and Consistency indicate <b>{player_name}</b> has found a repeatable, high-impact swing.")
     
     if "Improvement" in disc and "Decline" in pwr:
-        findings.append(f"🧘 <b>Passive Approach:</b> Discipline improved, but Power dropped. This often happens when a hitter becomes <i>too</i> selective, sacrificing aggression for better take decisions.")
+        findings.append(f"🧘 <b>Heightened Selectivity:</b> Discipline improved, but Power dropped. This often happens when a hitter becomes <i>too</i> selective, sacrificing aggression for better take decisions.")
     elif "Decline" in disc and "Improvement" in pwr:
-        findings.append(f"⚔️ <b>Aggressive Shift:</b> Discipline dropped while Power rose. The hitter is likely 'selling out' for power, swinging harder at the cost of strike-zone control.")
+        findings.append(f"⚔️ <b>Increased Plate Aggression:</b> Discipline dropped while Power rose. The hitter is likely 'selling out' for power, swinging harder at the cost of strike-zone control.")
 
     if "Decline" in res and "Stable" in pwr and "Stable" in la:
         findings.append(f"📉 <b>Pure Bad Luck:</b> Performance results (wOBA) dropped despite Power and Consistency remaining steady. Physics says the hitter is doing everything right—results should follow.")
@@ -219,26 +213,7 @@ def get_diagnostic_insight(stats_list, player_name):
 
     return findings
 
-# def render_cp_analysis(selected_date, player_name, before_data, after_data):
-#     st.markdown("---")
-#     st.write(f"### 🔍 Deep-Dive Analysis: Shift on {selected_date}")
-#     st.write(f"Comparing the window of performance before and after this detected shift.")
-    
-#     all_stats = {}
-#     for col in PA_INDICATORS:
-#         delta = after_data[col].mean() - before_data[col].mean()
-#         pooled = np.sqrt((before_data[col].std()**2 + after_data[col].std()**2) / 2 + 1e-9)
-#         d = delta / pooled
-#         all_stats[col] = {'delta': delta, 'effect_d': d, 'before': before_data[col].mean(), 'after': after_data[col].mean()}
 
-#     insights = get_diagnostic_insight(all_stats, player_name)
-    
-#     st.markdown(f"""
-#     <div class="narrative">
-#     <b>🧠 Smart Analyzer Hypothesis:</b><br><br>
-#     {"<br><br>".join(insights)}
-#     </div>
-#     """, unsafe_allow_html=True)
 
 def render_cp_analysis(selected_date, player_name, before_data, after_data, 
                        importance_df=None):  # new parameter
@@ -260,7 +235,7 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
 
     st.markdown(f"""
     <div class="narrative">
-    <b>🧠 Smart Analyzer Hypothesis:</b><br><br>
+    <b> Smart Analyzer Hypothesis:</b><br><br>
     {"<br><br>".join(insights)}
     </div>
     """, unsafe_allow_html=True)
@@ -296,7 +271,7 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
         )
 
 
-
+    # hiding key metric shifts for change forest
     # st.write("#### 📊 Key Metric Shifts")
     # with st.expander("ℹ️ How are these shifts calculated?"):
     #     st.markdown("""
@@ -345,9 +320,9 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
             st.plotly_chart(fig, use_container_width=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # DATA LOADING
-# ══════════════════════════════════════════════════════════════════════════════
+
 @st.cache_data(show_spinner="Loading PA-level data...")
 def load_data() -> pd.DataFrame:
     path = "/tmp/Qualified_hitters_statcast_2021_2025_pa_master.csv"
@@ -376,9 +351,9 @@ min_year = int(df["year"].min())
 max_year = int(df["year"].max())
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # PERFORMANCE INDEX
-# ══════════════════════════════════════════════════════════════════════════════
+
 @st.cache_data(show_spinner="Computing performance index...")
 def build_perf_index(_df: pd.DataFrame) -> pd.DataFrame:
     out = _df.copy()
@@ -395,9 +370,9 @@ def build_perf_index(_df: pd.DataFrame) -> pd.DataFrame:
 df_idx = build_perf_index(df)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # CPD UTILITIES
-# ══════════════════════════════════════════════════════════════════════════════
+
 def detect_cpd(series, penalty):
     try:
         import ruptures as rpt
@@ -503,9 +478,9 @@ def get_cp_feature_importance(subdf: pd.DataFrame, cp_idx: int, window: int) -> 
     }).sort_values("Importance", ascending=True)
 
     return importance_df
-# ══════════════════════════════════════════════════════════════════════════════
+
 # TOP NAVIGATION BAR
-# ══════════════════════════════════════════════════════════════════════════════
+
 if 'nav_page' not in st.session_state:
     st.session_state.nav_page = "📖 Welcome"
 
@@ -567,12 +542,12 @@ st.markdown("""
 # App Header / Logo
 t_col1, t_col2 = st.columns([1, 2])
 with t_col1:
-    st.markdown("<div class='nav-logo'>💎 DIAMOND INSIGHT</div>", unsafe_allow_html=True)
+    st.markdown("<div class='nav-logo'>Team 26: Performance Inflection Dashboard</div>", unsafe_allow_html=True)
 
 # Navigation Tabs
 with t_col2:
     nav_cols = st.columns(5)
-    nav_items = ["📖 Welcome", "🎯 Player Snapshot", "👥 Peer Comparison", "🔍 Univariate Change Analyzer","Multivariate Change Analyzer"]
+    nav_items = ["Welcome", "Player Snapshot", "👥 Peer Comparison", "Univariate Change Analyzer","Multivariate Change Analyzer"]
     
     for i, item in enumerate(nav_items):
         is_active = (st.session_state.nav_page == item)
@@ -591,22 +566,22 @@ players_with_all = ["All Players (League Avg)"] + players
 
 # ── PAGE: Welcome ─────────────────────────────────────────────────────────────
 if "Welcome" in page:
-    st.markdown("# 📖 Diamond Insight — Welcome")
+    st.markdown("# Performance Inflection Dashboard")
     st.markdown("### Advanced Hitter Performance Analytics through Statcast & Machine Learning")
 
     # ── Motivation & Navigation ────────────────────────────────────────────────
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("#### 🎯 Why it Matters")
+        st.markdown("#### Why it Matters: The Shift from Lagging to Leading Indicators")
         st.markdown(f"""
         Traditional baseball statistics like **Batting Average** or **OPS** are *lagging indicators*—by the time a slump shows up in the box score, a player may have been struggling for weeks. 
         
-        **Diamond Insight** changes the game by monitoring *leading indicators*. By analyzing the underlying physics of every plate appearance—how hard the ball was hit, the decision to swing, and the consistency of the swing path—we identify performance shifts the moment they happen. 
+        Changes the game by monitoring *leading indicators*. By analyzing the underlying physics of every plate appearance—how hard the ball was hit, the decision to swing, and the consistency of the swing path—we identify performance shifts the moment they happen. 
         
         Our goal is to give you the **true performance pulse** of a hitter, separating pure luck from genuine skill changes.
         """)
     with col2:
-        st.markdown("#### 🚀 How to Use Diamond Insight")
+        st.markdown("#### How to Use the Dashboard")
         st.markdown("""
         1.  **Start with the Snapshot**: Select a player to see their current performance profile and where they rank relative to the league average this season.
         2.  **Benchmark with Peers**: Select up to 3 hitters to see how their performance "fingerprints" differ and who is currently leading in contact quality.
@@ -616,7 +591,7 @@ if "Welcome" in page:
     st.markdown("---")
 
     # ── Indicators Grid ───────────────────────────────────────────────────────
-    st.markdown("#### 🔬 The Four Pillars of Performance")
+    st.markdown("#### The Four Pillars of Performance")
     st.caption("We monitor these core indicators to track a hitter's true performance pulse.")
     
     i1, i2 = st.columns(2)
@@ -682,11 +657,11 @@ if "Welcome" in page:
     """, unsafe_allow_html=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # PAGE 2 - PLAYER SNAPSHOT
-# ══════════════════════════════════════════════════════════════════════════════
+
 elif "Snapshot" in page:
-    st.markdown("# 🎯 Player Snapshot")
+    st.markdown("# Player Snapshot")
     
     # ── TOP FILTERS (Reciprocal filtering) ────────────────────────────────────
     if 'snapshot_player' not in st.session_state:
@@ -963,9 +938,9 @@ elif "Snapshot" in page:
             """, unsafe_allow_html=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # PAGE 3 - PEER COMPARISON
-# ══════════════════════════════════════════════════════════════════════════════
+
 elif "Peer" in page:
     st.markdown("# 👥 Peer Comparison")
     if 'peer_year' not in st.session_state: st.session_state.peer_year = max_year
@@ -1087,9 +1062,9 @@ elif "Peer" in page:
                     st.caption(f"💡 {msg}")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # PAGE 4: UNIVARIATE CHANGE ANALYZER
-# ══════════════════════════════════════════════════════════════════════════════
+
 elif "Univariate Change Analyzer" in page:
     st.markdown("# 🔍 Pruned Exact Linear Time (PELT) algorithm for univariate structural break detection")
     st.markdown("Identify significant shifts in a player's performance profile. Select a player and season to see where their performance changed, then deep-dive into the data.")
@@ -1215,9 +1190,9 @@ elif "Univariate Change Analyzer" in page:
 
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # PAGE 5: PERFORMANCE CHANGE ANALYZER
-# ══════════════════════════════════════════════════════════════════════════════
+
 elif "Multivariate Change Analyzer" in page:
     st.markdown("# ChangeForest for capturing multivariate distributional shifts")
     st.markdown("Multivariate change point detection across all 4 indicators simultaneously.")
