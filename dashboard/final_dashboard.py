@@ -266,6 +266,7 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
     """, unsafe_allow_html=True)
 
     
+
     if importance_df is not None and not importance_df.empty:
         st.write("#### 🌲 ChangeForest Feature Importance")
         st.caption(
@@ -287,7 +288,6 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
             font=dict(color=TEXT), margin=dict(t=10, b=30, l=10, r=10)
         )
         st.plotly_chart(fig_imp, use_container_width=True)
-
         top_feature = importance_df.iloc[-1]["Indicator"]
         top_score = importance_df.iloc[-1]["Importance"]
         st.caption(
@@ -297,45 +297,52 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
 
 
 
-    st.write("#### 📊 Key Metric Shifts")
-    with st.expander("ℹ️ How are these shifts calculated?"):
-        st.markdown("""
-        - **Effect Size (Cohen’s d):** This measures the magnitude of the shift relative to the player's natural variability. 
-            - **0.2:** Small shift (normal fluctuation).
-            - **0.5:** Medium shift (visible performance change).
-            - **0.8+:** Large shift (major mechanical or approach overhaul).
-        - **Primary Driver:** We identify this by finding the metric with the **highest absolute Effect Size**. It represents the most statistically significant 'break' in the player's performance profile.
-        """)
+    # st.write("#### 📊 Key Metric Shifts")
+    # with st.expander("ℹ️ How are these shifts calculated?"):
+    #     st.markdown("""
+    #     - **Effect Size (Cohen’s d):** This measures the magnitude of the shift relative to the player's natural variability. 
+    #         - **0.2:** Small shift (normal fluctuation).
+    #         - **0.5:** Medium shift (visible performance change).
+    #         - **0.8+:** Large shift (major mechanical or approach overhaul).
+    #     - **Primary Driver:** We identify this by finding the metric with the **highest absolute Effect Size**. It represents the most statistically significant 'break' in the player's performance profile.
+    #     """)
     
-    cols = st.columns(4)
-    for i, col_name in enumerate(PA_INDICATORS):
-        s = all_stats[col_name]
-        with cols[i]:
-            st.metric(PA_LABELS[col_name], f"{s['after']:.3f}", delta=f"{s['delta']:+.3f}")
-            st.caption(f"Effect Size: {s['effect_d']:.2f}")
+    # cols = st.columns(4)
+    # for i, col_name in enumerate(PA_INDICATORS):
+    #     s = all_stats[col_name]
+    #     with cols[i]:
+    #         st.metric(PA_LABELS[col_name], f"{s['after']:.3f}", delta=f"{s['delta']:+.3f}")
+    #         st.caption(f"Effect Size: {s['effect_d']:.2f}")
 
-    # st.write("#### 📈 Distribution Shift (Primary Driver)") # - uses cohen
-    # sorted_stats = sorted(all_stats.items(), key=lambda x: abs(x[1]['effect_d']), reverse=True)
-    # top_col = sorted_stats[0][0]
-
-    st.write("#### 📈 Distribution Shift (Primary Driver)") #- uses RF feature importance
     if importance_df is not None and not importance_df.empty:
-        # Use RF feature importance to identify primary driver
+        st.write("#### 📈 Distribution Shift (ChangeForest Primary Driver)")
         top_label = importance_df.iloc[-1]["Indicator"]
         top_col = next(col for col in PA_INDICATORS if PA_LABELS[col] == top_label)
     else:
-        # Fall back to Cohen's d for PELT page
+        st.write("#### 📈 Distribution Shift (Cohen's d Primary Driver)")
         sorted_stats = sorted(all_stats.items(), key=lambda x: abs(x[1]['effect_d']), reverse=True)
         top_col = sorted_stats[0][0]
-    
-    fig = go.Figure()
-    fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
-    fig.add_trace(go.Histogram(x=after_data[top_col], name="After Shift", marker_color=TEAL, opacity=0.6))
-    fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", 
-                      xaxis_title=PA_LABELS[top_col], yaxis_title="Frequency (PA Count)",
-                      paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT),
-                      height=300, margin=dict(t=40, b=40, l=40, r=40))
-    st.plotly_chart(fig, use_container_width=True)
+        
+        # fig = go.Figure()
+        # fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
+        # fig.add_trace(go.Histogram(x=after_data[top_col], name="After Shift", marker_color=TEAL, opacity=0.6))
+        # fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", 
+        #                 xaxis_title=PA_LABELS[top_col], yaxis_title="Frequency (PA Count)",
+        #                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT),
+        #                 height=300, margin=dict(t=40, b=40, l=40, r=40))
+        # st.plotly_chart(fig, use_container_width=True)
+
+    if before_data[top_col].dropna().empty or after_data[top_col].dropna().empty:
+            st.warning(f"Not enough data to plot distribution for {PA_LABELS[top_col]}.")
+    else:
+            fig = go.Figure()
+            fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
+            fig.add_trace(go.Histogram(x=after_data[top_col], name="After Shift", marker_color=TEAL, opacity=0.6))
+            fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", 
+                            xaxis_title=PA_LABELS[top_col], yaxis_title="Frequency (PA Count)",
+                            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT),
+                            height=300, margin=dict(t=40, b=40, l=40, r=40))
+            st.plotly_chart(fig, use_container_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -565,7 +572,7 @@ with t_col1:
 # Navigation Tabs
 with t_col2:
     nav_cols = st.columns(5)
-    nav_items = ["📖 Welcome", "🎯 Player Snapshot", "👥 Peer Comparison", "🔍 Change Analyzer - PELT","Change Analyzer - Changeforest"]
+    nav_items = ["📖 Welcome", "🎯 Player Snapshot", "👥 Peer Comparison", "🔍 Univariate Change Analyzer","Multivariate Change Analyzer"]
     
     for i, item in enumerate(nav_items):
         is_active = (st.session_state.nav_page == item)
@@ -1081,10 +1088,10 @@ elif "Peer" in page:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PAGE 4: PERFORMANCE CHANGE ANALYZER
+# PAGE 4: UNIVARIATE CHANGE ANALYZER
 # ══════════════════════════════════════════════════════════════════════════════
-elif "Change Analyzer - PELT" in page:
-    st.markdown("# 🔍 Performance Change Analyzer")
+elif "Univariate Change Analyzer" in page:
+    st.markdown("# 🔍 Pruned Exact Linear Time (PELT) algorithm for univariate structural break detection")
     st.markdown("Identify significant shifts in a player's performance profile. Select a player and season to see where their performance changed, then deep-dive into the data.")
 
     if 'pca_player' not in st.session_state: st.session_state.pca_player = "Trout, Mike" if "Trout, Mike" in players else players[2]
@@ -1211,8 +1218,8 @@ elif "Change Analyzer - PELT" in page:
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE 5: PERFORMANCE CHANGE ANALYZER
 # ══════════════════════════════════════════════════════════════════════════════
-elif "Change Analyzer - Changeforest" in page:
-    st.markdown("# 🔍 Performance Change Analyzer — Changeforest")
+elif "Multivariate Change Analyzer" in page:
+    st.markdown("# ChangeForest for capturing multivariate distributional shifts")
     st.markdown("Multivariate change point detection across all 4 indicators simultaneously.")
 
     if 'cf_player' not in st.session_state: st.session_state.cf_player = "Trout, Mike" if "Trout, Mike" in players else players[2]
