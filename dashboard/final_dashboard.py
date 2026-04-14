@@ -219,26 +219,83 @@ def get_diagnostic_insight(stats_list, player_name):
 
     return findings
 
-def render_cp_analysis(selected_date, player_name, before_data, after_data):
+# def render_cp_analysis(selected_date, player_name, before_data, after_data):
+#     st.markdown("---")
+#     st.write(f"### 🔍 Deep-Dive Analysis: Shift on {selected_date}")
+#     st.write(f"Comparing the window of performance before and after this detected shift.")
+    
+#     all_stats = {}
+#     for col in PA_INDICATORS:
+#         delta = after_data[col].mean() - before_data[col].mean()
+#         pooled = np.sqrt((before_data[col].std()**2 + after_data[col].std()**2) / 2 + 1e-9)
+#         d = delta / pooled
+#         all_stats[col] = {'delta': delta, 'effect_d': d, 'before': before_data[col].mean(), 'after': after_data[col].mean()}
+
+#     insights = get_diagnostic_insight(all_stats, player_name)
+    
+#     st.markdown(f"""
+#     <div class="narrative">
+#     <b>🧠 Smart Analyzer Hypothesis:</b><br><br>
+#     {"<br><br>".join(insights)}
+#     </div>
+#     """, unsafe_allow_html=True)
+
+def render_cp_analysis(selected_date, player_name, before_data, after_data, 
+                       importance_df=None):  # new parameter
     st.markdown("---")
     st.write(f"### 🔍 Deep-Dive Analysis: Shift on {selected_date}")
-    st.write(f"Comparing the window of performance before and after this detected shift.")
-    
+    st.write("Comparing the window of performance before and after this detected shift.")
+
     all_stats = {}
     for col in PA_INDICATORS:
         delta = after_data[col].mean() - before_data[col].mean()
         pooled = np.sqrt((before_data[col].std()**2 + after_data[col].std()**2) / 2 + 1e-9)
         d = delta / pooled
-        all_stats[col] = {'delta': delta, 'effect_d': d, 'before': before_data[col].mean(), 'after': after_data[col].mean()}
+        all_stats[col] = {
+            'delta': delta, 'effect_d': d,
+            'before': before_data[col].mean(), 'after': after_data[col].mean()
+        }
 
     insights = get_diagnostic_insight(all_stats, player_name)
-    
+
     st.markdown(f"""
     <div class="narrative">
     <b>🧠 Smart Analyzer Hypothesis:</b><br><br>
     {"<br><br>".join(insights)}
     </div>
     """, unsafe_allow_html=True)
+
+    
+    if importance_df is not None and not importance_df.empty:
+        st.write("#### 🌲 ChangeForest Feature Importance")
+        st.caption(
+            "Which indicators drove this shift? A Random Forest classifier trained on the "
+            "before/after windows shows which metrics were most separable at this change point."
+        )
+        fig_imp = go.Figure(go.Bar(
+            x=importance_df["Importance"],
+            y=importance_df["Indicator"],
+            orientation='h',
+            marker_color=importance_df["Color"],
+            text=[f"{v:.1%}" for v in importance_df["Importance"]],
+            textposition='auto',
+        ))
+        fig_imp.update_layout(
+            height=250,
+            xaxis=dict(title="Feature Importance", tickformat=".0%", range=[0, 1]),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color=TEXT), margin=dict(t=10, b=30, l=10, r=10)
+        )
+        st.plotly_chart(fig_imp, use_container_width=True)
+
+        top_feature = importance_df.iloc[-1]["Indicator"]
+        top_score = importance_df.iloc[-1]["Importance"]
+        st.caption(
+            f"**Primary driver:** {top_feature} accounts for {top_score:.1%} of the "
+            f"separability between segments — the strongest signal at this change point."
+        )
+
+
 
     st.write("#### 📊 Key Metric Shifts")
     with st.expander("ℹ️ How are these shifts calculated?"):
@@ -257,9 +314,19 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data):
             st.metric(PA_LABELS[col_name], f"{s['after']:.3f}", delta=f"{s['delta']:+.3f}")
             st.caption(f"Effect Size: {s['effect_d']:.2f}")
 
-    st.write("#### 📈 Distribution Shift (Primary Driver)")
-    sorted_stats = sorted(all_stats.items(), key=lambda x: abs(x[1]['effect_d']), reverse=True)
-    top_col = sorted_stats[0][0]
+    # st.write("#### 📈 Distribution Shift (Primary Driver)") # - uses cohen
+    # sorted_stats = sorted(all_stats.items(), key=lambda x: abs(x[1]['effect_d']), reverse=True)
+    # top_col = sorted_stats[0][0]
+
+    st.write("#### 📈 Distribution Shift (Primary Driver)") #- uses RF feature importance
+    if importance_df is not None and not importance_df.empty:
+        # Use RF feature importance to identify primary driver
+        top_label = importance_df.iloc[-1]["Indicator"]
+        top_col = next(col for col in PA_INDICATORS if PA_LABELS[col] == top_label)
+    else:
+        # Fall back to Cohen's d for PELT page
+        sorted_stats = sorted(all_stats.items(), key=lambda x: abs(x[1]['effect_d']), reverse=True)
+        top_col = sorted_stats[0][0]
     
     fig = go.Figure()
     fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
@@ -322,7 +389,7 @@ df_idx = build_perf_index(df)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PELT CPD UTILITIES
+# CPD UTILITIES
 # ══════════════════════════════════════════════════════════════════════════════
 def detect_cpd(series, penalty):
     try:
@@ -392,6 +459,43 @@ def run_changeforest(subdf: pd.DataFrame, window: int, min_seg: float):
     except Exception as e:
         st.warning(f"changeforest error: {e}")
         return None, [], None, None
+    
+
+def get_cp_feature_importance(subdf: pd.DataFrame, cp_idx: int, window: int) -> pd.DataFrame:
+    """
+    For a detected change point, train a binary RF classifier
+    on before/after windows and return feature importances.
+    """
+    from sklearn.ensemble import RandomForestClassifier
+
+    feature_names = [f"{col}_rollmean_{window}" for col in PA_INDICATORS]
+    half = min(50, cp_idx, len(subdf) - cp_idx)
+    if half < 5:
+        return pd.DataFrame()
+
+    before = subdf[feature_names].iloc[cp_idx - half : cp_idx].copy()
+    after  = subdf[feature_names].iloc[cp_idx : cp_idx + half].copy()
+
+    before["label"] = 0
+    after["label"]  = 1
+
+    combined = pd.concat([before, after]).dropna()
+    if len(combined) < 10:
+        return pd.DataFrame()
+
+    X = combined[feature_names].values
+    y = combined["label"].values
+
+    clf = RandomForestClassifier(n_estimators=100, random_state=42)
+    clf.fit(X, y)
+
+    importance_df = pd.DataFrame({
+        "Indicator": [PA_LABELS[col] for col in PA_INDICATORS],
+        "Importance": clf.feature_importances_,
+        "Color": [PA_COLORS[col] for col in PA_INDICATORS],
+    }).sort_values("Importance", ascending=True)
+
+    return importance_df
 # ══════════════════════════════════════════════════════════════════════════════
 # TOP NAVIGATION BAR
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1097,7 +1201,8 @@ elif "Change Analyzer - PELT" in page:
         if st.session_state.pca_selected_date != "-- Select Date --":
             selected_cp = st.session_state.pca_selected_date
             actual_cp_idx = cp_indices[cp_dates_str.index(selected_cp)]
-            render_cp_analysis(selected_cp, sel_player, c_idx.iloc[max(0, actual_cp_idx - 50) : actual_cp_idx], c_idx.iloc[actual_cp_idx : min(len(c_idx), actual_cp_idx + 50)])
+            render_cp_analysis(selected_cp, sel_player, c_idx.iloc[max(0, actual_cp_idx - 50) : actual_cp_idx], c_idx.iloc[actual_cp_idx : min(len(c_idx), actual_cp_idx + 50)],importance_df=None  # PELT page — no feature importance
+                               )
     else:
         st.info("No significant performance shifts detected with current settings.")
 
@@ -1248,11 +1353,12 @@ elif "Change Analyzer - Changeforest" in page:
                 st.session_state.cf_selected_date = "-- Select Date --"
             if st.session_state.cf_selected_date != "-- Select Date --":
                 actual_cp_idx = cps[cp_dates_str.index(st.session_state.cf_selected_date)]
+                importance_df = get_cp_feature_importance(subdf, actual_cp_idx, cpd_window)
+
                 render_cp_analysis(
                     st.session_state.cf_selected_date, sel_player,
                     subdf.iloc[max(0, actual_cp_idx - 50) : actual_cp_idx],
-                    subdf.iloc[actual_cp_idx : min(len(subdf), actual_cp_idx + 50)]
-                )
+                    subdf.iloc[actual_cp_idx : min(len(subdf), actual_cp_idx + 50)],importance_df=importance_df)
             else:
                 st.info("💡 Click on any red diamond marker to analyze that shift.")
         else:
