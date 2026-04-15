@@ -4,7 +4,7 @@
 MLB Batting Pulse
 
 Single dataset: PA-level engineered features
-  pa_master.csv — one row per plate appearance, 420 qualified hitters, 2021-2025
+pa_master.csv — one row per plate appearance, 420 qualified hitters, 2021-2025
 
 """
 
@@ -179,8 +179,8 @@ def get_diagnostic_insight(stats_list, player_name):
     for col, s in stats_list.items():
         d = s['effect_d']
         label = "Stable"
-        if d > 0.5: label = "Significant Gains"
-        elif d > 0.2: label = "Marginal Gains"
+        if d > 0.5: label = "Significant Gain"
+        elif d > 0.2: label = "Marginal Gain"
         elif d < -0.5: label = "Significant Decline"
         elif d < -0.2: label = "Marginal Decline"
         indicator_summary[col] = label
@@ -192,17 +192,17 @@ def get_diagnostic_insight(stats_list, player_name):
 
     if "Decline" in pwr and "Decline" in la:
         findings.append(f"⚠️ <b>Mechanical/Physical Shift:</b> Both Power and Consistency declined. This strongly suggests a mechanical flaw or a physical issue (fatigue/injury) affecting the swing path.")
-    elif "Improvement" in pwr and "Improvement" in la:
+    elif "Gains" in pwr and "Gains" in la:
         findings.append(f"🔥 <b>Optimized Mechanics:</b> Improvements in both Power and Consistency indicate <b>{player_name}</b> has found a repeatable, high-impact swing.")
     
-    if "Improvement" in disc and "Decline" in pwr:
+    if "Gains" in disc and "Decline" in pwr:
         findings.append(f"🧘 <b>Heightened Selectivity:</b> Discipline improved, but Power dropped. This often happens when a hitter becomes <i>too</i> selective, sacrificing aggression for better take decisions.")
-    elif "Decline" in disc and "Improvement" in pwr:
+    elif "Decline" in disc and "Gains" in pwr:
         findings.append(f"⚔️ <b>Increased Plate Aggression:</b> Discipline dropped while Power rose. The hitter is likely 'selling out' for power, swinging harder at the cost of strike-zone control.")
 
     if "Decline" in res and "Stable" in pwr and "Stable" in la:
         findings.append(f"📉 <b>Pure Bad Luck:</b> Performance results (wOBA) dropped despite Power and Consistency remaining steady. Physics says the hitter is doing everything right—results should follow.")
-    elif "Improvement" in res and "Stable" in pwr and "Stable" in la:
+    elif "Gains" in res and "Stable" in pwr and "Stable" in la:
         findings.append(f"🍀 <b>Results Surge:</b> Results are improving faster than the underlying physics change, indicating a period of high efficiency or favorable luck.")
 
     if not findings:
@@ -245,8 +245,8 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
     if importance_df is not None and not importance_df.empty:
         st.write("#### 🌲 ChangeForest Feature Importance")
         st.caption(
-            "Which indicators drove this shift? A Random Forest classifier trained on the "
-            "before/after windows shows which metrics were most separable at this change point."
+            "Which indicators drove this shift? A Random Forest classifier ranks each indicator "
+            "by how much it contributed to this change point."
         )
         fig_imp = go.Figure(go.Bar(
             x=importance_df["Importance"],
@@ -266,31 +266,30 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
         top_feature = importance_df.iloc[-1]["Indicator"]
         top_score = importance_df.iloc[-1]["Importance"]
         st.caption(
-            f"**Primary driver:** {top_feature} accounts for {top_score:.1%} of the "
-            f"separability between segments — the strongest signal at this change point."
+            f"**Primary driver:** {top_feature} accounts for {top_score:.1%} of the"
+            f"total feature importance — the strongest contributor at this change point."
         )
 
 
-    # hiding key metric shifts for change forest
-    # st.write("#### 📊 Key Metric Shifts")
-    # with st.expander("ℹ️ How are these shifts calculated?"):
-    #     st.markdown("""
-    #     - **Effect Size (Cohen’s d):** This measures the magnitude of the shift relative to the player's natural variability. 
-    #         - **0.2:** Small shift (normal fluctuation).
-    #         - **0.5:** Medium shift (visible performance change).
-    #         - **0.8+:** Large shift (major mechanical or approach overhaul).
-    #     - **Primary Driver:** We identify this by finding the metric with the **highest absolute Effect Size**. It represents the most statistically significant 'break' in the player's performance profile.
-    #     """)
-    
-    # cols = st.columns(4)
-    # for i, col_name in enumerate(PA_INDICATORS):
-    #     s = all_stats[col_name]
-    #     with cols[i]:
-    #         st.metric(PA_LABELS[col_name], f"{s['after']:.3f}", delta=f"{s['delta']:+.3f}")
-    #         st.caption(f"Effect Size: {s['effect_d']:.2f}")
+    if importance_df is None:
+        st.write("#### 📊 Key Metric Shifts")
+        with st.expander("ℹ️ How are these shifts calculated?"):
+            st.markdown("""
+            - **Effect Size (Cohen's d):** This measures the magnitude of the shift relative to the player's natural variability. 
+                - **0.2:** Small shift (normal fluctuation).
+                - **0.5:** Medium shift (visible performance change).
+                - **0.8+:** Large shift (major mechanical or approach overhaul).
+            - **Primary Driver:** We identify this by finding the metric with the **highest absolute Effect Size**. It represents the most statistically significant 'break' in the player's performance profile.
+            """)
+        cols = st.columns(4)
+        for i, col_name in enumerate(PA_INDICATORS):
+            s = all_stats[col_name]
+            with cols[i]:
+                st.metric(PA_LABELS[col_name], f"{s['after']:.3f}", delta=f"{s['delta']:+.3f}")
+                st.caption(f"Effect Size: {s['effect_d']:.2f}")
 
     if importance_df is not None and not importance_df.empty:
-        st.write("#### 📈 Distribution Shift (ChangeForest Primary Driver)")
+        st.write(f"#### 📈 Distribution Shift - {top_feature}")
         top_label = importance_df.iloc[-1]["Indicator"]
         top_col = next(col for col in PA_INDICATORS if PA_LABELS[col] == top_label)
     else:
@@ -298,14 +297,7 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
         sorted_stats = sorted(all_stats.items(), key=lambda x: abs(x[1]['effect_d']), reverse=True)
         top_col = sorted_stats[0][0]
         
-        # fig = go.Figure()
-        # fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
-        # fig.add_trace(go.Histogram(x=after_data[top_col], name="After Shift", marker_color=TEAL, opacity=0.6))
-        # fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", 
-        #                 xaxis_title=PA_LABELS[top_col], yaxis_title="Frequency (PA Count)",
-        #                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT),
-        #                 height=300, margin=dict(t=40, b=40, l=40, r=40))
-        # st.plotly_chart(fig, use_container_width=True)
+    
 
     if before_data[top_col].dropna().empty or after_data[top_col].dropna().empty:
             st.warning(f"Not enough data to plot distribution for {PA_LABELS[top_col]}.")
@@ -313,7 +305,7 @@ def render_cp_analysis(selected_date, player_name, before_data, after_data,
             fig = go.Figure()
             fig.add_trace(go.Histogram(x=before_data[top_col], name="Before Shift", marker_color=GREY, opacity=0.6))
             fig.add_trace(go.Histogram(x=after_data[top_col], name="After Shift", marker_color=TEAL, opacity=0.6))
-            fig.update_layout(barmode='overlay', title=f"Change in {PA_LABELS[top_col]} Population", 
+            fig.update_layout(barmode='overlay', title=f"{PA_LABELS[top_col]}: Before vs. After Shift", 
                             xaxis_title=PA_LABELS[top_col], yaxis_title="Frequency (PA Count)",
                             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=TEXT),
                             height=300, margin=dict(t=40, b=40, l=40, r=40))
@@ -1066,7 +1058,7 @@ elif "Peer" in page:
 # PAGE 4: UNIVARIATE CHANGE ANALYZER
 
 elif "Univariate Change Analyzer" in page:
-    st.markdown("# 🔍 Pruned Exact Linear Time (PELT) algorithm for univariate structural break detection")
+    st.markdown("# Univariate Change Point Analyzer (PELT)")
     st.markdown("Identify significant shifts in a player's performance profile. Select a player and season to see where their performance changed, then deep-dive into the data.")
 
     if 'pca_player' not in st.session_state: st.session_state.pca_player = "Trout, Mike" if "Trout, Mike" in players else players[2]
@@ -1194,7 +1186,7 @@ elif "Univariate Change Analyzer" in page:
 # PAGE 5: PERFORMANCE CHANGE ANALYZER
 
 elif "Multivariate Change Analyzer" in page:
-    st.markdown("# ChangeForest for capturing multivariate distributional shifts")
+    st.markdown("# Multivariate Change Point Analyzer (ChangeForest)")
     st.markdown("Multivariate change point detection across all 4 indicators simultaneously.")
 
     if 'cf_player' not in st.session_state: st.session_state.cf_player = "Trout, Mike" if "Trout, Mike" in players else players[2]
@@ -1260,8 +1252,7 @@ elif "Multivariate Change Analyzer" in page:
     # ── Tab 1 ─────────────────────────────────────────────────────────────────
     with tab1:
         sec("ChangeForest Result")
-        st.caption("4 rolling-mean signals on a shared timeline. Red dashed lines mark detected change points. Click a diamond to analyze that shift.")
-
+        st.caption("4 rolling-mean signals on a shared timeline. Red dotted lines mark detected change points. Click a ◆ marker in the bottom row to analyze that shift.")
         from plotly.subplots import make_subplots
 
         dates = pd.to_datetime(subdf["game_date"])
