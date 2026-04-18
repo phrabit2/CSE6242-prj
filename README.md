@@ -1,10 +1,16 @@
-# ⚾ Change-Point-Based Detection and Visual Analysis of Baseball Performance Shifts
+# Performance Inflection Dashboard
 
 > **CSE 6242 — Data and Visual Analytics | Spring 2026 | Team 026**
->
-> CI/CD: Auto-deploy to EC2 & S3 via GitHub Actions
 
-**Team Members:** Hsiang Wen Hsiao(Eric), I Lin Tsai(Irene), Qixiang Goh(Ethan), Xueying Jin(Clara), Suho Lee(Suho)
+**Team Members:** Hsiang Wen Hsiao (Eric), I Lin Tsai (Irene), Qixiang Goh (Ethan), Xueying Jin (Clara), Suho Lee (Suho)
+
+---
+
+## Live Demo
+
+**Access the deployed dashboard here:**
+
+> **http://15.165.52.135:8501**
 
 ---
 
@@ -12,26 +18,36 @@
 
 Traditional baseball metrics rely on season-long averages that act as **lagging indicators**, often concealing meaningful performance shifts until a player has already experienced extended decline. This project develops an **automated diagnostic dashboard** powered by **Change-Point Detection (CPD)** algorithms to pinpoint the exact onset of player slumps or breakouts using high-frequency MLB Statcast data.
 
-Our system:
-- **Detects** structural performance shifts across multivariate Statcast metrics (Exit Velocity, Launch Angle, Barrel Rate, etc.)
+Our system analyzes **PA-level engineered features** across 420 qualified hitters from 2021–2025:
+
+- **Detects** structural performance shifts using PELT (univariate) and ChangeForest (multivariate) algorithms
 - **Diagnoses** root causes by distinguishing mechanical changes from psychological "clutch" performance dips
-- **Visualizes** results through an interactive four-view dashboard with before/after snapshot comparison
+- **Visualizes** results through an interactive five-view dashboard with before/after snapshot comparison and a Smart Analyzer narrative engine
 
-## Key Features
+---
 
-| Feature | Description |
-|---------|-------------|
-| **Change-Point Timeline** | Interactive time series with detected breakpoints overlaid |
-| **Before / After Snapshot** | Dual-state comparison of mechanical metrics pre/post shift |
-| **Clutch vs. Core Breakdown** | Situational performance diagnostics |
-| **Multi-Algorithm Support** | PELT, Binary Segmentation (CUSUM), Bayesian Online CPD |
+## The Four Performance Pillars
 
-## Tech Stack
+| Indicator | What It Measures |
+|-----------|-----------------|
+| **Hitting Decisions Score** | Plate discipline — quality of swing vs. take decisions |
+| **Power Efficiency** | Raw power — converting swing effort to exit velocity |
+| **wOBA Residual** | Luck vs. Skill — actual results vs. physics-based expectation |
+| **Launch Angle Stability** | Swing consistency — repeatability of ball flight path |
 
-- **Data Source:** [Baseball Savant (Statcast)](https://baseballsavant.mlb.com/) via `pybaseball`
-- **CPD Engine:** `ruptures` (PELT, CUSUM, Bayesian)
-- **Dashboard:** Plotly Dash + D3.js
-- **Language:** Python 3.10+
+---
+
+## Dashboard Pages
+
+| Page | Description |
+|------|-------------|
+| **Welcome** | League-wide benchmark distributions & four-pillar overview |
+| **Player Snapshot** | Season-level profile, percentile rankings, radar chart |
+| **Peer Comparison** | Side-by-side radar, leaderboard, and density plots for up to 3 players |
+| **Univariate Change Analyzer** | PELT-based single-metric CPD with interactive shift deep-dive |
+| **Multivariate Change Analyzer** | ChangeForest RF-based multivariate CPD with feature importance |
+
+---
 
 ## Project Structure
 
@@ -39,50 +55,42 @@ Our system:
 CSE6242_prj/
 ├── README.md
 ├── .gitignore
-├── requirements.txt
+├── requirements.txt          # Minimal dependencies for final_dashboard.py
+├── deploy.yml                # GitHub Actions CI/CD workflow (reference)
 │
-├── docs/                          # Documentation & proposal
-│   ├── team026proposal.pdf
-│   └── references/
+├── dashboard/                # Streamlit application (entry point + modules)
+│   ├── final_dashboard.py    #   Entry point — run this with streamlit
+│   ├── config.py             #   Constants, colour palette, indicator mappings
+│   ├── styles.py             #   Global CSS injection
+│   ├── data_loader.py        #   Data fetching & caching (Google Drive)
+│   ├── cpd_engine.py         #   PELT & ChangeForest CPD algorithms
+│   ├── ui_components.py      #   Shared UI helpers & deep-dive renderer
+│   └── pages/
+│       ├── welcome.py        #   Page 1: League overview
+│       ├── snapshot.py       #   Page 2: Player snapshot
+│       ├── peer_comparison.py#   Page 3: Peer comparison
+│       ├── univariate.py     #   Page 4: Univariate change analyzer
+│       └── multivariate.py   #   Page 5: Multivariate change analyzer
 │
-├── data/                          # Data directory (large files excluded from Git)
-│   ├── raw/                       #   Raw Statcast data
-│   ├── processed/                 #   Cleaned & aggregated data
-│   └── README.md                  #   Data dictionary & fetch instructions
-│
-├── notebooks/                     # Jupyter notebooks for exploration & analysis
-│
-├── src/                           # Source code (Python package)
-│   ├── data/
-│   │   ├── fetch_statcast.py      #   Statcast data collection
-│   │   └── preprocess.py          #   Data cleaning & feature engineering
-│   ├── models/
-│   │   ├── cpd.py                 #   CPD algorithms (PELT, BinSeg, Bayesian)
-│   │   └── evaluate.py            #   Precision, Recall, F1 evaluation
-│   └── visualization/
-│       └── plots.py               #   Plotly-based visualization utilities
-│
-├── dashboard/                     # Plotly Dash web application
-│   ├── app.py                     #   Main Dash app entry point
-│   ├── layouts/                   #   Page layout definitions
-│   ├── callbacks/                 #   Dash callback functions
-│   ├── components/                #   Reusable UI components
-│   └── assets/                    #   Static assets (CSS, JS/D3)
-│
-├── tests/                         # Unit tests
-│   └── test_cpd.py                #   CPD algorithm tests
-│
-└── reports/                       # Generated figures & analysis outputs
-    └── figures/
+└── infra/                    # AWS infrastructure (Terraform)
+    ├── main.tf
+    ├── variables.tf
+    ├── outputs.tf
+    ├── userdata.sh
+    ├── architecture_diagram.py
+    └── cse6242_team26_architecture.png
 ```
 
-## Getting Started
+---
+
+## Installation & Local Run
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-org>/CSE6242_prj.git
-cd CSE6242_prj
+git clone https://github.com/phrabit2/CSE6242-prj.git
+cd CSE6242-prj
+git checkout final
 ```
 
 ### 2. Set up the environment
@@ -95,49 +103,53 @@ source venv/bin/activate        # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 3. Fetch Statcast data
+### 3. Run the dashboard
 
 ```bash
-python src.data.fetch_statcast
+streamlit run dashboard/final_dashboard.py
 ```
 
-### 4. Run the dashboard
+Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
-```bash
-cd dashboard
-python app.py
-```
+> **Note:** On first run the app downloads `pa_master.csv` (~300 MB) from Google Drive to `/tmp/`. This takes 1–2 minutes. Subsequent runs use the cached file.
 
-Then open [http://localhost:8050](http://localhost:8050) in your browser.
+---
 
-### 5. Run tests
+## Tech Stack
 
-```bash
-pytest tests/
-```
+| Layer | Technology |
+|-------|-----------|
+| **Data Source** | MLB Statcast via Google Drive (pre-processed PA-level CSV) |
+| **CPD — Univariate** | `ruptures` (PELT, RBF kernel) |
+| **CPD — Multivariate** | `changeforest` (Random Forest) |
+| **Feature Importance** | `scikit-learn` RandomForestClassifier |
+| **Dashboard** | `streamlit` |
+| **Visualization** | `plotly`, `matplotlib`, `seaborn` |
+| **Deployment** | AWS EC2 (ap-northeast-2) + GitHub Actions CI/CD |
 
-## Project Timeline
+---
 
-| Phase | Period | Deliverables |
-|-------|--------|-------------|
-| **I — Literature Review** | 2/16 – 3/5 | Topic selection, literature survey |
-| **II — Development** | 3/3 – 3/30 | Cleaned dataset, working CPD prototype, prototype dashboard |
-| **III — Evaluation & Final** | 3/31 – 4/25 | Algorithm comparison (PELT vs CUSUM vs Bayesian), final four-view dashboard |
+## Deployment (CI/CD)
 
-**Midterm Milestone (3/30):** Cleaned Statcast dataset + working CPD prototype + prototype dashboard
+The `deploy.yml` file documents the GitHub Actions workflow that auto-deploys to EC2 on every push to `main`:
 
-**Final Milestone (4/22):** Detection precision/recall evaluation + algorithm comparison + final dashboard
+1. SSH into EC2 → `git pull` → `pip install` → restart `systemd` service
+2. Sync data assets to S3 (`s3://team26-cpd-data-294342039761`)
+
+The infra was provisioned with Terraform (see `infra/`).
+
+---
 
 ## References
 
 - Truong, Oudre, & Vayatis (2020) — CPD computational framework
 - Killick, Fearnhead, & Eckley (2012) — PELT algorithm
+- Londschien, Kovács, & Bühlmann (2023) — ChangeForest algorithm
 - Adams & MacKay (2007) — Bayesian Online CPD
 - Taylor (2017) — Exit Velocity & Launch Angle predictive power
-- Albert (2022) — Evolution of baseball metrics
 - Lage et al. (2016) — StatCast Dashboard
 
-See [docs/team026proposal.pdf](docs/team026proposal.pdf) for the full proposal and bibliography.
+---
 
 ## License
 
