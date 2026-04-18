@@ -74,7 +74,7 @@ jobs:
             Type=simple
             User=ubuntu
             WorkingDirectory=/home/ubuntu/project/repo
-            ExecStart=/home/ubuntu/project/venv/bin/streamlit run streamlit/change_forest_app_v2_irene_orginal.py --server.port 8501 --server.address 0.0.0.0
+            ExecStart=/home/ubuntu/project/venv/bin/streamlit run dashboard/final_dashboard.py --server.port 8501 --server.address 0.0.0.0
             Restart=always
             RestartSec=10
 
