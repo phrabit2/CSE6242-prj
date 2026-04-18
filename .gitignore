@@ -12,6 +12,7 @@ build/
 .venv/
 env/
 .env
+.env.local
 
 # Jupyter Notebook
 .ipynb_checkpoints/
@@ -26,25 +27,11 @@ env/
 .DS_Store
 Thumbs.db
 
-# Data (large files - track with Git LFS or exclude)
-data/raw/*.csv
-data/raw/*.parquet
-data/processed/*.csv
-data/processed/*.parquet
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-
-# Reports
-reports/figures/*.png
-reports/figures/*.jpg
-!reports/figures/.gitkeep
-
-# Environment variables
-.env
-.env.local
-
-# Infra
-infra/
+# Terraform
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+*.tfvars
 
 # Private keys
-team26-key.pem
+*.pem
