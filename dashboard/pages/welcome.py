@@ -7,7 +7,7 @@ from ui_components import card, sec
 
 
 def render(df, min_year: int, max_year: int) -> None:
-    st.markdown("# Performance Inflection Dashboard")
+    st.markdown("#  Diamond Insight")
     st.markdown("### Advanced Hitter Performance Analytics through Statcast & Machine Learning")
 
     col1, col2 = st.columns(2)

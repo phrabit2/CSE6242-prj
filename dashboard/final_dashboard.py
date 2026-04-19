@@ -23,7 +23,7 @@ import streamlit as st
 
 # st.set_page_config must be the very first Streamlit call
 st.set_page_config(
-    page_title="Team 26: Performance Inflection Dashboard",
+    page_title="Team 26: Diamond Insight",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -50,7 +50,7 @@ df_idx   = build_perf_index(df)
 NAV_ITEMS = [
     "Welcome",
     "Player Snapshot",
-    "👥 Peer Comparison",
+    "Peer Comparison",
     "Univariate Change Analyzer",
     "Multivariate Change Analyzer",
 ]
@@ -60,7 +60,7 @@ if "nav_page" not in st.session_state:
 
 t_col1, t_col2 = st.columns([1, 2])
 with t_col1:
-    st.markdown("<div class='nav-logo'>Team 26: Performance Inflection Dashboard</div>",
+    st.markdown("<div class='nav-logo'>Team 26: Diamond Insight</div>",
                 unsafe_allow_html=True)
 with t_col2:
     nav_cols = st.columns(len(NAV_ITEMS))
