@@ -35,7 +35,7 @@ except Exception:
 # Streamlit page configuration
 
 st.set_page_config(
-    page_title="Team 26: Performance Inflection Dashboard",
+    page_title="Team 26: Diamond Insight",
     
     layout="wide",
     initial_sidebar_state="expanded",
@@ -534,12 +534,12 @@ st.markdown("""
 # App Header / Logo
 t_col1, t_col2 = st.columns([1, 2])
 with t_col1:
-    st.markdown("<div class='nav-logo'>Team 26: Performance Inflection Dashboard</div>", unsafe_allow_html=True)
+    st.markdown("<div class='nav-logo'>Team 26: Diamond Insight</div>", unsafe_allow_html=True)
 
 # Navigation Tabs
 with t_col2:
     nav_cols = st.columns(5)
-    nav_items = ["Welcome", "Player Snapshot", "👥 Peer Comparison", "Univariate Change Analyzer","Multivariate Change Analyzer"]
+    nav_items = ["Welcome", "Player Snapshot", "Peer Comparison", "Univariate Change Analyzer","Multivariate Change Analyzer"]
     
     for i, item in enumerate(nav_items):
         is_active = (st.session_state.nav_page == item)
