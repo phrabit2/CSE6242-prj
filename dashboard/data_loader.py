@@ -19,7 +19,7 @@ def load_data() -> pd.DataFrame:
     if not os.path.exists(path):
         gdown.download(
             f"https://drive.google.com/uc?id={DATA_CF_FILE_ID}",
-            path, quiet=False, fuzzy=True,
+            path, quiet=False,
         )
     df = pd.read_csv(path, usecols=cols)
     df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
