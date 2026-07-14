@@ -1,92 +1,15 @@
-
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker-compose -f docker-compose.yml -f docker-compose-metric.yml up -d
-Creating network "pinpoint-docker_default" with the default driver
-Creating volume "pinpoint-docker_pinot-zoo-data" with default driver
-Creating volume "pinpoint-docker_pinot-zoo-datalog" with default driver
-Creating volume "pinpoint-docker_pinot-server-volume" with default driver
-Creating volume "pinpoint-docker_pinot-controller-volume" with default driver
-Creating volume "pinpoint-docker_pinot-kafka-volume" with default driver
-pinpoint-docker_zoo1_1 is up-to-date
-pinpoint-docker_zoo3_1 is up-to-date
-Starting pinpoint-mysql ...
-pinpoint-docker_zoo2_1 is up-to-date
-pinpoint-docker_redis_1 is up-to-date
-Starting pinpoint-mysql               ... done
-Recreating pinpoint-hbase ...
-Recreating pinpoint-flink-taskmanager ...
-Creating pinpoint-docker_pinot-init_1 ... done
-Creating pinpoint-docker_pinot-zoo_1  ... done
-Creating pinpoint-docker_pinot-controller_1 ...
-Creating pinpoint-docker_pinpoint-kafka_1   ...
-Creating pinpoint-docker_pinot-controller_1 ... done
-Creating pinpoint-docker_pinpoint-kafka_1   ... done
-Creating pinpoint-docker_pinot-broker-0_1      ... done
-Creating pinpoint-docker_pinpoint-kafka-init_1 ... done
-Creating pinpoint-docker_pinot-server-0_1      ... done
-
-ERROR: for pinpoint-hbase  'ContainerConfig'
-
-ERROR: for taskmanager  'ContainerConfig'
-
-ERROR: for pinpoint-hbase  'ContainerConfig'
-Traceback (most recent call last):
-  File "/usr/bin/docker-compose", line 33, in <module>
-    sys.exit(load_entry_point('docker-compose==1.29.2', 'console_scripts', 'docker-compose')())
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 81, in main
-    command_func()
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 203, in perform_command
-    handler(command, command_options)
-  File "/usr/lib/python3/dist-packages/compose/metrics/decorator.py", line 18, in wrapper
-    result = fn(*args, **kwargs)
-             ^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1186, in up
-    to_attach = up(False)
-                ^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1166, in up
-    return self.project.up(
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/project.py", line 697, in up
-    results, errors = parallel.parallel_execute(
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
-    raise error_to_reraise
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
-    result = func(obj)
-             ^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/project.py", line 679, in do
-    return service.execute_convergence_plan(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 579, in execute_convergence_plan
-    return self._execute_convergence_recreate(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 499, in _execute_convergence_recreate
-    containers, errors = parallel_execute(
-                         ^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
-    raise error_to_reraise
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
-    result = func(obj)
-             ^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 494, in recreate
-    return self.recreate_container(
-           ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 612, in recreate_container
-    new_container = self.create_container(
-                    ^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 330, in create_container
-    container_options = self._get_container_create_options(
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 921, in _get_container_create_options
-    container_options, override_options = self._build_container_volume_options(
-                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 960, in _build_container_volume_options
-    binds, affinity = merge_volume_bindings(
-                      ^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 1548, in merge_volume_bindings
-    old_volumes, old_mounts = get_container_data_volumes(
-                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 1579, in get_container_data_volumes
-    container.image_config['ContainerConfig'].get('Volumes') or {}
-    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-KeyError: 'ContainerConfig'
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d
+WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+[+] up 8/11
+ ✔ Contain... Recreated                                                                                                                                                                                   0.8s
+ ✔ Contain... Recreated                                                                                                                                                                                   0.3s
+ ✔ Contain... Recreated                                                                                                                                                                                   0.1s
+ ✔ Contain... Recreated                                                                                                                                                                                   0.8s
+ ✔ Contain... Recreated                                                                                                                                                                                   0.7s
+ ✔ Contain... Recreated                                                                                                                                                                                   0.2s
+ ✔ Contain... Recreated                                                                                                                                                                                   0.8s
+ ⠋ Contain... Recreate                                                                                                                                                                                    0.0s
+ ✘ Contain... Error response from daemon: Conflict. The container name "/c9848771dc33_pinpoint-hbase" is already in use by container "c9848771dc3354986c9d7b0805b2a570546b7f2d1d229513dd573d3410b1e39f". You have to remove (or rename) that container to be able to reuse that name. 0.0s                                                                                                                              0.0s
+ ⠋ Contain... Recreate                                                                                                                                                                                    0.0s
+ ⠋ Contain... Recreate                                                                                                                                                                                    0.0s
+Error response from daemon: Conflict. The container name "/c9848771dc33_pinpoint-hbase" is already in use by container "c9848771dc3354986c9d7b0805b2a570546b7f2d1d229513dd573d3410b1e39f". You have to remove (or rename) that container to be able to reuse that name.
