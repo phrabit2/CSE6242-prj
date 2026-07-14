@@ -1,23 +1,92 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ grep -nE 'curl|for |basename|AddTable|schemaFile|tableConfigFile|\*\.json|ls ' docker-compose-metric.yml.bak
-184:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/uristat/uristat-common/src/main/pinot/pinot-uriStat-realtime-table.json > uriStatTable.json &&
-185:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/uristat/uristat-common/src/main/pinot/pinot-uriStat-schema.json > uriStatSchema.json &&
-187:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-tag-realtime-table.json > tagTable.json &&
-188:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-tag-schema.json > tagSchema.json &&
-189:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-double-realtime-table.json > doubleTable.json &&
-190:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-double-schema.json > doubleSchema.json &&
-191:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-dataType-realtime-table.json > dataTypeTable.json &&
-192:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-dataType-schema.json > dataTypeSchema.json &&
-194:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/exceptiontrace/exceptiontrace-common/src/main/pinot/pinot-exceptionTrace-offline-table.json > exceptionTraceTable.json &&
-195:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/exceptiontrace/exceptiontrace-common/src/main/pinot/pinot-exceptionTrace-schema.json > exceptionTraceSchema.json &&
-197:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-agent-realtime-table.json > inspectorAgentTable.json &&
-198:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-agent-schema.json > inspectorAgentSchema.json &&
-199:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-application-realtime-table.json > inspectorApplicationTable.json &&
-200:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-application-schema.json > inspectorApplicationSchema.json &&
-205:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile uriStatSchema.json -tableConfigFile uriStatTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
-206:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile tagSchema.json -tableConfigFile tagTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
-207:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile doubleSchema.json -tableConfigFile doubleTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
-208:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile dataTypeSchema.json -tableConfigFile dataTypeTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
-209:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile exceptionTraceSchema.json -tableConfigFile exceptionTraceTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
-210:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile inspectorAgentSchema.json -tableConfigFile inspectorAgentTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
-211:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile inspectorApplicationSchema.json -tableConfigFile inspectorApplicationTable.json -controllerHost pinot-controller -controllerPort 9000 -exec
-239:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/telegraf/pinpoint-telegraf.conf > telegraf.conf &&
+
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker-compose -f docker-compose.yml -f docker-compose-metric.yml up -d
+Creating network "pinpoint-docker_default" with the default driver
+Creating volume "pinpoint-docker_pinot-zoo-data" with default driver
+Creating volume "pinpoint-docker_pinot-zoo-datalog" with default driver
+Creating volume "pinpoint-docker_pinot-server-volume" with default driver
+Creating volume "pinpoint-docker_pinot-controller-volume" with default driver
+Creating volume "pinpoint-docker_pinot-kafka-volume" with default driver
+pinpoint-docker_zoo1_1 is up-to-date
+pinpoint-docker_zoo3_1 is up-to-date
+Starting pinpoint-mysql ...
+pinpoint-docker_zoo2_1 is up-to-date
+pinpoint-docker_redis_1 is up-to-date
+Starting pinpoint-mysql               ... done
+Recreating pinpoint-hbase ...
+Recreating pinpoint-flink-taskmanager ...
+Creating pinpoint-docker_pinot-init_1 ... done
+Creating pinpoint-docker_pinot-zoo_1  ... done
+Creating pinpoint-docker_pinot-controller_1 ...
+Creating pinpoint-docker_pinpoint-kafka_1   ...
+Creating pinpoint-docker_pinot-controller_1 ... done
+Creating pinpoint-docker_pinpoint-kafka_1   ... done
+Creating pinpoint-docker_pinot-broker-0_1      ... done
+Creating pinpoint-docker_pinpoint-kafka-init_1 ... done
+Creating pinpoint-docker_pinot-server-0_1      ... done
+
+ERROR: for pinpoint-hbase  'ContainerConfig'
+
+ERROR: for taskmanager  'ContainerConfig'
+
+ERROR: for pinpoint-hbase  'ContainerConfig'
+Traceback (most recent call last):
+  File "/usr/bin/docker-compose", line 33, in <module>
+    sys.exit(load_entry_point('docker-compose==1.29.2', 'console_scripts', 'docker-compose')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 81, in main
+    command_func()
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 203, in perform_command
+    handler(command, command_options)
+  File "/usr/lib/python3/dist-packages/compose/metrics/decorator.py", line 18, in wrapper
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1186, in up
+    to_attach = up(False)
+                ^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1166, in up
+    return self.project.up(
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/project.py", line 697, in up
+    results, errors = parallel.parallel_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
+    raise error_to_reraise
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
+    result = func(obj)
+             ^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/project.py", line 679, in do
+    return service.execute_convergence_plan(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 579, in execute_convergence_plan
+    return self._execute_convergence_recreate(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 499, in _execute_convergence_recreate
+    containers, errors = parallel_execute(
+                         ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
+    raise error_to_reraise
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
+    result = func(obj)
+             ^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 494, in recreate
+    return self.recreate_container(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 612, in recreate_container
+    new_container = self.create_container(
+                    ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 330, in create_container
+    container_options = self._get_container_create_options(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 921, in _get_container_create_options
+    container_options, override_options = self._build_container_volume_options(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 960, in _build_container_volume_options
+    binds, affinity = merge_volume_bindings(
+                      ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 1548, in merge_volume_bindings
+    old_volumes, old_mounts = get_container_data_volumes(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 1579, in get_container_data_volumes
+    container.image_config['ContainerConfig'].get('Volumes') or {}
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+KeyError: 'ContainerConfig'
