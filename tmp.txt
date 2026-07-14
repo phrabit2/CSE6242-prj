@@ -1,0 +1,23 @@
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ grep -nE 'curl|for |basename|AddTable|schemaFile|tableConfigFile|\*\.json|ls ' docker-compose-metric.yml.bak
+184:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/uristat/uristat-common/src/main/pinot/pinot-uriStat-realtime-table.json > uriStatTable.json &&
+185:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/uristat/uristat-common/src/main/pinot/pinot-uriStat-schema.json > uriStatSchema.json &&
+187:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-tag-realtime-table.json > tagTable.json &&
+188:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-tag-schema.json > tagSchema.json &&
+189:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-double-realtime-table.json > doubleTable.json &&
+190:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-double-schema.json > doubleSchema.json &&
+191:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-dataType-realtime-table.json > dataTypeTable.json &&
+192:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/pinot/pinot-dataType-schema.json > dataTypeSchema.json &&
+194:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/exceptiontrace/exceptiontrace-common/src/main/pinot/pinot-exceptionTrace-offline-table.json > exceptionTraceTable.json &&
+195:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/exceptiontrace/exceptiontrace-common/src/main/pinot/pinot-exceptionTrace-schema.json > exceptionTraceSchema.json &&
+197:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-agent-realtime-table.json > inspectorAgentTable.json &&
+198:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-agent-schema.json > inspectorAgentSchema.json &&
+199:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-application-realtime-table.json > inspectorApplicationTable.json &&
+200:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/inspector-module/inspector-collector/src/main/pinot/pinot-inspector-stat-application-schema.json > inspectorApplicationSchema.json &&
+205:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile uriStatSchema.json -tableConfigFile uriStatTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
+206:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile tagSchema.json -tableConfigFile tagTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
+207:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile doubleSchema.json -tableConfigFile doubleTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
+208:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile dataTypeSchema.json -tableConfigFile dataTypeTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
+209:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile exceptionTraceSchema.json -tableConfigFile exceptionTraceTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
+210:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile inspectorAgentSchema.json -tableConfigFile inspectorAgentTable.json -controllerHost pinot-controller -controllerPort 9000 -exec &&
+211:      /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile inspectorApplicationSchema.json -tableConfigFile inspectorApplicationTable.json -controllerHost pinot-controller -controllerPort 9000 -exec
+239:      curl https://raw.githubusercontent.com/pinpoint-apm/pinpoint/${PINPOINT_VERSION}/metric-module/metric/src/main/telegraf/pinpoint-telegraf.conf > telegraf.conf &&
