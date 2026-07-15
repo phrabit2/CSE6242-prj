@@ -1,28 +1,7 @@
-wcsadmin@scp-wcspwas1:/etc/systemd/system$ sudo systemctl status wcs
-● wcs.service - WCS Application (Spring Boot Embedded Tomcat)
-     Loaded: loaded (/etc/systemd/system/wcs.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2026-07-15 14:26:07 KST; 5s ago
-   Main PID: 73451 (java)
-      Tasks: 77 (limit: 149301)
-     Memory: 688.3M (peak: 688.5M)
-        CPU: 21.460s
-     CGroup: /system.slice/wcs.service
-             └─73451 /usr/bin/java -javaagent:/app/pinpoint-agent-wcs/pinpoint-bootstrap-3.1.0.jar -Dpinpoint.agentId=wcs-backend-71 -Dpinpoint.applicationName=wcs-backend -Dpinpoint.config=/app/pinpoint-a>
 
-Jul 15 14:26:09 scp-wcspwas1 wcs[73451]: 07-15 14:26:09.462 [nfoSender-Timer] WARN  c.n.p.p.AgentInfoSender                  -- Failed to send agentInfo={objectName='ObjectNameV1{agentId='wcs-backend-71', >
-Jul 15 14:26:09 scp-wcspwas1 wcs[73451]: 07-15 14:26:09.474 [nfoSender-Timer] WARN  c.n.p.p.AgentInfoSender                  -- Failed to send agentInfo={objectName='ObjectNameV1{agentId='wcs-backend-71', >
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]: 14:26:10,410 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]:   .   ____          _            __ _ _
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]:  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]: ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]:  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]:   '  |____| .__|_| |_|_| |_\__, | / / / /
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]:  =========|_|==============|___/=/_/_/_/
-Jul 15 14:26:10 scp-wcspwas1 wcs[73451]:  :: Spring Boot ::               (v3.5.14)
-wcsadmin@scp-wcspwas1:/etc/systemd/system$ ps -ef | grep java | grep -v grep
-wcsadmin   73451       1 99 14:26 ?        00:01:03 /usr/bin/java -javaagent:/app/pinpoint-agent-wcs/pinpoint-bootstrap-3.1.0.jar -Dpinpoint.agentId=wcs-backend-71 -Dpinpoint.applicationName=wcs-backend -Dpinpoint.config=/app/pinpoint-agent-wcs/pinpoint-root.config -Dserver.port=8080 -jar /app/wcs/backend/current_wcs.jar --spring.profiles.active=prd
-wcsadmin@scp-wcspwas1:/etc/systemd/system$ nc -zv 10.194.178.88 9991
-Connection to 10.194.178.88 9991 port [tcp/*] succeeded!
-wcsadmin@scp-wcspwas1:/etc/systemd/system$ tail -f /app/pinpoint-agent-wcs/log/pinpoint-agent.log
-tail: cannot open '/app/pinpoint-agent-wcs/log/pinpoint-agent.log' for reading: No such file or directory
-tail: no files remaining
+Jul 15 14:33:04 scp-wcspwas1 wcs[77027]: 07-15 14:33:04.057 INFO  PinpointStarter                     : pinpoint agent started normally.
+Jul 15 14:33:04 scp-wcspwas1 wcs[77027]: 07-15 14:33:04.132 [nfoSender-Timer] WARN  c.n.p.p.AgentInfoSender                  -- Failed to send agentInfo={objectName='ObjectNameV1{agentId='wcs-backend-71', agentName='wcs-backend-71', applicationName='wcs-backend'}', isContainer=false, startTime=1784093582413, pid=77027, machineName='scp-wcspwas1', hostIp='10.194.178.71', serverType=SPRING_BOOT, jvmVersion='21.0.10', agentVersion='3.1.0', clusterNamespace=''}. request unsuccessful, response=Internal Server Error
+Jul 15 14:33:04 scp-wcspwas1 wcs[77027]: 07-15 14:33:04.147 [nfoSender-Timer] WARN  c.n.p.p.AgentInfoSender                  -- Failed to send agentInfo={objectName='ObjectNameV1{agentId='wcs-backend-71', agentName='wcs-backend-71', applicationName='wcs-backend'}', isContainer=false, startTime=1784093582413, pid=77027, machineName='scp-wcspwas1', hostIp='10.194.178.71', serverType=SPRING_BOOT, jvmVersion='21.0.10', agentVersion='3.1.0', clusterNamespace=''}. request unsuccessful, response=Internal Server Error
+Jul 15 14:33:09 scp-wcspwas1 wcs[77027]: 07-15 14:33:09.722 [nfoSender-Timer] WARN  c.n.p.p.AgentInfoSender                  -- Failed to send agentInfo={objectName='ObjectNameV1{agentId='wcs-backend-71', agentName='wcs-backend-71', applicationName='wcs-backend'}', isContainer=false, startTime=1784093582413, pid=77027, machineName='scp-wcspwas1', hostIp='10.194.178.71', serverType=SPRING_BOOT, jvmVersion='21.0.10', agentVersion='3.1.0', clusterNamespace=''}. request unsuccessful, response=Internal Server Error
+Jul 15 14:33:09 scp-wcspwas1 wcs[77027]: 07-15 14:33:09.743 [nfoSender-Timer] WARN  c.n.p.p.AgentInfoSender                  -- Failed to send agentInfo={objectName='ObjectNameV1{agentId='wcs-backend-71', agentName='wcs-backend-71', applicationName='wcs-backend'}', isContainer=false, startTime=1784093582413, pid=77027, machineName='scp-wcspwas1', hostIp='10.194.178.71', serverType=SPRING_BOOT, jvmVersion='21.0.10', agentVersion='3.1.0', clusterNamespace=''}. request unsuccessful, response=Internal Server Error
+Jul 15 14:33:11 scp-wcspwas1 wcs[77027]: 07-15 14:33:11.373 [nfoSender-Timer] WARN  c.n.p.p.AgentInfoSender                  -- Failed to send agentInfo={objectName='ObjectNameV1{agentId='wcs-backend-71', agentName='wcs-backend-71', applicationName='wcs-backend'}', isContainer=false, startTime=1784093582413, pid=77027, machineName='scp-wcspwas1', hostIp='10.194.178.71', serverType=SPRING_BOOT, jvmVersion='21.0.10', agentVersion='3.1.0', clusterNamespace=''}. request unsuccessful, response=Internal Server Error
