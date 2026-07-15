@@ -1,4 +1,33 @@
-
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml ps | grep web
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
-pinpoint-web                                      pinpointdocker/pinpoint-web:latest-metric         "java -cp @/app/jib-…"   pinpoint-web          17 hours ago   Up 17 hours    0.0.0.0:8080->8080/tcp, 0.0.0.0:9997->9997/tcp
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ ssh -L 18080:localhost:8080 \
+> -o HostKeyAlgorithms=+ssh-rsa \
+> -o PubkeyAcceptedKeyTypes=+ssh-rsa \
+> -o StrictHostKeyChecking=no \
+> -vv wcsadmin@10.194.178.88
+OpenSSH_9.6p1 Ubuntu-3ubuntu13.5, OpenSSL 3.0.13 30 Jan 2024
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 19: include /etc/ssh/ssh_config.d/*.conf matched no files
+debug1: /etc/ssh/ssh_config line 21: Applying options for *
+debug2: resolve_canonicalize: hostname 10.194.178.88 is address
+debug1: Connecting to 10.194.178.88 [10.194.178.88] port 22.
+debug1: Connection established.
+debug1: identity file /home/wcsadmin/.ssh/id_rsa type -1
+debug1: identity file /home/wcsadmin/.ssh/id_rsa-cert type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ecdsa type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ecdsa-cert type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ecdsa_sk type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ecdsa_sk-cert type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ed25519 type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ed25519-cert type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ed25519_sk type -1
+debug1: identity file /home/wcsadmin/.ssh/id_ed25519_sk-cert type -1
+debug1: identity file /home/wcsadmin/.ssh/id_xmss type -1
+debug1: identity file /home/wcsadmin/.ssh/id_xmss-cert type -1
+debug1: identity file /home/wcsadmin/.ssh/id_dsa type -1
+debug1: identity file /home/wcsadmin/.ssh/id_dsa-cert type -1
+debug1: Local version string SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5
+kex_exchange_identification: read: Connection reset by peer
+Connection reset by 10.194.178.88 port 22
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ ~C
+~C: command not found
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docke
