@@ -1,66 +1,13 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec -i pinpoint-docker-zoo1-1 zkCli.sh deleteall /hbase
-Connecting to localhost:2181
-2026-07-15 06:01:14,060 [myid:] - INFO  [main:Environment@100] - Client environment:zookeeper.version=3.4.13-2d71af4dbe22557fda74f9a9b4309b15a7487f03, built on 06/29/2018 04:05 GMT
-2026-07-15 06:01:14,064 [myid:] - INFO  [main:Environment@100] - Client environment:host.name=zoo1
-2026-07-15 06:01:14,064 [myid:] - INFO  [main:Environment@100] - Client environment:java.version=1.8.0_201
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:java.vendor=Oracle Corporation
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:java.home=/usr/lib/jvm/java-1.8-openjdk/jre
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:java.class.path=/zookeeper-3.4.13/bin/../build/classes:/zookeeper-3.4.13/bin/../build/lib/*.jar:/zookeeper-3.4.13/bin/../lib/slf4j-log4j12-1.7.25.jar:/zookeeper-3.4.13/bin/../lib/slf4j-api-1.7.25.jar:/zookeeper-3.4.13/bin/../lib/netty-3.10.6.Final.jar:/zookeeper-3.4.13/bin/../lib/log4j-1.2.17.jar:/zookeeper-3.4.13/bin/../lib/jline-0.9.94.jar:/zookeeper-3.4.13/bin/../lib/audience-annotations-0.5.0.jar:/zookeeper-3.4.13/bin/../zookeeper-3.4.13.jar:/zookeeper-3.4.13/bin/../src/java/lib/*.jar:/conf:
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:java.library.path=/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64:/usr/lib/jvm/java-1.8-openjdk/jre/../lib/amd64:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:java.io.tmpdir=/tmp
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:java.compiler=<NA>
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:os.name=Linux
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:os.arch=amd64
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:os.version=6.8.0-117-generic
-2026-07-15 06:01:14,066 [myid:] - INFO  [main:Environment@100] - Client environment:user.name=root
-2026-07-15 06:01:14,067 [myid:] - INFO  [main:Environment@100] - Client environment:user.home=/root
-2026-07-15 06:01:14,067 [myid:] - INFO  [main:Environment@100] - Client environment:user.dir=/zookeeper-3.4.13
-2026-07-15 06:01:14,068 [myid:] - INFO  [main:ZooKeeper@442] - Initiating client connection, connectString=localhost:2181 sessionTimeout=30000 watcher=org.apache.zookeeper.ZooKeeperMain$MyWatcher@5ce65a89
-ZooKeeper -server host:port cmd args
-        stat path [watch]
-        set path data [version]
-        ls path [watch]
-        delquota [-n|-b] path
-        ls2 path [watch]
-        setAcl path acl
-        setquota -n|-b val path
-        history
-        redo cmdno
-        printwatches on|off
-        delete path [version]
-        sync path
-        listquota path
-        rmr path
-        get path [watch]
-        create [-s] [-e] path data acl
-        addauth scheme auth
-        quit
-        getAcl path
-        close
-        connect host:port
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec -i pinpoint-docker-zoo1-1 zkCli.sh ls /hbase
-Connecting to localhost:2181
-2026-07-15 06:01:42,533 [myid:] - INFO  [main:Environment@100] - Client environment:zookeeper.version=3.4.13-2d71af4dbe22557fda74f9a9b4309b15a7487f03, built on 06/29/2018 04:05 GMT
-2026-07-15 06:01:42,536 [myid:] - INFO  [main:Environment@100] - Client environment:host.name=zoo1
-2026-07-15 06:01:42,536 [myid:] - INFO  [main:Environment@100] - Client environment:java.version=1.8.0_201
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:java.vendor=Oracle Corporation
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:java.home=/usr/lib/jvm/java-1.8-openjdk/jre
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:java.class.path=/zookeeper-3.4.13/bin/../build/classes:/zookeeper-3.4.13/bin/../build/lib/*.jar:/zookeeper-3.4.13/bin/../lib/slf4j-log4j12-1.7.25.jar:/zookeeper-3.4.13/bin/../lib/slf4j-api-1.7.25.jar:/zookeeper-3.4.13/bin/../lib/netty-3.10.6.Final.jar:/zookeeper-3.4.13/bin/../lib/log4j-1.2.17.jar:/zookeeper-3.4.13/bin/../lib/jline-0.9.94.jar:/zookeeper-3.4.13/bin/../lib/audience-annotations-0.5.0.jar:/zookeeper-3.4.13/bin/../zookeeper-3.4.13.jar:/zookeeper-3.4.13/bin/../src/java/lib/*.jar:/conf:
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:java.library.path=/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64:/usr/lib/jvm/java-1.8-openjdk/jre/../lib/amd64:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:java.io.tmpdir=/tmp
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:java.compiler=<NA>
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:os.name=Linux
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:os.arch=amd64
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:os.version=6.8.0-117-generic
-2026-07-15 06:01:42,538 [myid:] - INFO  [main:Environment@100] - Client environment:user.name=root
-2026-07-15 06:01:42,539 [myid:] - INFO  [main:Environment@100] - Client environment:user.home=/root
-2026-07-15 06:01:42,539 [myid:] - INFO  [main:Environment@100] - Client environment:user.dir=/zookeeper-3.4.13
-2026-07-15 06:01:42,539 [myid:] - INFO  [main:ZooKeeper@442] - Initiating client connection, connectString=localhost:2181 sessionTimeout=30000 watcher=org.apache.zookeeper.ZooKeeperMain$MyWatcher@5ce65a89
-2026-07-15 06:01:42,557 [myid:] - INFO  [main-SendThread(localhost:2181):ClientCnxn$SendThread@1029] - Opening socket connection to server localhost/127.0.0.1:2181. Will not attempt to authenticate using SASL (unknown error)
-2026-07-15 06:01:42,611 [myid:] - INFO  [main-SendThread(localhost:2181):ClientCnxn$SendThread@879] - Socket connection established to localhost/127.0.0.1:2181, initiating session
-2026-07-15 06:01:42,616 [myid:] - INFO  [main-SendThread(localhost:2181):ClientCnxn$SendThread@1303] - Session establishment complete on server localhost/127.0.0.1:2181, sessionid = 0x1001f7bd4ab288a, negotiated timeout = 30000
-
-WATCHER::
-
-WatchedEvent state:SyncConnected type:None path:null
-[meta-region-server, rs, splitWAL, backup-masters, flush-table-proc, master-maintenance, online-snapshot, switch, running, draining, hbaseid, table]
+wcsadmin@scp-wcspmq1:~$ sudo docker exec pinpoint-hbase find / -name 'hbase-create*.hbase' 2>/dev/null
+/opt/hbase/hbase-create.hbase
+wcsadmin@scp-wcspmq1:~$ sudo docker exec -i pinpoint-hbase /opt/hbase/hbase-2.2.6/bin/hbase shell <<< "list"
+2026-07-15 06:41:55,468 WARN  [main] util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+HBase Shell
+Use "help" to get list of supported commands.
+Use "exit" to quit this interactive shell.
+For Reference, please visit: http://hbase.apache.org/2.0/book.html#shell
+Version 2.2.6, r88c9a386176e2c2b5fd9915d0e9d3ce17d0e456e, Tue Sep 15 17:36:14 CST 2020
+Took 0.0021 seconds
+stty: 'standard input': Inappropriate ioctl for device
+list
+TABLE
