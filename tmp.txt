@@ -1,15 +1,31 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
-[+] up 8/11
- ✔ Contain... Recreated                                                                                                                                                                                   0.8s
- ✔ Contain... Recreated                                                                                                                                                                                   0.3s
- ✔ Contain... Recreated                                                                                                                                                                                   0.1s
- ✔ Contain... Recreated                                                                                                                                                                                   0.8s
- ✔ Contain... Recreated                                                                                                                                                                                   0.7s
- ✔ Contain... Recreated                                                                                                                                                                                   0.2s
- ✔ Contain... Recreated                                                                                                                                                                                   0.8s
- ⠋ Contain... Recreate                                                                                                                                                                                    0.0s
- ✘ Contain... Error response from daemon: Conflict. The container name "/c9848771dc33_pinpoint-hbase" is already in use by container "c9848771dc3354986c9d7b0805b2a570546b7f2d1d229513dd573d3410b1e39f". You have to remove (or rename) that container to be able to reuse that name. 0.0s                                                                                                                              0.0s
- ⠋ Contain... Recreate                                                                                                                                                                                    0.0s
- ⠋ Contain... Recreate                                                                                                                                                                                    0.0s
-Error response from daemon: Conflict. The container name "/c9848771dc33_pinpoint-hbase" is already in use by container "c9848771dc3354986c9d7b0805b2a570546b7f2d1d229513dd573d3410b1e39f". You have to remove (or rename) that container to be able to reuse that name.
+wcsadmin@scp-wcspmq1:/data/pinpoint$ sudo docker logs pinpoint-web --tail 30
+        at com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:752)
+        at com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:731)
+        at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+        at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: com.mysql.cj.exceptions.CJCommunicationsException: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+        at jdk.internal.reflect.GeneratedConstructorAccessor101.newInstance(Unknown Source)
+        at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(Unknown Source)
+        at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Unknown Source)
+        at java.base/java.lang.reflect.Constructor.newInstance(Unknown Source)
+        at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:52)
+        at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:95)
+        at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:140)
+        at com.mysql.cj.exceptions.ExceptionFactory.createCommunicationsException(ExceptionFactory.java:156)
+        at com.mysql.cj.protocol.a.NativeSocketConnection.connect(NativeSocketConnection.java:79)
+        at com.mysql.cj.NativeSession.connect(NativeSession.java:139)
+        at com.mysql.cj.jdbc.ConnectionImpl.connectOneTryOnly(ConnectionImpl.java:980)
+        at com.mysql.cj.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:851)
+        ... 13 more
+Caused by: java.net.UnknownHostException: pinpoint-mysql
+        at java.base/java.net.InetAddress$CachedAddresses.get(Unknown Source)
+        at java.base/java.net.InetAddress.getAllByName0(Unknown Source)
+        at java.base/java.net.InetAddress.getAllByName(Unknown Source)
+        at java.base/java.net.InetAddress.getAllByName(Unknown Source)
+        at com.mysql.cj.protocol.StandardSocketFactory.connect(StandardSocketFactory.java:121)
+        at com.mysql.cj.protocol.a.NativeSocketConnection.connect(NativeSocketConnection.java:53)
+        ... 16 more
