@@ -1,16 +1,4 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker logs pinpoint-web 2>&1 | grep -E 'Started|Tomcat started|APPLICATION FAILED'
-07-14 09:17:31.821 [           main] INFO  w.r.RedisActiveThreadCountHandlerAdaptor -- Started
-07-14 09:17:33.157 [           main] INFO  o.s.b.w.e.t.TomcatWebServer              -- Tomcat started on port 8080 (http) with context path '/'
-07-14 09:17:33.345 [           main] INFO  o.s.b.w.e.t.TomcatWebServer              -- Tomcat started on port 8443 (http) with context path '/'
-07-14 09:17:33.362 [           main] INFO  c.n.p.w.s.m.PinpointWebStarter           -- Started PinpointWebStarter in 20.632 seconds (process running for 22.191)
-07-14 09:17:33.362 [           main] INFO  c.n.p.c.s.e.EnvironmentLoggingListener   -- applicationEvent:ApplicationStartedEvent
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ curl -I http://localhost:8080
-HTTP/1.1 200
-Vary: Origin
-Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
-Cache-Control: no-cache
-Last-Modified: Thu, 01 Jan 1970 00:00:01 GMT
-Accept-Ranges: bytes
-Content-Type: text/html;charset=ISO-8859-1
-Date: Wed, 15 Jul 2026 02:12:08 GMT
+
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml ps | grep web
+WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+pinpoint-web                                      pinpointdocker/pinpoint-web:latest-metric         "java -cp @/app/jib-…"   pinpoint-web          17 hours ago   Up 17 hours    0.0.0.0:8080->8080/tcp, 0.0.0.0:9997->9997/tcp
