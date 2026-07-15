@@ -1,36 +1,17 @@
-
-wcsadmin@scp-wcspmq1:~$ sudo docker exec pinpoint-hbase /opt/hbase/hbase-2.2.6/bin/hbase shell /opt/hbase/hbase-create.hbase
-2026-07-15 06:58:23,090 WARN  [main] util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-2026-07-15 06:58:23,867 WARN  [main] fs.FileSystem: Cannot load filesystem: java.util.ServiceConfigurationError: org.apache.hadoop.fs.FileSystem: Provider org.apache.hadoop.hdfs.web.WebHdfsFileSystem could not be instantiated
-2026-07-15 06:58:23,867 WARN  [main] fs.FileSystem: java.lang.NoClassDefFoundError: org/codehaus/jackson/map/ObjectMapper
-2026-07-15 06:58:23,867 WARN  [main] fs.FileSystem: java.lang.ClassNotFoundException: org.codehaus.jackson.map.ObjectMapper
-2026-07-15 06:58:23,868 WARN  [main] fs.FileSystem: Cannot load filesystem: java.util.ServiceConfigurationError: org.apache.hadoop.fs.FileSystem: Provider org.apache.hadoop.hdfs.web.SWebHdfsFileSystem could not be instantiated
-2026-07-15 06:58:23,868 WARN  [main] fs.FileSystem: java.lang.NoClassDefFoundError: org.apache.hadoop.hdfs.web.WebHdfsFileSystem
-
-ERROR: org.apache.hadoop.hbase.PleaseHoldException: Master is initializing
-        at org.apache.hadoop.hbase.master.HMaster.checkInitialized(HMaster.java:2826)
-        at org.apache.hadoop.hbase.master.HMaster.createTable(HMaster.java:2032)
-        at org.apache.hadoop.hbase.master.MasterRpcServices.createTable(MasterRpcServices.java:659)
-        at org.apache.hadoop.hbase.shaded.protobuf.generated.MasterProtos$MasterService$2.callBlockingMethod(MasterProtos.java)
-        at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:418)
-        at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:133)
-        at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:338)
-        at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:318)
-
-For usage try 'help "create"'
-
-Took 8.5642 seconds
-
-ERROR: org.apache.hadoop.hbase.PleaseHoldException: Master is initializing
-        at org.apache.hadoop.hbase.master.HMaster.checkInitialized(HMaster.java:2826)
-        at org.apache.hadoop.hbase.master.HMaster.createTable(HMaster.java:2032)
-        at org.apache.hadoop.hbase.master.MasterRpcServices.createTable(MasterRpcServices.java:659)
-        at org.apache.hadoop.hbase.shaded.protobuf.generated.MasterProtos$MasterService$2.callBlockingMethod(MasterProtos.java)
-        at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:418)
-        at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:133)
-        at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:338)
-        at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:318)
-
-For usage try 'help "create"'
-
-Took 8.1781 seconds
+wcsadmin@scp-wcspwas1:/app$ ls
+com  pinpoint-agent-com  pinpoint-agent-wcs  wcs
+wcsadmin@scp-wcspwas1:/app$ cd wcs
+wcsadmin@scp-wcspwas1:/app/wcs$ ls
+backend  deploy
+wcsadmin@scp-wcspwas1:/app/wcs$ cd deploy
+wcsadmin@scp-wcspwas1:/app/wcs/deploy$ ls
+backend
+wcsadmin@scp-wcspwas1:/app/wcs/deploy$ cd backend
+wcsadmin@scp-wcspwas1:/app/wcs/deploy/backend$ ls
+app_wcs_20260714_055724_b12_b833f55.jar  app_wcs_20260714_062835_b14_df0d1b8.jar  app_wcs_20260714_092024_b16_a02abc7.jar  history_wcs.log
+app_wcs_20260714_061602_b13_acb79bc.jar  app_wcs_20260714_085937_b15_414e496.jar  app_wcs_20260715_053037_b17_96a8569.jar
+wcsadmin@scp-wcspwas1:/app/wcs/deploy/backend$ cd ../
+wcsadmin@scp-wcspwas1:/app/wcs/deploy$ cd ../backend
+wcsadmin@scp-wcspwas1:/app/wcs/backend$ ls
+app_wcs_20260714_055724_b12_b833f55.jar  app_wcs_20260714_062835_b14_df0d1b8.jar  app_wcs_20260714_092024_b16_a02abc7.jar  current_wcs.jar
+app_wcs_20260714_061602_b13_acb79bc.jar  app_wcs_20260714_085937_b15_414e496.jar  app_wcs_20260715_053037_b17_96a8569.jar  logs
