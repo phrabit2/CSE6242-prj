@@ -1,31 +1,27 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint$ sudo docker logs pinpoint-web --tail 30
-        at com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:752)
-        at com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:731)
-        at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
-        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
-        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
-        at java.base/java.lang.Thread.run(Unknown Source)
-Caused by: com.mysql.cj.exceptions.CJCommunicationsException: Communications link failure
-
-The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
-        at jdk.internal.reflect.GeneratedConstructorAccessor101.newInstance(Unknown Source)
-        at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(Unknown Source)
-        at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Unknown Source)
-        at java.base/java.lang.reflect.Constructor.newInstance(Unknown Source)
-        at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:52)
-        at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:95)
-        at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:140)
-        at com.mysql.cj.exceptions.ExceptionFactory.createCommunicationsException(ExceptionFactory.java:156)
-        at com.mysql.cj.protocol.a.NativeSocketConnection.connect(NativeSocketConnection.java:79)
-        at com.mysql.cj.NativeSession.connect(NativeSession.java:139)
-        at com.mysql.cj.jdbc.ConnectionImpl.connectOneTryOnly(ConnectionImpl.java:980)
-        at com.mysql.cj.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:851)
-        ... 13 more
-Caused by: java.net.UnknownHostException: pinpoint-mysql
-        at java.base/java.net.InetAddress$CachedAddresses.get(Unknown Source)
-        at java.base/java.net.InetAddress.getAllByName0(Unknown Source)
-        at java.base/java.net.InetAddress.getAllByName(Unknown Source)
-        at java.base/java.net.InetAddress.getAllByName(Unknown Source)
-        at com.mysql.cj.protocol.StandardSocketFactory.connect(StandardSocketFactory.java:121)
-        at com.mysql.cj.protocol.a.NativeSocketConnection.connect(NativeSocketConnection.java:53)
-        ... 16 more
+wcsadmin@scp-wcspmq1:~$ sudo docker ps -a --format '{{.Names}}' | grep -i pinpoint | sort
+[sudo] password for wcsadmin:
+a972c1b1edb7_pinpoint-collector
+b5bdc5f9b840_pinpoint-docker-pinpoint-kafka-1
+b6014b1f0498_pinpoint-docker-pinot-controller-1
+pinpoint-agent
+pinpoint-batch
+pinpoint-docker-pinot-broker-0-1
+pinpoint-docker-pinot-init-1
+pinpoint-docker-pinot-server-0-1
+pinpoint-docker-pinot-zoo-1
+pinpoint-docker-pinpoint-kafka-init-1
+pinpoint-docker-redis-1
+pinpoint-docker-telegraf-1
+pinpoint-docker-zoo1-1
+pinpoint-docker-zoo2-1
+pinpoint-docker-zoo3-1
+pinpoint-flink-jobmanager
+pinpoint-flink-taskmanager
+pinpoint-hbase
+pinpoint-mysql
+pinpoint-quickstart
+pinpoint-web
+wcsadmin@scp-wcspmq1:~$ sudo docker inspect pinpoint-mysql --format '{{json .NetworkSettings.Networks}}'
+{"pinpoint-docker_pinpoint":{"IPAMConfig":null,"Links":null,"Aliases":["pinpoint-mysql","pinpoint-mysql"],"DriverOpts":null,"GwPriority":0,"NetworkID":"4829f3dc32de6b2c8eb42fb03c94b1eb12bee0f8e2478f3f392400f2e58e2df8","EndpointID":"","Gateway":"","IPAddress":"","MacAddress":"","IPPrefixLen":0,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":["pinpoint-mysql","ce3b5a385eb2"]}}
+wcsadmin@scp-wcspmq1:~$ sudo docker inspect pinpoint-web --format '{{json .NetworkSettings.Networks}}'
+{"pinpoint-docker_pinpoint":{"IPAMConfig":null,"Links":["pinpoint-mysql:pinpoint-mysql","pinpoint-mysql:pinpoint-mysql-1","pinpoint-mysql:pinpoint-docker-pinpoint-mysql-1"],"Aliases":["pinpoint-web","pinpoint-web"],"DriverOpts":null,"GwPriority":0,"NetworkID":"4829f3dc32de6b2c8eb42fb03c94b1eb12bee0f8e2478f3f392400f2e58e2df8","EndpointID":"a0a13fb6bd8a584357ae7df7e5900152bac7e0aa36b7144197058d79a5342e00","Gateway":"172.24.0.1","IPAddress":"172.24.0.16","MacAddress":"e2:15:80:e4:84:89","IPPrefixLen":27,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":["pinpoint-web","2e304d950794"]}}
