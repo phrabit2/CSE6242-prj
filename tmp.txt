@@ -1,27 +1,16 @@
-wcsadmin@scp-wcspmq1:~$ sudo docker ps -a --format '{{.Names}}' | grep -i pinpoint | sort
-[sudo] password for wcsadmin:
-a972c1b1edb7_pinpoint-collector
-b5bdc5f9b840_pinpoint-docker-pinpoint-kafka-1
-b6014b1f0498_pinpoint-docker-pinot-controller-1
-pinpoint-agent
-pinpoint-batch
-pinpoint-docker-pinot-broker-0-1
-pinpoint-docker-pinot-init-1
-pinpoint-docker-pinot-server-0-1
-pinpoint-docker-pinot-zoo-1
-pinpoint-docker-pinpoint-kafka-init-1
-pinpoint-docker-redis-1
-pinpoint-docker-telegraf-1
-pinpoint-docker-zoo1-1
-pinpoint-docker-zoo2-1
-pinpoint-docker-zoo3-1
-pinpoint-flink-jobmanager
-pinpoint-flink-taskmanager
-pinpoint-hbase
-pinpoint-mysql
-pinpoint-quickstart
-pinpoint-web
-wcsadmin@scp-wcspmq1:~$ sudo docker inspect pinpoint-mysql --format '{{json .NetworkSettings.Networks}}'
-{"pinpoint-docker_pinpoint":{"IPAMConfig":null,"Links":null,"Aliases":["pinpoint-mysql","pinpoint-mysql"],"DriverOpts":null,"GwPriority":0,"NetworkID":"4829f3dc32de6b2c8eb42fb03c94b1eb12bee0f8e2478f3f392400f2e58e2df8","EndpointID":"","Gateway":"","IPAddress":"","MacAddress":"","IPPrefixLen":0,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":["pinpoint-mysql","ce3b5a385eb2"]}}
-wcsadmin@scp-wcspmq1:~$ sudo docker inspect pinpoint-web --format '{{json .NetworkSettings.Networks}}'
-{"pinpoint-docker_pinpoint":{"IPAMConfig":null,"Links":["pinpoint-mysql:pinpoint-mysql","pinpoint-mysql:pinpoint-mysql-1","pinpoint-mysql:pinpoint-docker-pinpoint-mysql-1"],"Aliases":["pinpoint-web","pinpoint-web"],"DriverOpts":null,"GwPriority":0,"NetworkID":"4829f3dc32de6b2c8eb42fb03c94b1eb12bee0f8e2478f3f392400f2e58e2df8","EndpointID":"a0a13fb6bd8a584357ae7df7e5900152bac7e0aa36b7144197058d79a5342e00","Gateway":"172.24.0.1","IPAddress":"172.24.0.16","MacAddress":"e2:15:80:e4:84:89","IPPrefixLen":27,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":["pinpoint-web","2e304d950794"]}}
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker logs pinpoint-web 2>&1 | grep -E 'Started|Tomcat started|APPLICATION FAILED'
+07-14 09:17:31.821 [           main] INFO  w.r.RedisActiveThreadCountHandlerAdaptor -- Started
+07-14 09:17:33.157 [           main] INFO  o.s.b.w.e.t.TomcatWebServer              -- Tomcat started on port 8080 (http) with context path '/'
+07-14 09:17:33.345 [           main] INFO  o.s.b.w.e.t.TomcatWebServer              -- Tomcat started on port 8443 (http) with context path '/'
+07-14 09:17:33.362 [           main] INFO  c.n.p.w.s.m.PinpointWebStarter           -- Started PinpointWebStarter in 20.632 seconds (process running for 22.191)
+07-14 09:17:33.362 [           main] INFO  c.n.p.c.s.e.EnvironmentLoggingListener   -- applicationEvent:ApplicationStartedEvent
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ curl -I http://localhost:8080
+HTTP/1.1 200
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Cache-Control: no-cache
+Last-Modified: Thu, 01 Jan 1970 00:00:01 GMT
+Accept-Ranges: bytes
+Content-Type: text/html;charset=ISO-8859-1
+Date: Wed, 15 Jul 2026 02:12:08 GMT
