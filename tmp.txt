@@ -1,52 +1,410 @@
-wcsadmin@scp-wcspwas1:/app/wcs/backend$ ls -l current_wcs.jar
-lrwxrwxrwx 1 wcsadmin users 56 Jul 15 17:03 current_wcs.jar -> /app/wcs/backend/app_wcs_20260714_085937_b15_414e496.jar
-wcsadmin@scp-wcspwas1:/app/wcs/backend$ unzip -l current_wcs.jar | grep -iE 'micrometer|actuator'
-    76505  2023-12-17 10:15   BOOT-INF/lib/resilience4j-micrometer-2.2.0.jar
-   842200  2026-04-23 13:44   BOOT-INF/lib/spring-boot-actuator-autoconfigure-3.5.14.jar
-   707482  2026-04-23 13:44   BOOT-INF/lib/spring-boot-actuator-3.5.14.jar
-    76266  2026-04-13 12:33   BOOT-INF/lib/micrometer-observation-1.15.11.jar
-    49154  2026-04-13 12:33   BOOT-INF/lib/micrometer-commons-1.15.11.jar
-    32799  2026-04-13 12:33   BOOT-INF/lib/micrometer-jakarta9-1.15.11.jar
-   910984  2026-06-08 06:41   BOOT-INF/lib/micrometer-core-1.16.6.jar
-wcsadmin@scp-wcspwas1:/app/wcs/backend$ ps -ef | grep java | grep wcs
-wcsadmin   91035       1 88 17:03 ?        00:01:01 /usr/bin/java -javaagent:/app/pinpoint-agent-wcs/pinpoint-bootstrap-3.1.0.jar -Dpinpoint.agentId=wcs-backend-71 -Dpinpoint.applicationName=wcs-backend -Dpinpoint.config=/app/pinpoint-agent-wcs/pinpoint-root.config -Dserver.port=8080 -jar /app/wcs/backend/current_wcs.jar --spring.profiles.active=prd
-wcsadmin   92142   85673  0 17:04 pts/0    00:00:00 grep --color=auto java
-wcsadmin@scp-wcspwas1:/app/wcs/backend$ sudo systemctl cat wcs.service
-[sudo] password for wcsadmin:
-# /etc/systemd/system/wcs.service
-[Unit]
-Description=WCS Application (Spring Boot Embedded Tomcat)
-After=network.target
+@Library(['cicdpaas@adpaas', 'moffice-library@master', 'fccm-library@main', 'dx-jenkins-pipeline-library@main']) _
 
-[Service]
-Type=simple
-User=wcsadmin
-Group=wcsadmin
+pipeline {
+    agent {
+        label  'DEFAULT'
+    }
 
-# 애플리케이션 경로
-WorkingDirectory=/app/wcs/backend
-#ExecStart=java -Dserver.port=8080 -jar /app/wcs/backend/current_wcs.jar --spring.profiles.active=prd
-ExecStart=/usr/bin/java -javaagent:/app/pinpoint-agent-wcs/pinpoint-bootstrap-3.1.0.jar -Dpinpoint.agentId=wcs-backend-71 -Dpinpoint.applicationName=wcs-backend -Dpinpoint.config=/app/pinpoint-agent-wcs/pi>
+    tools {
+        jdk 'openJDK21'
+        maven 'maven'
+    }
 
-# 재시작 정책
-Restart=on-failure
-RestartSec=10
+    environment {
+        PROJECT_ID = 'glwcs'
 
-# 로그
-StandardOutput=journal
-StandardError=journal
-SyslogIdentifier=wcs
+        // Git Credential
+        GIT_CREDENTIAL_ID = 'dx_26s0032_glwcs'
 
-# 환경변수
-#Environment="JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64"
-#Environment="JRE_HOME=/usr/lib/jvm/java-21-openjdk-amd64"
-Environment="SPRING_PROFILES_ACTIVE=prd"
-Environment="JASYPT_ENCRYPTOR_PASSWORD=wcs_jasypt_secret"
-Environment="REALGRID_LICENSE_KEY=upVcPE+wPOmtLjqyBIh9RkM/nBOseBrflwxYpzGZyYnnEaStU+QCRcTJ+wWtu85+Rh6tCnyYEIR1bFWdZ5kWEQ7n7/ElITcuX4Dd2arc8Rdkntz2waMmjNVKB8L2b1xoCJQIMEyqc4IwUxhUskFVWZMVWpaY093J"
+        // Build Output
+        BACKEND_ARTIFACT = 'wcs-release-0.0.1-SNAPSHOT.jar'
 
-# 종료 타임아웃
-TimeoutStartSec=120
-TimeoutStopSec=30
+        // App / Service Name
+        APP_NAME = 'wcs'
+        SERVICE_NAME = 'wcs'
 
-[Install]
-WantedBy=multi-user.target
+        // Maven
+        MAVEN_POM = 'pom_jar.xml'
+
+        // Remote Server List (배포 대상 서버 목록)
+        SSH_HOSTS = '10.194.178.71 10.194.178.72'
+
+        // Remote Server Paths
+        REMOTE_BASE = '/app/wcs'
+        REMOTE_DEPLOY_DIR = "${REMOTE_BASE}/deploy/backend"
+        REMOTE_HOME_DIR = "${REMOTE_BASE}/backend"
+
+        // App별 배포 이력 로그 (같은 서버에 여러 app이 존재할 수 있음)
+        HISTORY_LOG = "${REMOTE_DEPLOY_DIR}/history_${APP_NAME}.log"
+
+        // 심볼릭 링크명
+        SYMLINK_NAME = "current_${APP_NAME}.jar"
+    }
+
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Git 브랜치')
+        choice(name: 'BUILD_ENV', choices: ['prd'], description: '빌드 환경')
+        booleanParam(name: 'DEPLOY', defaultValue: true, description: '빌드 후 배포 수행')
+        booleanParam(name: 'TEST_CONNECTIVITY', defaultValue: false, description: '방화벽/네트워크 연결 테스트만 실행 (SSH Port 22)')
+    }
+
+    stages {
+
+        // ============================================
+        // Network Connectivity Test
+        // ============================================
+        stage('Connectivity Test') {
+            when {
+                expression { params.TEST_CONNECTIVITY == true }
+            }
+            steps {
+                sh '''
+                    echo "============================================"
+                    echo "Network Connectivity Test"
+                    echo "============================================"
+
+                    ALL_OK=true
+
+                    for SSH_HOST in ${SSH_HOSTS}; do
+                        echo ""
+                        echo "--------------------------------------------"
+                        echo "Target: ${SSH_HOST}:22"
+                        echo "--------------------------------------------"
+
+                        # Test TCP connection to SSH port
+                        echo "Testing SSH (port 22) connection to ${SSH_HOST}..."
+                        if timeout 10 bash -c "echo > /dev/tcp/${SSH_HOST}/22" 2>/dev/null; then
+                            echo "SUCCESS: Port 22 is OPEN on ${SSH_HOST}"
+                        else
+                            echo "FAILED: Port 22 is NOT reachable on ${SSH_HOST}"
+                            echo ""
+                            echo "Possible causes:"
+                            echo "  1. Firewall blocking port 22 from Jenkins Agent"
+                            echo "  2. SSH service not running on target server"
+                            echo "  3. Network route not available"
+                            echo ""
+                            echo "Diagnostic info:"
+                            echo "  - Jenkins Agent hostname: $(hostname)"
+                            echo "  - Target: ${SSH_HOST}:22"
+
+                            # Try ping
+                            echo ""
+                            echo "Ping test to ${SSH_HOST}..."
+                            ping -c 3 -W 5 ${SSH_HOST} 2>&1 || echo "Ping failed"
+
+                            # Try traceroute
+                            echo ""
+                            echo "Traceroute to ${SSH_HOST}..."
+                            traceroute -m 10 -w 2 ${SSH_HOST} 2>&1 || echo "Traceroute not available or failed"
+
+                            ALL_OK=false
+                        fi
+                    done
+
+                    echo ""
+                    echo "============================================"
+                    if [ "${ALL_OK}" = "true" ]; then
+                        echo "Connectivity test PASSED for all hosts!"
+                    else
+                        echo "Connectivity test FAILED for one or more hosts!"
+                        exit 1
+                    fi
+                    echo "============================================"
+                '''
+            }
+        }
+
+        // ============================================
+        // 1. Git Checkout
+        // ============================================
+        stage('Checkout') {
+            steps {
+                git branch: "${params.BRANCH}",
+                    credentialsId: "${GIT_CREDENTIAL_ID}",
+                    url: 'https://github.devops.sec.samsung.net/dx-26s0032-glwcs/glwcs-wcs-be.git'
+                script {
+                    env.GIT_SHORT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                }
+                sh '''
+                    echo "============================================"
+                    echo "Checkout Info"
+                    echo "============================================"
+                    git log -1 --pretty=format:"Commit: %h - %an, %ar : %s"
+                    echo ""
+                    echo "Git Short SHA: ${GIT_SHORT_SHA}"
+                    echo "Build Number:  ${BUILD_NUMBER}"
+                    echo "============================================"
+                '''
+            }
+        }
+
+        // ============================================
+        // 1-1. Version Check (symlink vs history.log 비교 → 불일치 시 알림)
+        // ============================================
+        stage('Version Check') {
+            when {
+                expression { params.DEPLOY == true }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'wcs_ssh_key', usernameVariable: 'SSH_USER_NAME', passwordVariable: 'SSH_KEY_CONTENT')]) {
+                    script {
+                        // SSH 키 파일 생성
+                        sh '''
+                            { set +x; } 2>/dev/null
+                            printf '%s\n' "${SSH_KEY_CONTENT}" | tr -d '\r' > /tmp/deploy_ssh_key
+                            chmod 600 /tmp/deploy_ssh_key
+                            set -x
+                        '''
+
+                        def firstHost = env.SSH_HOSTS.split(' ')[0]
+
+                        // current symlink 가 가리키는 실제 버전
+                        // \\\$(readlink ...) : Groovy \\\$ → shell \$ → 원격 서버에서 $(readlink) 실행
+                        env.LIVE_VERSION = sh(
+                            script: """
+                                SSH_OPTS="-o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 -i /tmp/deploy_ssh_key"
+                                ssh \${SSH_OPTS} ${SSH_USER_NAME}@${firstHost} \\
+                                    "basename \\\$(readlink -f ${REMOTE_HOME_DIR}/${SYMLINK_NAME} 2>/dev/null) 2>/dev/null | sed 's/^app_${APP_NAME}_//;s/\\.jar\$//' || echo 'UNKNOWN'"
+                            """,
+                            returnStdout: true
+                        ).trim()
+
+                        // history.log 마지막 라인
+                        env.HISTORY_VERSION = sh(
+                            script: """
+                                SSH_OPTS="-o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 -i /tmp/deploy_ssh_key"
+                                ssh \${SSH_OPTS} ${SSH_USER_NAME}@${firstHost} \\
+                                    "tail -1 ${HISTORY_LOG} 2>/dev/null || echo 'NO_HISTORY'"
+                            """,
+                            returnStdout: true
+                        ).trim()
+
+                        sh 'rm -f /tmp/deploy_ssh_key'
+
+                        echo "============================================"
+                        echo "Version Check (symlink vs history.log)"
+                        echo "============================================"
+                        echo "  Live version (symlink):   ${env.LIVE_VERSION ?: 'UNKNOWN'}"
+                        echo "  History last version:     ${env.HISTORY_VERSION ?: 'NONE'}"
+                        echo "  Build git_short_sha:      ${env.GIT_SHORT_SHA}"
+                        echo "============================================"
+
+                        if (env.LIVE_VERSION != 'UNKNOWN' && env.HISTORY_VERSION != 'NO_HISTORY'
+                            && env.LIVE_VERSION != env.HISTORY_VERSION) {
+                            echo """
+WARNING: symlink and history.log mismatch!
+  This may indicate a rollback or manual change was made.
+  Live version (symlink):     ${env.LIVE_VERSION}
+  History last version:       ${env.HISTORY_VERSION}
+  Deploying now may override the rolled-back version.
+  Please verify that the source (git) has been properly updated.
+"""
+                            input(
+                                message: "symlink과 history.log가 불일치합니다 (롤백 또는 수동 변경 가능성). [${env.GIT_SHORT_SHA}]로 배포를 강행하시겠습니까?",
+                                ok: 'Proceed'
+                            )
+                        } else {
+                            echo "OK: symlink and history.log are consistent. Proceeding with deployment."
+                        }
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // Clean
+        // ============================================
+        stage('Clean') {
+            steps {
+                sh '''
+                    echo "============================================"
+                    echo "Cleaning build artifacts..."
+                    echo "============================================"
+                    rm -rf target
+                    echo "Clean completed."
+                '''
+            }
+        }
+
+        // ============================================
+        // 2. Backend Build (Maven → JAR)
+        // ============================================
+        stage('Build Backend') {
+            steps {
+                sh '''
+                    echo "============================================"
+                    echo "Building Backend (JAR)..."
+                    echo "Build Env: ${BUILD_ENV}"
+                    echo "============================================"
+                    mvn clean package -f ${MAVEN_POM} -DskipTests
+
+                    if [ ! -f target/${BACKEND_ARTIFACT} ]; then
+                        echo "ERROR: Build failed - target/${BACKEND_ARTIFACT} not found!"
+                        exit 1
+                    fi
+
+                    echo "============================================"
+                    echo "Backend build completed: target/${BACKEND_ARTIFACT}"
+                    echo "============================================"
+                '''
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: "target/${BACKEND_ARTIFACT}", allowEmptyArchive: false
+                }
+            }
+        }
+
+        // ============================================
+        // 3~8. Deploy Backend
+        //   3. scp 전송 (deploy/backend/app_{app}_{ver}.jar)
+        //   4. 아티팩트 복사 (backend/app_{app}_{ver}.jar)
+        //   5. 심볼릭 링크 변경 (backend/current_{app}.jar → app_{app}_{ver}.jar)
+        //   6. 서비스 데몬 재시작
+        //   7. 배포 이력 기록 (deploy/backend/history_{app_name}.log)
+        //   8. 배포 완료
+        // ============================================
+        stage('Deploy Backend') {
+            when {
+                expression { params.DEPLOY == true }
+            }
+            steps {
+                // 빌드 없이 배포만 하는 경우, 이전 빌드의 artifact 복원
+                script {
+                    if (!fileExists("target/${BACKEND_ARTIFACT}")) {
+                        copyArtifacts projectName: env.JOB_NAME,
+                            selector: specific(env.BUILD_NUMBER),
+                            filter: "target/${BACKEND_ARTIFACT}",
+                            optional: true
+                        // 현재 빌드에 artifact가 없으면 마지막 성공 빌드에서 가져옴
+                        if (!fileExists("target/${BACKEND_ARTIFACT}")) {
+                            copyArtifacts projectName: env.JOB_NAME,
+                                selector: lastSuccessful(),
+                                filter: "target/${BACKEND_ARTIFACT}",
+                                optional: true
+                        }
+                    }
+                }
+                withCredentials([usernamePassword(credentialsId: 'wcs_ssh_key', usernameVariable: 'SSH_USER_NAME', passwordVariable: 'SSH_KEY_CONTENT')]) {
+                    sh '''
+                        echo "============================================"
+                        echo "Deploying Backend to ${SSH_HOSTS}"
+                        echo "============================================"
+
+                        if [ ! -f target/${BACKEND_ARTIFACT} ]; then
+                            echo "ERROR: target/${BACKEND_ARTIFACT} not found! Run build first."
+                            exit 1
+                        fi
+
+                        # 배포 버전 태그: {YYYYMMDD_HHMMSS}_b{BUILD_NUMBER}_{git_short_sha}
+                        DEPLOY_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                        VERSION_TAG="${DEPLOY_TIMESTAMP}_b${BUILD_NUMBER}_${GIT_SHORT_SHA}"
+
+                        # 아티팩트 파일명: app_{app_name}_{YYYYMMDD_HHMMSS}_b{BUILD_NUMBER}_{git_short_sha}.jar
+                        JAR_DEPLOY_NAME="app_${APP_NAME}_${VERSION_TAG}.jar"
+                        SYMLINK_NAME="current_${APP_NAME}.jar"
+
+                        echo "Deploy version:  ${VERSION_TAG}"
+                        echo "Artifact name:   ${JAR_DEPLOY_NAME}"
+                        echo "Symlink:         ${REMOTE_HOME_DIR}/${SYMLINK_NAME} -> ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME}"
+                        echo "============================================"
+
+                        # Write SSH private key to temp file (hide from log)
+                        { set +x; } 2>/dev/null
+                        # printf 사용: echo와 달리 백슬래시 해석 안 함
+                        # tr -d '\r': Windows CRLF → Unix LF 변환
+                        printf '%s\n' "${SSH_KEY_CONTENT}" | tr -d '\r' > /tmp/deploy_ssh_key
+                        chmod 600 /tmp/deploy_ssh_key
+                        set -x
+
+                        # 키 파일 진단 (내용 노출 없이)
+                        echo "Key file lines: $(wc -l < /tmp/deploy_ssh_key)"
+                        echo "Key file size: $(wc -c < /tmp/deploy_ssh_key) bytes"
+                        HEAD_LINE=$(head -1 /tmp/deploy_ssh_key)
+                        case "$HEAD_LINE" in
+                            *BEGIN*) echo "Key format: OK ($HEAD_LINE)" ;;
+                            *)
+                                echo "ERROR: SSH key format is invalid. First line: ${HEAD_LINE:0:20}..."
+                                rm -f /tmp/deploy_ssh_key
+                                exit 1
+                                ;;
+                        esac
+
+                        SSH_OPTS="-o StrictHostKeyChecking=no -i /tmp/deploy_ssh_key"
+
+                        TOTAL_HOSTS=$(echo ${SSH_HOSTS} | wc -w)
+                        HOST_INDEX=0
+
+                        # 다중 타겟 서버에 순차 배포
+                        for SSH_HOST in ${SSH_HOSTS}; do
+                            HOST_INDEX=$((HOST_INDEX + 1))
+                            echo ""
+                            echo "============================================"
+                            echo "[$HOST_INDEX/$TOTAL_HOSTS] Deploying to ${SSH_HOST}"
+                            echo "============================================"
+
+                            # SSH 연결 진단 (verbose)
+                            echo "[0/6] Testing SSH connection to ${SSH_HOST}..."
+                            ssh -v ${SSH_OPTS} -o BatchMode=yes -o ConnectTimeout=10 ${SSH_USER_NAME}@${SSH_HOST} "echo SSH_OK" 2>&1 | grep -E "Offering|Authentications|Permission|identity|publickey|SSH_OK" || true
+
+                            # 3. scp 전송 (타겟 경로: /app/{모듈명}/deploy/backend/app_{app}_{ver}.jar)
+                            echo "[1/6] Uploading ${JAR_DEPLOY_NAME} to ${SSH_HOST}..."
+                            scp ${SSH_OPTS} target/${BACKEND_ARTIFACT} ${SSH_USER_NAME}@${SSH_HOST}:${REMOTE_DEPLOY_DIR}/${JAR_DEPLOY_NAME}
+
+                            # 4. 아티팩트 복사 (경로: /app/{모듈명}/backend/app_{app}_{ver}.jar)
+                            # 5. 심볼릭 링크 변경 (/app/{모듈명}/backend/current_{app}.jar → app_{app}_{ver}.jar)
+                            # 6. 서비스 데몬 재시작
+                            echo "[2/6] Copying artifact to service path on ${SSH_HOST}..."
+                            echo "[3/6] Updating symlink on ${SSH_HOST}..."
+                            echo "[4/6] Restarting ${SERVICE_NAME} service on ${SSH_HOST}..."
+                            ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                "cp ${REMOTE_DEPLOY_DIR}/${JAR_DEPLOY_NAME} ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME} && \\
+                                 ln -sfn ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME} ${REMOTE_HOME_DIR}/${SYMLINK_NAME} && \\
+                                 sudo systemctl restart ${SERVICE_NAME}"
+
+                            # 7. 배포 이력 기록 ({YYYYMMDD_HHMMSS}_b{BUILD_NUMBER}_{git_short_sha} → history_{app_name}.log)
+                            echo "[5/6] Recording deployment history on ${SSH_HOST}..."
+                            ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                "echo '${VERSION_TAG}' >> ${HISTORY_LOG}"
+
+                            # 8. 서비스 상태 확인
+                            echo "[6/6] Checking service status on ${SSH_HOST}..."
+                            ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                "sudo systemctl status ${SERVICE_NAME}"
+
+                            echo "============================================"
+                            echo "[$HOST_INDEX/$TOTAL_HOSTS] ${SSH_HOST} deployed successfully!"
+                            echo "============================================"
+                        done
+
+                        rm -f /tmp/deploy_ssh_key
+                        echo ""
+                        echo "============================================"
+                        echo "All servers deployed successfully!"
+                        echo "Deploy version:  ${VERSION_TAG}"
+                        echo "Artifact:        ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME}"
+                        echo "Symlink:         ${REMOTE_HOME_DIR}/${SYMLINK_NAME} -> ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME}"
+                        echo "History log:     ${HISTORY_LOG}"
+                        echo "Service:         ${SERVICE_NAME} (restarted on all hosts)"
+                        echo "Target hosts:    ${SSH_HOSTS}"
+                        echo "============================================"
+                    '''
+                }
+            }
+        }
+
+    } // end stages
+
+    post {
+        success {
+            devopsMail (
+                to: "lee.gwangjae@partner.sec.co.kr"
+            )
+        }
+        failure {
+            devopsMail (
+                to: "lee.gwangjae@partner.sec.co.kr"
+            )
+        }
+    }
+}
