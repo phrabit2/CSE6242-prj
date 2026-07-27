@@ -1,11 +1,17 @@
-$files = Get-ChildItem -Filter *.jpg | Sort-Object Name
-for ($i = 0; $i -lt $files.Count; $i++) {
-    if ($files[$i].Name -like '*_annotated.jpg') {
-        # annotated 본인 복사
-        Copy-Item $files[$i].FullName -Destination damaged
-        # 정렬상 바로 앞 파일 복사 (존재할 때만)
-        if ($i -gt 0) {
-            Copy-Item $files[$i-1].FullName -Destination damaged
-        }
-    }
-}
+
+(base) wcsadmin@scp-wcsdgpu1:~/vllm$ cat start_vl.sh
+sudo docker run -d --name vllm \
+        --gpus all \
+        --ipc=host \
+        -v /data/ai-models:/models \
+        -p 8000:8000 \
+        -e HF_HUB_OFFLINE=1 \
+        -e TRANSFORMERS_OFFLINE=1 \
+        vllm/vllm-openai:v0.23.0 \
+        --model /models/Qwen2.5-VL-7B-Instruct \
+        --served-model-name qwen2.5-vl \
+        --gpu-memory-utilization 0.28 \
+        --max-model-len 16384 \
+        --limit-mm-per-prompt '{"image":2,"video":0}' \
+        --trust-remote-code
+
