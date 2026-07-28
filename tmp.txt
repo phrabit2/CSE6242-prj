@@ -1,8 +1,4 @@
-(base) wcsadmin@scp-wcsdgpu1:/tmp/torch_cu128$ unzip -p torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl '*/METADATA' | grep -iE "Requires-Dist:.*(cuda|nvidia)"
-Requires-Dist: cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==12.8.1; platform_system == "Linux"
-Requires-Dist: cuda-bindings<13,>=12.9.4; platform_system == "Linux"
-Requires-Dist: nvidia-cudnn-cu12==9.19.0.56; platform_system == "Linux"
-Requires-Dist: nvidia-cusparselt-cu12==0.7.1; platform_system == "Linux"
-Requires-Dist: nvidia-nccl-cu12==2.28.9; platform_system == "Linux"
-Requires-Dist: nvidia-nvshmem-cu12==3.4.5; platform_system == "Linux"
-(base) wcsadmin@scp-wcsdgpu1:/tmp/torch_cu128$
+cd /tmp/torch_cu128
+unzip -l torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl | grep -iE "\.so" | head -20
+echo "--- so 총 개수 ---"
+unzip -l torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl | grep -ciE "\.so"
