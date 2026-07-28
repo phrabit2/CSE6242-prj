@@ -1,3 +1,6 @@
+python3 -c "import torch, transformers, peft, bitsandbytes; print('torch', torch.__version__); print('tf', transformers.__version__); print('peft', peft.__version__); print('bnb', bitsandbytes.__version__)"
+
+
 #!/usr/bin/env python3
 """자원·시간 측정 유틸. 세 학습 스크립트(full/lora/qlora) 공용.
 사용법:
