@@ -1,49 +1,144 @@
-(base) wcsadmin@scp-wcsdgpu1:/data/sample_train/src$ cd /data/sample_train
-(base) wcsadmin@scp-wcsdgpu1:/data/sample_train$ ./src/monitor.sh test
-모니터링 시작 (method=test) -> /data/sample_train/outputs/test/{gpu,cpu}_log.csv
-종료하려면: /data/sample_train/src/stop_monitor.sh test
-(base) wcsadmin@scp-wcsdgpu1:/data/sample_train$ sleep 5
-(base) wcsadmin@scp-wcsdgpu1:/data/sample_train$ ./src/stop_monitor.sh test
-모니터링 종료 (method=test)
-(base) wcsadmin@scp-wcsdgpu1:/data/sample_train$ echo "---GPU---"; cat outputs/test/gpu_log.csv
----GPU---
-timestamp, memory.used [MiB], memory.total [MiB], utilization.gpu [%], power.draw [W]
-2026/07/28 09:57:52.906, 0, 81920, 0, 50.76
-2026/07/28 09:57:53.913, 0, 81920, 0, 50.76
-2026/07/28 09:57:54.913, 0, 81920, 0, 50.76
-2026/07/28 09:57:55.913, 0, 81920, 0, 50.76
-2026/07/28 09:57:56.913, 0, 81920, 0, 50.76
-2026/07/28 09:57:57.914, 0, 81920, 0, 50.76
-2026/07/28 09:57:58.914, 0, 81920, 0, 50.76
-2026/07/28 09:57:59.914, 0, 81920, 0, 50.76
-2026/07/28 09:58:00.914, 0, 81920, 0, 50.76
-2026/07/28 09:58:01.914, 0, 81920, 0, 50.76
-2026/07/28 09:58:02.915, 0, 81920, 0, 50.76
-2026/07/28 09:58:03.915, 0, 81920, 0, 50.76
-2026/07/28 09:58:04.915, 0, 81920, 0, 50.76
-2026/07/28 09:58:05.915, 0, 81920, 0, 50.76
-2026/07/28 09:58:06.915, 0, 81920, 0, 50.76
-2026/07/28 09:58:07.915, 0, 81920, 0, 50.76
-2026/07/28 09:58:08.916, 0, 81920, 0, 50.76
-2026/07/28 09:58:09.916, 0, 81920, 0, 50.76
-(base) wcsadmin@scp-wcsdgpu1:/data/sample_train$ echo "---CPU---"; cat outputs/test/cpu_log.csv
----CPU---
-1785200272,0.0,3887
-1785200274,0.0,3888
-1785200275,0.0,3887
-1785200276,0.0,3887
-1785200277,0.0,3887
-1785200278,0.0,3887
-1785200280,0.0,3888
-1785200281,0.0,3888
-1785200282,0.0,3889
-1785200283,0.0,3889
-1785200285,0.0,3889
-1785200286,0.0,3890
-1785200287,0.0,3890
-1785200288,0.0,3890
-1785200289,0.0,3882
-(base) wcsadmin@scp-wcsdgpu1:/data/sample_train$ python3 -c "import torch, transformers, peft, bitsandbytes; print('torch', torch.__version__); print('tf', transformers.__version__); print('peft', peft.__version__); print('bnb', bitsandbytes.__version__)"
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-ModuleNotFoundError: No module named 'bitsandbytes'
+#!/usr/bin/env python3
+"""Qwen2.5-VL LoRA 파인튜닝 (자원 벤치마크용).
+20장 Y/N 분류. bench.py로 VRAM/시간 측정.
+"""
+import os, sys, json
+import torch
+from torch.utils.data import Dataset, DataLoader
+from PIL import Image
+from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+from peft import LoraConfig, get_peft_model
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bench import Bench
+
+# ---------- 고정 설정 (세 기법 공통) ----------
+MODEL_PATH = "/data/ai-models/Qwen2.5-VL-7B-Instruct"
+DATA       = "/data/sample_train/data/train.jsonl"
+OUTDIR     = "/data/sample_train/outputs/lora"
+METHOD     = "lora"
+
+EPOCHS        = 3          # 20장 * 3 = 60 step (batch=1)
+BATCH_SIZE    = 1          # 고정
+GRAD_ACCUM    = 1          # 고정
+LR            = 1e-4
+MAX_PIXELS    = 512*28*28  # Qwen-VL 이미지 토큰 상한 (VRAM 직결, 세 기법 동일)
+GRAD_CKPT     = True       # 고정
+SEED          = 42
+
+# LoRA 고유 설정
+LORA_R        = 16
+LORA_ALPHA    = 32
+LORA_DROPOUT  = 0.05
+# ---------------------------------------------
+
+torch.manual_seed(SEED)
+
+def load_data():
+    rows = []
+    with open(DATA) as f:
+        for line in f:
+            rows.append(json.loads(line))
+    return rows
+
+class VLDataset(Dataset):
+    def __init__(self, rows, processor):
+        self.rows = rows
+        self.processor = processor
+    def __len__(self):
+        return len(self.rows)
+    def __getitem__(self, i):
+        r = self.rows[i]
+        img = Image.open(r["image"]).convert("RGB")
+        user_text = r["conversations"][0]["content"].replace("<image>\n", "")
+        answer    = r["conversations"][1]["content"]
+        messages = [
+            {"role": "user", "content": [
+                {"type": "image", "image": img},
+                {"type": "text",  "text": user_text},
+            ]},
+            {"role": "assistant", "content": [{"type": "text", "text": answer}]},
+        ]
+        return messages
+
+def collate(batch, processor):
+    # batch=1 전제. 대화형 템플릿 적용 + 라벨 마스킹.
+    messages = batch[0]
+    # 전체(정답 포함) 토큰화
+    full = processor.apply_chat_template(
+        messages, tokenize=True, add_generation_prompt=False,
+        return_dict=True, return_tensors="pt",
+    )
+    # 정답 직전까지(프롬프트만) 토큰화 -> 그 길이만큼 label 마스킹
+    prompt_only = processor.apply_chat_template(
+        messages[:-1], tokenize=True, add_generation_prompt=True,
+        return_dict=True, return_tensors="pt",
+    )
+    labels = full["input_ids"].clone()
+    plen = prompt_only["input_ids"].shape[1]
+    labels[:, :plen] = -100   # 프롬프트 부분은 loss 계산 제외
+    full["labels"] = labels
+    return full
+
+def main():
+    os.makedirs(OUTDIR, exist_ok=True)
+    bench = Bench(METHOD)
+
+    processor = AutoProcessor.from_pretrained(
+        MODEL_PATH, max_pixels=MAX_PIXELS, trust_remote_code=True,
+    )
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        MODEL_PATH, torch_dtype=torch.bfloat16,
+        device_map="cuda:0", trust_remote_code=True,
+    )
+
+    # LoRA 부착
+    lora_cfg = LoraConfig(
+        r=LORA_R, lora_alpha=LORA_ALPHA, lora_dropout=LORA_DROPOUT,
+        target_modules=["q_proj","k_proj","v_proj","o_proj",
+                        "gate_proj","up_proj","down_proj"],
+        task_type="CAUSAL_LM",
+    )
+    model = get_peft_model(model, lora_cfg)
+
+    if GRAD_CKPT:
+        model.gradient_checkpointing_enable()
+        model.enable_input_require_grads()  # ckpt+peft 필수
+    model.config.use_cache = False
+
+    bench.mark_model(model)
+    model.print_trainable_parameters()
+
+    rows = load_data()
+    ds = VLDataset(rows, processor)
+    loader = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True,
+                        collate_fn=lambda b: collate(b, processor))
+
+    optim = torch.optim.AdamW(
+        [p for p in model.parameters() if p.requires_grad], lr=LR)
+
+    model.train()
+    device = next(model.parameters()).device
+    step = 0
+    bench.start_train()
+    for epoch in range(EPOCHS):
+        for batch in loader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            out = model(**batch)
+            loss = out.loss
+            loss.backward()
+            optim.step()
+            optim.zero_grad()
+            step += 1
+            print(f"[{METHOD}] epoch {epoch+1} step {step} loss {loss.item():.4f}")
+    bench.end_train(num_samples=len(rows)*EPOCHS, num_steps=step)
+
+    # 어댑터 저장
+    model.save_pretrained(OUTDIR)
+    processor.save_pretrained(OUTDIR)
+    print(f"어댑터 저장: {OUTDIR}")
+
+    bench.dump()
+
+if __name__ == "__main__":
+    main()
