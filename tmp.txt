@@ -1,73 +1,77 @@
-(base) wcsadmin@scp-wcsdgpu1:~$ python3 -c "import json; d=json.load(open('/data/sample_train/data/annotations.json')); print('type:', type(d).__name__); print('len:', len(d) if isinstance(d,(list,dict)) else 'n/a'); print('---'); print(json.dumps(d[0] if isinstance(d,list) else d, indent=2, ensure_ascii=False)[:2000])"
-type: list
-len: 20
----
-{
-  "id": 3,
-  "annotations": [
-    {
-      "id": 3,
-      "completed_by": 2,
-      "result": [
-        {
-          "original_width": 2560,
-          "original_height": 1920,
-          "image_rotation": 0,
-          "value": {
-            "x": 35.424703534936874,
-            "y": 34.39349150330773,
-            "width": 4.114850544048423,
-            "height": 3.3626735628782853,
-            "rotation": 0,
-            "rectanglelabels": [
-              "damaged area"
-            ]
-          },
-          "id": "cNeOOpHf1v",
-          "from_name": "label",
-          "to_name": "image",
-          "type": "rectanglelabels",
-          "origin": "manual"
-        }
-      ],
-      "was_cancelled": false,
-      "ground_truth": false,
-      "created_at": "2026-07-27T08:33:13.239068Z",
-      "updated_at": "2026-07-27T08:33:13.239089Z",
-      "draft_created_at": "2026-07-27T08:12:48.694649Z",
-      "lead_time": 29.511,
-      "prediction": {},
-      "result_count": 1,
-      "unique_id": "2ec12f0b-071a-4dc4-8a1a-af638ccf6823",
-      "import_id": null,
-      "last_action": null,
-      "bulk_created": false,
-      "task": 3,
-      "project": 5,
-      "updated_by": 2,
-      "parent_prediction": null,
-      "parent_annotation": null,
-      "last_created_by": null
-    }
-  ],
-  "file_upload": "eaabcca2-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg",
-  "drafts": [],
-  "predictions": [],
-  "data": {
-    "image": "/data/upload/5/eaabcca2-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg"
-  },
-  "meta": {},
-  "created_at": "2026-07-27T08:05:20.149985Z",
-  "updated_at": "2026-07-27T08:33:13.288553Z",
-  "allow_skip": true,
-  "inner_id": 1,
-  "total_annotations": 1,
-  "cancelled_annotations": 0,
-  "total_predictions": 0,
-  "comment_count": 0,
-  "unresolved_comment_count": 0,
-  "last_comment_updated_at": null,
-  "project": 5,
-  "updated_by": 2,
-  "comment_authors": []
-}
+#!/usr/bin/env python3
+"""Label Studio JSON -> Y/N 분류용 학습 데이터(train.jsonl) 변환.
+자원 벤치마크용. 20장 전부 학습에 사용."""
+import json, os, re, sys
+
+ANN   = "/data/sample_train/data/annotations.json"
+IMGDIR = "/data/sample_train/data/images"
+OUT   = "/data/sample_train/data/train.jsonl"
+
+QUESTION = "이 상자 이미지에 파손이 있습니까? '예' 또는 '아니오'로만 답하세요."
+
+def candidates(task):
+    """이미지 파일명 후보들을 생성 (LS 해시 접두어 대응)."""
+    names = []
+    fu = task.get("file_upload")
+    if fu:
+        names.append(fu)                                  # 해시 붙은 원래 이름
+        names.append(re.sub(r'^[0-9a-fA-F]{8}-', '', fu)) # 해시 접두어 제거
+    img = task.get("data", {}).get("image", "")
+    if img:
+        base = os.path.basename(img)
+        names.append(base)
+        names.append(re.sub(r'^[0-9a-fA-F]{8}-', '', base))
+    # 중복 제거(순서 유지)
+    seen, out = set(), []
+    for n in names:
+        if n and n not in seen:
+            seen.add(n); out.append(n)
+    return out
+
+def resolve(task, existing):
+    for c in candidates(task):
+        if c in existing:
+            return c
+    return None
+
+def has_damage(task):
+    for ann in task.get("annotations", []):
+        for r in ann.get("result", []):
+            labels = r.get("value", {}).get("rectanglelabels", [])
+            if labels:
+                return True
+    return False
+
+def main():
+    data = json.load(open(ANN))
+    existing = set(os.listdir(IMGDIR))
+    samples, unmatched = [], []
+    for task in data:
+        fname = resolve(task, existing)
+        if fname is None:
+            unmatched.append(candidates(task)[:1])
+            continue
+        answer = "예" if has_damage(task) else "아니오"
+        samples.append({
+            "image": os.path.join(IMGDIR, fname),
+            "conversations": [
+                {"role": "user",      "content": "<image>\n" + QUESTION},
+                {"role": "assistant", "content": answer},
+            ],
+        })
+
+    with open(OUT, "w", encoding="utf-8") as f:
+        for s in samples:
+            f.write(json.dumps(s, ensure_ascii=False) + "\n")
+
+    n_yes = sum(1 for s in samples if s["conversations"][1]["content"] == "예")
+    print(f"총 task: {len(data)}")
+    print(f"매칭 성공: {len(samples)}  (예:{n_yes}  아니오:{len(samples)-n_yes})")
+    print(f"매칭 실패: {len(unmatched)}")
+    if unmatched:
+        print("  실패 예시:", unmatched[:3])
+        print("  -> images 폴더 파일명과 JSON의 file_upload를 대조 필요")
+    print(f"출력: {OUT}")
+
+if __name__ == "__main__":
+    main()
