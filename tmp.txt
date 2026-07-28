@@ -1,4 +1,18 @@
-cd /tmp/torch_cu128
-unzip -l torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl | grep -iE "\.so" | head -20
+(base) wcsadmin@scp-wcsdgpu1:/tmp/torch_cu128$ unzip -l torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl | grep -iE "\.so" | head -20
 echo "--- so 총 개수 ---"
 unzip -l torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl | grep -ciE "\.so"
+    25521  2026-03-21 15:14   torch/_C.cpython-312-x86_64-linux-gnu.so
+  1499297  2026-03-21 15:14   torch/lib/libc10.so
+   598617  2026-03-21 15:14   torch/lib/libc10_cuda.so
+    23073  2026-03-21 15:14   torch/lib/libcaffe2_nvrtc.so
+    57969  2026-03-21 15:14   torch/lib/libshm.so
+   343457  2026-03-21 15:14   torch/lib/libtorch.so
+451209425  2026-03-21 15:14   torch/lib/libtorch_cpu.so
+912729897  2026-03-21 15:14   torch/lib/libtorch_cuda.so
+119055033  2026-03-21 15:14   torch/lib/libtorch_cuda_linalg.so
+    17353  2026-03-21 15:14   torch/lib/libtorch_global_deps.so
+  8705233  2026-03-21 15:14   torch/lib/libtorch_nvshmem.so
+ 32656545  2026-03-21 15:14   torch/lib/libtorch_python.so
+   254337  2026-03-21 15:14   torch/lib/libgomp.so.1
+--- so 총 개수 ---
+13
