@@ -1,17 +1,2 @@
 
-(base) wcsadmin@scp-wcsdgpu1:~/vllm$ cat start_vl.sh
-sudo docker run -d --name vllm \
-        --gpus all \
-        --ipc=host \
-        -v /data/ai-models:/models \
-        -p 8000:8000 \
-        -e HF_HUB_OFFLINE=1 \
-        -e TRANSFORMERS_OFFLINE=1 \
-        vllm/vllm-openai:v0.23.0 \
-        --model /models/Qwen2.5-VL-7B-Instruct \
-        --served-model-name qwen2.5-vl \
-        --gpu-memory-utilization 0.28 \
-        --max-model-len 16384 \
-        --limit-mm-per-prompt '{"image":2,"video":0}' \
-        --trust-remote-code
-
+python3 -c "import json; d=json.load(open('/data/sample_train/data/annotations.json')); print('type:', type(d).__name__); print('len:', len(d) if isinstance(d,(list,dict)) else 'n/a'); print('---'); print(json.dumps(d[0] if isinstance(d,list) else d, indent=2, ensure_ascii=False)[:2000])"
