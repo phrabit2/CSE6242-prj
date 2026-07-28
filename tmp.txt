@@ -1,10 +1,17 @@
-(base) wcsadmin@scp-wcsdgpu1:/tmp$ pip uninstall -y torch torchvision
-Found existing installation: torch 2.12.1
-Uninstalling torch-2.12.1:
-  Successfully uninstalled torch-2.12.1
-Found existing installation: torchvision 0.27.1
-Uninstalling torchvision-0.27.1:
-  Successfully uninstalled torchvision-0.27.1
+(base) wcsadmin@scp-wcsdgpu1:/tmp$ ls
+agent.sock                                                                    systemd-private-c5ead8e0511141a188f4719e73ab8a2f-switcheroo-control.service-nv37ca
+sample_selected_data.tar.gz                                                   systemd-private-c5ead8e0511141a188f4719e73ab8a2f-systemd-logind.service-PmU0l8
+snap-private-tmp                                                              systemd-private-c5ead8e0511141a188f4719e73ab8a2f-systemd-resolved.service-sAfb9c
+systemd-private-c5ead8e0511141a188f4719e73ab8a2f-ModemManager.service-teWXc4  torch_cu128
+systemd-private-c5ead8e0511141a188f4719e73ab8a2f-chrony.service-hrhGlr        torch_cu128.tar.gz
+systemd-private-c5ead8e0511141a188f4719e73ab8a2f-polkit.service-JedfBb        torchinductor_wcsadmin
+(base) wcsadmin@scp-wcsdgpu1:/tmp$ ls torch_cu128/ | wc -l
+17
+(base) wcsadmin@scp-wcsdgpu1:/tmp$ ls torch_cu128/ | grep nvidia
+nvidia_cudnn_cu12-9.19.0.56-py3-none-manylinux_2_27_x86_64.whl
+nvidia_cusparselt_cu12-0.7.1-py3-none-manylinux2014_x86_64.whl
+nvidia_nccl_cu12-2.28.9-py3-none-manylinux_2_18_x86_64.whl
+nvidia_nvshmem_cu12-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 (base) wcsadmin@scp-wcsdgpu1:/tmp$ pip install --no-index --find-links=/tmp/torch_cu128 torch torchvision
 Looking in links: /tmp/torch_cu128
 Processing ./torch_cu128/torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl
