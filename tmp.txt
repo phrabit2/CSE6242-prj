@@ -1,28 +1,8 @@
-(base) wcsadmin@scp-wcsdgpu1:/tmp$ ls
-agent.sock                                                                    systemd-private-c5ead8e0511141a188f4719e73ab8a2f-switcheroo-control.service-nv37ca
-sample_selected_data.tar.gz                                                   systemd-private-c5ead8e0511141a188f4719e73ab8a2f-systemd-logind.service-PmU0l8
-snap-private-tmp                                                              systemd-private-c5ead8e0511141a188f4719e73ab8a2f-systemd-resolved.service-sAfb9c
-systemd-private-c5ead8e0511141a188f4719e73ab8a2f-ModemManager.service-teWXc4  torch_cu128
-systemd-private-c5ead8e0511141a188f4719e73ab8a2f-chrony.service-hrhGlr        torch_cu128.tar.gz
-systemd-private-c5ead8e0511141a188f4719e73ab8a2f-polkit.service-JedfBb        torchinductor_wcsadmin
-(base) wcsadmin@scp-wcsdgpu1:/tmp$ ls torch_cu128/ | wc -l
-17
-(base) wcsadmin@scp-wcsdgpu1:/tmp$ ls torch_cu128/ | grep nvidia
-nvidia_cudnn_cu12-9.19.0.56-py3-none-manylinux_2_27_x86_64.whl
-nvidia_cusparselt_cu12-0.7.1-py3-none-manylinux2014_x86_64.whl
-nvidia_nccl_cu12-2.28.9-py3-none-manylinux_2_18_x86_64.whl
-nvidia_nvshmem_cu12-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-(base) wcsadmin@scp-wcsdgpu1:/tmp$ pip install --no-index --find-links=/tmp/torch_cu128 torch torchvision
-Looking in links: /tmp/torch_cu128
-Processing ./torch_cu128/torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl
-Processing ./torch_cu128/torchvision-0.26.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl
-Requirement already satisfied: filelock in /home/wcsadmin/miniconda3/lib/python3.12/site-packages (from torch) (3.29.4)
-Requirement already satisfied: typing-extensions>=4.10.0 in /home/wcsadmin/miniconda3/lib/python3.12/site-packages (from torch) (4.15.0)
-Requirement already satisfied: setuptools<82 in /home/wcsadmin/miniconda3/lib/python3.12/site-packages (from torch) (81.0.0)
-Requirement already satisfied: sympy>=1.13.3 in /home/wcsadmin/miniconda3/lib/python3.12/site-packages (from torch) (1.14.0)
-Requirement already satisfied: networkx>=2.5.1 in /home/wcsadmin/miniconda3/lib/python3.12/site-packages (from torch) (3.6.1)
-Requirement already satisfied: jinja2 in /home/wcsadmin/miniconda3/lib/python3.12/site-packages (from torch) (3.1.6)
-Requirement already satisfied: fsspec>=0.8.5 in /home/wcsadmin/miniconda3/lib/python3.12/site-packages (from torch) (2026.4.0)
-INFO: pip is looking at multiple versions of torch to determine which version is compatible with other requirements. This could take a while.
-ERROR: Could not find a version that satisfies the requirement cuda-toolkit==12.8.1; platform_system == "Linux" (from torch) (from versions: none)
-ERROR: No matching distribution found for cuda-toolkit==12.8.1; platform_system == "Linux"
+(base) wcsadmin@scp-wcsdgpu1:/tmp/torch_cu128$ unzip -p torch-2.11.0+cu128-cp312-cp312-manylinux_2_28_x86_64.whl '*/METADATA' | grep -iE "Requires-Dist:.*(cuda|nvidia)"
+Requires-Dist: cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==12.8.1; platform_system == "Linux"
+Requires-Dist: cuda-bindings<13,>=12.9.4; platform_system == "Linux"
+Requires-Dist: nvidia-cudnn-cu12==9.19.0.56; platform_system == "Linux"
+Requires-Dist: nvidia-cusparselt-cu12==0.7.1; platform_system == "Linux"
+Requires-Dist: nvidia-nccl-cu12==2.28.9; platform_system == "Linux"
+Requires-Dist: nvidia-nvshmem-cu12==3.4.5; platform_system == "Linux"
+(base) wcsadmin@scp-wcsdgpu1:/tmp/torch_cu128$
