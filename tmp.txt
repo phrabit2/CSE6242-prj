@@ -1,2 +1,73 @@
-
-python3 -c "import json; d=json.load(open('/data/sample_train/data/annotations.json')); print('type:', type(d).__name__); print('len:', len(d) if isinstance(d,(list,dict)) else 'n/a'); print('---'); print(json.dumps(d[0] if isinstance(d,list) else d, indent=2, ensure_ascii=False)[:2000])"
+(base) wcsadmin@scp-wcsdgpu1:~$ python3 -c "import json; d=json.load(open('/data/sample_train/data/annotations.json')); print('type:', type(d).__name__); print('len:', len(d) if isinstance(d,(list,dict)) else 'n/a'); print('---'); print(json.dumps(d[0] if isinstance(d,list) else d, indent=2, ensure_ascii=False)[:2000])"
+type: list
+len: 20
+---
+{
+  "id": 3,
+  "annotations": [
+    {
+      "id": 3,
+      "completed_by": 2,
+      "result": [
+        {
+          "original_width": 2560,
+          "original_height": 1920,
+          "image_rotation": 0,
+          "value": {
+            "x": 35.424703534936874,
+            "y": 34.39349150330773,
+            "width": 4.114850544048423,
+            "height": 3.3626735628782853,
+            "rotation": 0,
+            "rectanglelabels": [
+              "damaged area"
+            ]
+          },
+          "id": "cNeOOpHf1v",
+          "from_name": "label",
+          "to_name": "image",
+          "type": "rectanglelabels",
+          "origin": "manual"
+        }
+      ],
+      "was_cancelled": false,
+      "ground_truth": false,
+      "created_at": "2026-07-27T08:33:13.239068Z",
+      "updated_at": "2026-07-27T08:33:13.239089Z",
+      "draft_created_at": "2026-07-27T08:12:48.694649Z",
+      "lead_time": 29.511,
+      "prediction": {},
+      "result_count": 1,
+      "unique_id": "2ec12f0b-071a-4dc4-8a1a-af638ccf6823",
+      "import_id": null,
+      "last_action": null,
+      "bulk_created": false,
+      "task": 3,
+      "project": 5,
+      "updated_by": 2,
+      "parent_prediction": null,
+      "parent_annotation": null,
+      "last_created_by": null
+    }
+  ],
+  "file_upload": "eaabcca2-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg",
+  "drafts": [],
+  "predictions": [],
+  "data": {
+    "image": "/data/upload/5/eaabcca2-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg"
+  },
+  "meta": {},
+  "created_at": "2026-07-27T08:05:20.149985Z",
+  "updated_at": "2026-07-27T08:33:13.288553Z",
+  "allow_skip": true,
+  "inner_id": 1,
+  "total_annotations": 1,
+  "cancelled_annotations": 0,
+  "total_predictions": 0,
+  "comment_count": 0,
+  "unresolved_comment_count": 0,
+  "last_comment_updated_at": null,
+  "project": 5,
+  "updated_by": 2,
+  "comment_authors": []
+}
