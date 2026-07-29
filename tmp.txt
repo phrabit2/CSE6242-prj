@@ -1,100 +1,193 @@
-[
-  {
-    "id": 123,
-    "annotations": [
-      {
-        "id": 23,
-        "completed_by": 2,
-        "result": [
-          {
-            "original_width": 2560,
-            "original_height": 1920,
-            "image_rotation": 0,
-            "value": {
-              "x": 35.90468574389335,
-              "y": 34.148884303245005,
-              "width": 3.27688776363847,
-              "height": 3.2126350623906603,
-              "rotation": 0,
-              "rectanglelabels": [
-                "damaged area"
-              ]
-            },
-            "id": "pe72eGbR08",
-            "from_name": "label",
-            "to_name": "image",
-            "type": "rectanglelabels",
-            "origin": "manual"
-          },
-          {
-            "original_width": 2560,
-            "original_height": 1920,
-            "image_rotation": 0,
-            "value": {
-              "x": 28.128914710560483,
-              "y": 19.45938952076627,
-              "width": 43.370573342273886,
-              "height": 64.80343868708012,
-              "rotation": 0,
-              "rectanglelabels": [
-                "product area"
-              ]
-            },
-            "id": "mPnOey-fA6",
-            "from_name": "label",
-            "to_name": "image",
-            "type": "rectanglelabels",
-            "origin": "manual"
-          }
-        ],
-        "was_cancelled": false,
-        "ground_truth": false,
-        "created_at": "2026-07-29T05:15:14.744525Z",
-        "updated_at": "2026-07-29T05:15:14.744543Z",
-        "draft_created_at": "2026-07-29T05:12:12.497751Z",
-        "lead_time": 96.22500000000001,
-        "prediction": {
-          
-        },
-        "result_count": 2,
-        "unique_id": "9b22bb4c-0aac-445f-aa38-c4cc2b39d59d",
-        "import_id": null,
-        "last_action": null,
-        "bulk_created": false,
-        "task": 123,
-        "project": 4,
-        "updated_by": 2,
-        "parent_prediction": null,
-        "parent_annotation": null,
-        "last_created_by": null
-      }
-    ],
-    "file_upload": "d2344d38-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg",
-    "drafts": [
-      
-    ],
-    "predictions": [
-      
-    ],
-    "data": {
-      "image": "\/data\/upload\/4\/d2344d38-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg"
-    },
-    "meta": {
-      
-    },
-    "created_at": "2026-07-29T05:07:47.044038Z",
-    "updated_at": "2026-07-29T05:15:14.784536Z",
-    "allow_skip": true,
-    "inner_id": 1,
-    "total_annotations": 1,
-    "cancelled_annotations": 0,
-    "total_predictions": 0,
-    "comment_count": 0,
-    "unresolved_comment_count": 0,
-    "last_comment_updated_at": null,
-    "project": 4,
-    "updated_by": 2,
-    "comment_authors": [
-      
-    ]
-  },
+def has_damage(task):
+    for ann in task.get("annotations", []):
+        for r in ann.get("result", []):
+            labels = r.get("value", {}).get("rectanglelabels", [])
+            if "damaged area" in labels:   # product area는 무시, damaged area만 카운트
+                return True
+    return False
+
+
+
+
+
+
+
+
+
+
+
+===========
+
+
+
+#!/usr/bin/env python3
+"""Qwen2.5-VL LoRA 파인튜닝 (자원 벤치마크용) - batch size 실험 버전."""
+import os, sys, json, argparse
+import torch
+from torch.utils.data import Dataset, DataLoader
+from PIL import Image
+from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+from peft import LoraConfig, get_peft_model
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bench import Bench
+
+# ---------- 인자 ----------
+parser = argparse.ArgumentParser()
+parser.add_argument("--batch_size", type=int, default=1)
+parser.add_argument("--epochs", type=int, default=3)
+args = parser.parse_args()
+
+MODEL_PATH = "/data/ai-models/Qwen2.5-VL-7B-Instruct"
+DATA       = "/data/sample_train/data/train.jsonl"
+METHOD     = f"lora_b{args.batch_size}"          # 예: lora_b3
+OUTDIR     = f"/data/sample_train/outputs/{METHOD}"
+
+BATCH_SIZE = args.batch_size
+EPOCHS     = args.epochs
+LR         = 1e-4
+MAX_PIXELS = 512*28*28
+GRAD_CKPT  = True
+SEED       = 42
+LORA_R, LORA_ALPHA, LORA_DROPOUT = 16, 32, 0.05
+# --------------------------
+
+torch.manual_seed(SEED)
+
+def load_data():
+    with open(DATA) as f:
+        return [json.loads(l) for l in f]
+
+class VLDataset(Dataset):
+    def __init__(self, rows):
+        self.rows = rows
+    def __len__(self):
+        return len(self.rows)
+    def __getitem__(self, i):
+        r = self.rows[i]
+        img = Image.open(r["image"]).convert("RGB")
+        user_text = r["conversations"][0]["content"].replace("<image>\n", "")
+        answer    = r["conversations"][1]["content"]
+        return {
+            "messages": [
+                {"role": "user", "content": [
+                    {"type": "image", "image": img},
+                    {"type": "text",  "text": user_text}]},
+                {"role": "assistant", "content": [{"type": "text", "text": answer}]},
+            ],
+            "answer": answer,
+        }
+
+def collate(batch, processor):
+    """batch>1 지원. 각 샘플을 개별 토큰화 후 패딩으로 묶음."""
+    input_ids_list, labels_list, pixel_list, grid_list = [], [], [], []
+
+    for sample in batch:
+        messages = sample["messages"]
+        full = processor.apply_chat_template(
+            messages, tokenize=True, add_generation_prompt=False,
+            return_dict=True, return_tensors="pt")
+        prompt_only = processor.apply_chat_template(
+            messages[:-1], tokenize=True, add_generation_prompt=True,
+            return_dict=True, return_tensors="pt")
+
+        ids = full["input_ids"][0]
+        labels = ids.clone()
+        plen = prompt_only["input_ids"].shape[1]
+        labels[:plen] = -100
+
+        input_ids_list.append(ids)
+        labels_list.append(labels)
+        pixel_list.append(full["pixel_values"])
+        grid_list.append(full["image_grid_thw"])
+
+    # 텍스트 패딩 (오른쪽)
+    pad_id = processor.tokenizer.pad_token_id or 0
+    maxlen = max(x.size(0) for x in input_ids_list)
+    input_ids, labels, attn = [], [], []
+    for ids, lbl in zip(input_ids_list, labels_list):
+        padlen = maxlen - ids.size(0)
+        input_ids.append(torch.cat([ids, torch.full((padlen,), pad_id, dtype=ids.dtype)]))
+        labels.append(torch.cat([lbl, torch.full((padlen,), -100, dtype=lbl.dtype)]))
+        attn.append(torch.cat([torch.ones(ids.size(0), dtype=torch.long),
+                               torch.zeros(padlen, dtype=torch.long)]))
+
+    return {
+        "input_ids": torch.stack(input_ids),
+        "attention_mask": torch.stack(attn),
+        "labels": torch.stack(labels),
+        "pixel_values": torch.cat(pixel_list, dim=0),
+        "image_grid_thw": torch.cat(grid_list, dim=0),
+    }
+
+def main():
+    os.makedirs(OUTDIR, exist_ok=True)
+    bench = Bench(METHOD)
+
+    processor = AutoProcessor.from_pretrained(
+        MODEL_PATH, max_pixels=MAX_PIXELS, trust_remote_code=True)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        MODEL_PATH, torch_dtype=torch.bfloat16,
+        device_map="cuda:0", trust_remote_code=True)
+
+    lora_cfg = LoraConfig(
+        r=LORA_R, lora_alpha=LORA_ALPHA, lora_dropout=LORA_DROPOUT,
+        target_modules=["q_proj","k_proj","v_proj","o_proj",
+                        "gate_proj","up_proj","down_proj"],
+        task_type="CAUSAL_LM")
+    model = get_peft_model(model, lora_cfg)
+
+    if GRAD_CKPT:
+        model.gradient_checkpointing_enable()
+        model.enable_input_require_grads()
+    model.config.use_cache = False
+
+    bench.mark_model(model)
+    model.print_trainable_parameters()
+
+    rows = load_data()
+    ds = VLDataset(rows)
+    loader = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True,
+                        collate_fn=lambda b: collate(b, processor))
+
+    optim = torch.optim.AdamW(
+        [p for p in model.parameters() if p.requires_grad], lr=LR)
+
+    model.train()
+    device = next(model.parameters()).device
+    step = 0
+    bench.start_train()
+    for epoch in range(EPOCHS):
+        for batch in loader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            loss = model(**batch).loss
+            loss.backward()
+            optim.step(); optim.zero_grad()
+            step += 1
+            print(f"[{METHOD}] epoch {epoch+1} step {step} loss {loss.item():.4f}")
+    bench.end_train(num_samples=len(rows)*EPOCHS, num_steps=step)
+
+    model.save_pretrained(OUTDIR)
+    processor.save_pretrained(OUTDIR)
+    print(f"어댑터 저장: {OUTDIR}")
+    bench.dump()
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+======
+
+
+실행 명령어
+
+for BS in 1 2 4 8 16; do
+  ./src/monitor.sh lora_b${BS}
+  /usr/bin/time -v python3 src/train_lora.py --batch_size ${BS} \
+    2> outputs/lora_b${BS}/time.txt
+  ./src/stop_monitor.sh lora_b${BS}
+done
+cat results.csv   # batch별 peak VRAM 한눈에 비교
