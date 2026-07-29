@@ -1,12 +1,100 @@
-(base) wcsadmin@scp-wcsdgpu1:/data/labeling$ ls
-label-studio-1.23.0-amd64.tar  label-studio-data  start.sh
-(base) wcsadmin@scp-wcsdgpu1:/data/labeling$ cat start.sh
-sudo docker run -d \
-  --name label-studio \
-  --restart unless-stopped \
-  -p 9080:8080 \
-  -v /data/labeling/label-studio-data:/label-studio/data \
-  -e LABEL_STUDIO_HOST=http://gpu-server.internal:9080 \
-  -e LABEL_STUDIO_VERSION_CHECK=false \
-  -e COLLECT_ANALYTICS=false \
-  heartexlabs/label-studio:1.23.0
+[
+  {
+    "id": 123,
+    "annotations": [
+      {
+        "id": 23,
+        "completed_by": 2,
+        "result": [
+          {
+            "original_width": 2560,
+            "original_height": 1920,
+            "image_rotation": 0,
+            "value": {
+              "x": 35.90468574389335,
+              "y": 34.148884303245005,
+              "width": 3.27688776363847,
+              "height": 3.2126350623906603,
+              "rotation": 0,
+              "rectanglelabels": [
+                "damaged area"
+              ]
+            },
+            "id": "pe72eGbR08",
+            "from_name": "label",
+            "to_name": "image",
+            "type": "rectanglelabels",
+            "origin": "manual"
+          },
+          {
+            "original_width": 2560,
+            "original_height": 1920,
+            "image_rotation": 0,
+            "value": {
+              "x": 28.128914710560483,
+              "y": 19.45938952076627,
+              "width": 43.370573342273886,
+              "height": 64.80343868708012,
+              "rotation": 0,
+              "rectanglelabels": [
+                "product area"
+              ]
+            },
+            "id": "mPnOey-fA6",
+            "from_name": "label",
+            "to_name": "image",
+            "type": "rectanglelabels",
+            "origin": "manual"
+          }
+        ],
+        "was_cancelled": false,
+        "ground_truth": false,
+        "created_at": "2026-07-29T05:15:14.744525Z",
+        "updated_at": "2026-07-29T05:15:14.744543Z",
+        "draft_created_at": "2026-07-29T05:12:12.497751Z",
+        "lead_time": 96.22500000000001,
+        "prediction": {
+          
+        },
+        "result_count": 2,
+        "unique_id": "9b22bb4c-0aac-445f-aa38-c4cc2b39d59d",
+        "import_id": null,
+        "last_action": null,
+        "bulk_created": false,
+        "task": 123,
+        "project": 4,
+        "updated_by": 2,
+        "parent_prediction": null,
+        "parent_annotation": null,
+        "last_created_by": null
+      }
+    ],
+    "file_upload": "d2344d38-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg",
+    "drafts": [
+      
+    ],
+    "predictions": [
+      
+    ],
+    "data": {
+      "image": "\/data\/upload\/4\/d2344d38-20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg"
+    },
+    "meta": {
+      
+    },
+    "created_at": "2026-07-29T05:07:47.044038Z",
+    "updated_at": "2026-07-29T05:15:14.784536Z",
+    "allow_skip": true,
+    "inner_id": 1,
+    "total_annotations": 1,
+    "cancelled_annotations": 0,
+    "total_predictions": 0,
+    "comment_count": 0,
+    "unresolved_comment_count": 0,
+    "last_comment_updated_at": null,
+    "project": 4,
+    "updated_by": 2,
+    "comment_authors": [
+      
+    ]
+  },
