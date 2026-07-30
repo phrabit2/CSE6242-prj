@@ -1,5 +1,7 @@
-(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ grep -n "AutoModelForCausalLMWithValueHead\|ValueHead" /data/LLaMA-Factory/src/llamafactory/model/loader.py
-28:from trl import AutoModelForCausalLMWithValueHead
-186:        model = AutoModelForCausalLMWithValueHead.from_pretrained(model)
-(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ python3 -c "import trl; print([x for x in dir(trl) if 'Value' in x or 'AutoModel' in x])"
-[]
+cp /data/LLaMA-Factory/src/llamafactory/model/loader.py /data/LLaMA-Factory/src/llamafactory/model/loader.py.bak
+
+sed -n '28p' /data/LLaMA-Factory/src/llamafactory/model/loader.py
+
+sed -i '28s/.*/try:\n    from trl import AutoModelForCausalLMWithValueHead\nexcept ImportError:\n    AutoModelForCausalLMWithValueHead = None/' /data/LLaMA-Factory/src/llamafactory/model/loader.py
+
+sed -n '28,32p' /data/LLaMA-Factory/src/llamafactory/model/loader.py
