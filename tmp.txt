@@ -1,6 +1,71 @@
-(base) wcsadmin@scp-wcsdgpu1:/tmp/lf_deps$ ls -la /data/sample_train/data/train.jsonl
--rw-r--r-- 1 wcsadmin wcsadmin 60095 Jul 29 16:08 /data/sample_train/data/train.jsonl
-(base) wcsadmin@scp-wcsdgpu1:/tmp/lf_deps$ wc -l /data/sample_train/data/train.jsonl
-200 /data/sample_train/data/train.jsonl
-(base) wcsadmin@scp-wcsdgpu1:/tmp/lf_deps$ head -1 /data/sample_train/data/train.jsonl
-{"image": "/data/sample_train/data/images/20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg", "conversations": [{"role": "user", "content": "<image>\n이 상자 이미지에 파손이 있습니까? '예' 또는 '아니오'로만 답하세요."}, {"role": "assistant", "content": "예"}]}
+#!/usr/bin/env python3
+"""train.jsonl (커스텀 형식) → LLaMA-Factory sharegpt 멀티모달 형식 변환."""
+import json
+
+SRC = "/data/sample_train/data/train.jsonl"
+DST = "/data/sample_train/data/llamafactory_train.json"
+
+out = []
+with open(SRC) as f:
+    for line in f:
+        r = json.loads(line)
+        # 이미지 경로 분리
+        image_path = r["image"]
+        # conversations 그대로 messages로 (content의 <image>\n 유지)
+        messages = []
+        for turn in r["conversations"]:
+            messages.append({
+                "role": turn["role"],
+                "content": turn["content"],
+            })
+        out.append({
+            "messages": messages,
+            "images": [image_path],
+        })
+
+# LLaMA-Factory는 JSON 배열 파일을 읽음 (jsonl 아님)
+with open(DST, "w", encoding="utf-8") as f:
+    json.dump(out, f, ensure_ascii=False, indent=2)
+
+print(f"변환 완료: {len(out)}개")
+print(f"출력: {DST}")
+print("--- 샘플 ---")
+print(json.dumps(out[0], ensure_ascii=False, indent=2))
+
+
+
+==========
+
+#!/usr/bin/env python3
+"""LLaMA-Factory dataset_info.json에 damage_vl 데이터셋 등록."""
+import json
+
+INFO = "/data/LLaMA-Factory/data/dataset_info.json"
+
+with open(INFO) as f:
+    info = json.load(f)
+
+info["damage_vl"] = {
+    "file_name": "/data/sample_train/data/llamafactory_train.json",
+    "formatting": "sharegpt",
+    "columns": {
+        "messages": "messages",
+        "images": "images",
+    },
+    "tags": {
+        "role_tag": "role",
+        "content_tag": "content",
+        "user_tag": "user",
+        "assistant_tag": "assistant",
+    },
+}
+
+with open(INFO, "w", encoding="utf-8") as f:
+    json.dump(info, f, ensure_ascii=False, indent=2)
+
+print("damage_vl 등록 완료")
+print("등록된 데이터셋 수:", len(info))
+
+
+
+
