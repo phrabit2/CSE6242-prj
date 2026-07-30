@@ -1,36 +1,19 @@
-wcsadmin@scp-wcspmq1:~$ sudo docker volume inspect pinpoint-docker_hbase_data | grep -A4 Options
-        "Options": {
-            "device": "/data/pinpoint/hbase",
-            "o": "bind",
-            "type": "none"
-        },
-wcsadmin@scp-wcspmq1:~$ sudo du -sh /data/pinpoint/hbase
-281M    /data/pinpoint/hbase
-wcsadmin@scp-wcspmq1:~$ df -h
-Filesystem                Size  Used Avail Use% Mounted on
-tmpfs                     6.1G  2.6M  6.1G   1% /run
-/dev/vda1                 100G   66G   35G  66% /
-tmpfs                      31G     0   31G   0% /dev/shm
-tmpfs                     5.0M     0  5.0M   0% /run/lock
-/dev/vda16                881M  163M  656M  20% /boot
-/dev/vda15                105M  6.1M   99M   6% /boot/efi
-/dev/mapper/vg_data-data  600G   17G  584G   3% /data
-tmpfs                     6.1G   12K  6.1G   1% /run/user/1102
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ pip install --no-deps -e .
+Obtaining file:///data/LLaMA-Factory
+  Installing build dependencies ... error
+  error: subprocess-exited-with-error
 
+  × installing build dependencies did not run successfully.
+  │ exit code: 1
+  ╰─> [7 lines of output]
+      WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e7728a0e90>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
+      WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772a97d40>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
+      WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772748890>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
+      WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772748a70>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
+      WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772748c80>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
+      ERROR: Could not find a version that satisfies the requirement hatchling (from versions: none)
+      ERROR: No matching distribution found for hatchling
+      [end of output]
 
-wcsadmin@scp-wcspmq1:/data/pinpoint/hbase$ ls -la
-total 20
-drwxr-xr-x 12 root root  188 Jul 15 16:08 .
-drwxr-xr-x  5 root root   88 Jul 15 09:36 ..
-drwxr-xr-x  2 root root    6 Jul 14 16:35 .hbck
-drwxr-xr-x  3 root root   41 Jul 15 16:08 .tmp
-drwxr-xr-x  2 root root   42 Jul 30 10:24 MasterProcWALs
-drwxr-xr-x  3 root root   46 Jul 15 16:08 WALs
-drwxr-xr-x  3 root root   18 Jul 30 10:26 archive
-drwxr-xr-x  2 root root    6 Jul 15 16:08 corrupt
-drwxr-xr-x  4 root root   34 Jul 15 16:08 data
--rw-r--r--  1 root root   42 Jul 15 16:08 hbase.id
--rw-r--r--  1 root root    7 Jul 15 16:08 hbase.version
-drwxr-xr-x  2 root root    6 Jul 15 16:08 mobdir
-drwxr-xr-x  2 root root 8192 Jul 30 10:28 oldWALs
-drwx--x--x  2 root root    6 Jul 15 16:08 staging
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'file:///data/LLaMA-Factory' when installing build dependencies
