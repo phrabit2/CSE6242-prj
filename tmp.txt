@@ -1,107 +1,25 @@
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ DISABLE_VERSION_CHECK=1 llamafactory-cli webui 2>&1 | grep -A5 -B5 torchaudio
+  File "/data/LLaMA-Factory/src/llamafactory/data/__init__.py", line 23, in <module>
+    from .template import TEMPLATES, Template, get_template_and_fix_tokenizer
+  File "/data/LLaMA-Factory/src/llamafactory/data/template.py", line 25, in <module>
+    from .mm_plugin import get_mm_plugin
+  File "/data/LLaMA-Factory/src/llamafactory/data/mm_plugin.py", line 30, in <module>
+    import torchaudio
+ModuleNotFoundError: No module named 'torchaudio'
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ sed -n '25,40p' /data/LLaMA-Factory/src/llamafactory/data/mm_plugin.py
+from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any, BinaryIO, Literal, NotRequired, Optional, TypedDict, Union
 
-(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory/requirements$ for f in /data/LLaMA-Factory/requirements/*.txt; do
-  echo "===== $f ====="
-  cat "$f"
-  echo ""
-done
-===== /data/LLaMA-Factory/requirements/adam-mini.txt =====
-adam-mini
+import numpy as np
+import torch
+import torchaudio
+from transformers.image_utils import get_image_size, is_valid_image, make_flat_list_of_images, to_numpy_array
+from transformers.models.mllama.processing_mllama import (
+    convert_sparse_cross_attention_mask_to_dense,
+    get_cross_attention_token_mask,
+)
+from transformers.video_utils import make_batched_videos
+from typing_extensions import override
 
-===== /data/LLaMA-Factory/requirements/apollo.txt =====
-apollo-torch
-
-===== /data/LLaMA-Factory/requirements/aqlm.txt =====
-aqlm[gpu]>=1.1.0
-
-===== /data/LLaMA-Factory/requirements/badam.txt =====
-badam>=1.2.1
-
-===== /data/LLaMA-Factory/requirements/bitsandbytes.txt =====
-bitsandbytes>=0.39.0
-
-===== /data/LLaMA-Factory/requirements/deepspeed.txt =====
-deepspeed>=0.10.0,<=0.18.4
-
-===== /data/LLaMA-Factory/requirements/dev.txt =====
-pre-commit
-ruff
-pytest
-build
-
-===== /data/LLaMA-Factory/requirements/eetq.txt =====
-eetq
-
-===== /data/LLaMA-Factory/requirements/fp8-te.txt =====
-transformer_engine[pytorch]>=2.0.0
-accelerate>=1.10.0
-
-===== /data/LLaMA-Factory/requirements/fp8.txt =====
-torchao>=0.8.0
-accelerate>=1.10.0
-
-===== /data/LLaMA-Factory/requirements/galore.txt =====
-galore-torch
-
-===== /data/LLaMA-Factory/requirements/gptq.txt =====
-optimum>=1.24.0
-gptqmodel>=2.0.0
-
-===== /data/LLaMA-Factory/requirements/hqq.txt =====
-hqq
-
-===== /data/LLaMA-Factory/requirements/ktransformers.txt =====
-ktransformers[sft]
-
-===== /data/LLaMA-Factory/requirements/liger-kernel.txt =====
-liger-kernel>=0.6.3
-
-===== /data/LLaMA-Factory/requirements/metrics.txt =====
-nltk
-jieba
-rouge-chinese
-
-===== /data/LLaMA-Factory/requirements/minicpm-v.txt =====
-soundfile
-torchvision
-torchaudio
-vector_quantize_pytorch
-vocos
-msgpack
-referencing
-jsonschema_specifications
-
-===== /data/LLaMA-Factory/requirements/npu.txt =====
-torch==2.7.1
-torch-npu==2.7.1.post4
-torchvision==0.22.1
-torchaudio==2.7.1
-decorator
-
-===== /data/LLaMA-Factory/requirements/openmind.txt =====
-openmind
-
-===== /data/LLaMA-Factory/requirements/sglang.txt =====
-sglang[srt]>=0.4.5
-transformers==4.51.1
-
-===== /data/LLaMA-Factory/requirements/swanlab.txt =====
-swanlab
-
-===== /data/LLaMA-Factory/requirements/vllm.txt =====
-vllm>=0.4.3,<=0.11.0
-
-(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory/requirements$ python3 << 'EOF'
-mods = ["torchaudio", "torchvision", "sse_starlette", "matplotlib", "omegaconf",
-        "fire", "tyro", "av", "librosa", "einops", "sentencepiece", "tiktoken",
-        "protobuf", "pandas", "scipy", "uvicorn", "fastapi", "pydantic",
-        "yaml", "jieba", "rouge_chinese", "nltk", "peft", "trl", "datasets",
-        "accelerate", "gradio", "transformers", "packaging"]
-missing = []
-for m in mods:
-    try:
-        __import__(m)
-    except ImportError:
-        missing.append(m)
-print("없는 모듈:", missing)
-EOF
-없는 모듈: ['torchaudio', 'sse_starlette', 'matplotlib', 'omegaconf', 'fire', 'tyro', 'librosa', 'einops', 'sentencepiece', 'tiktoken', 'protobuf', 'scipy', 'uvicorn', 'jieba', 'rouge_chinese', 'nltk']
+from ..extras.constants import AUDIO_PLACEHOLDER, IGNORE_INDEX, IMAGE_PLACEHOLDER, VIDEO_PLACEHOLDER
+from ..extras.packages import is_pillow_available, is_pyav_available, is_transformers_version_greater_than
