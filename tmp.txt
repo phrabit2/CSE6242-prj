@@ -1,12 +1,96 @@
-for f in /data/LLaMA-Factory/requirements/*.txt; do
+
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory/requirements$ for f in /data/LLaMA-Factory/requirements/*.txt; do
   echo "===== $f ====="
   cat "$f"
   echo ""
 done
+===== /data/LLaMA-Factory/requirements/adam-mini.txt =====
+adam-mini
 
-===
+===== /data/LLaMA-Factory/requirements/apollo.txt =====
+apollo-torch
 
-python3 << 'EOF'
+===== /data/LLaMA-Factory/requirements/aqlm.txt =====
+aqlm[gpu]>=1.1.0
+
+===== /data/LLaMA-Factory/requirements/badam.txt =====
+badam>=1.2.1
+
+===== /data/LLaMA-Factory/requirements/bitsandbytes.txt =====
+bitsandbytes>=0.39.0
+
+===== /data/LLaMA-Factory/requirements/deepspeed.txt =====
+deepspeed>=0.10.0,<=0.18.4
+
+===== /data/LLaMA-Factory/requirements/dev.txt =====
+pre-commit
+ruff
+pytest
+build
+
+===== /data/LLaMA-Factory/requirements/eetq.txt =====
+eetq
+
+===== /data/LLaMA-Factory/requirements/fp8-te.txt =====
+transformer_engine[pytorch]>=2.0.0
+accelerate>=1.10.0
+
+===== /data/LLaMA-Factory/requirements/fp8.txt =====
+torchao>=0.8.0
+accelerate>=1.10.0
+
+===== /data/LLaMA-Factory/requirements/galore.txt =====
+galore-torch
+
+===== /data/LLaMA-Factory/requirements/gptq.txt =====
+optimum>=1.24.0
+gptqmodel>=2.0.0
+
+===== /data/LLaMA-Factory/requirements/hqq.txt =====
+hqq
+
+===== /data/LLaMA-Factory/requirements/ktransformers.txt =====
+ktransformers[sft]
+
+===== /data/LLaMA-Factory/requirements/liger-kernel.txt =====
+liger-kernel>=0.6.3
+
+===== /data/LLaMA-Factory/requirements/metrics.txt =====
+nltk
+jieba
+rouge-chinese
+
+===== /data/LLaMA-Factory/requirements/minicpm-v.txt =====
+soundfile
+torchvision
+torchaudio
+vector_quantize_pytorch
+vocos
+msgpack
+referencing
+jsonschema_specifications
+
+===== /data/LLaMA-Factory/requirements/npu.txt =====
+torch==2.7.1
+torch-npu==2.7.1.post4
+torchvision==0.22.1
+torchaudio==2.7.1
+decorator
+
+===== /data/LLaMA-Factory/requirements/openmind.txt =====
+openmind
+
+===== /data/LLaMA-Factory/requirements/sglang.txt =====
+sglang[srt]>=0.4.5
+transformers==4.51.1
+
+===== /data/LLaMA-Factory/requirements/swanlab.txt =====
+swanlab
+
+===== /data/LLaMA-Factory/requirements/vllm.txt =====
+vllm>=0.4.3,<=0.11.0
+
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory/requirements$ python3 << 'EOF'
 mods = ["torchaudio", "torchvision", "sse_starlette", "matplotlib", "omegaconf",
         "fire", "tyro", "av", "librosa", "einops", "sentencepiece", "tiktoken",
         "protobuf", "pandas", "scipy", "uvicorn", "fastapi", "pydantic",
@@ -20,3 +104,4 @@ for m in mods:
         missing.append(m)
 print("없는 모듈:", missing)
 EOF
+없는 모듈: ['torchaudio', 'sse_starlette', 'matplotlib', 'omegaconf', 'fire', 'tyro', 'librosa', 'einops', 'sentencepiece', 'tiktoken', 'protobuf', 'scipy', 'uvicorn', 'jieba', 'rouge_chinese', 'nltk']
