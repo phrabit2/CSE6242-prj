@@ -1,41 +1,6 @@
-base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ pip install --no-deps --no-build-isolation -e .
-Obtaining file:///data/LLaMA-Factory
-  Checking if build backend supports build_editable ... done
-  Preparing editable metadata (pyproject.toml) ... error
-  error: subprocess-exited-with-error
-
-  × Preparing editable metadata (pyproject.toml) did not run successfully.
-  │ exit code: 1
-  ╰─> [29 lines of output]
-      Traceback (most recent call last):
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 195, in prepare_metadata_for_build_editable
-          hook = backend.prepare_metadata_for_build_editable
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      AttributeError: module 'hatchling.build' has no attribute 'prepare_metadata_for_build_editable'
-
-      During handling of the above exception, another exception occurred:
-
-      Traceback (most recent call last):
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 389, in <module>
-          main()
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 373, in main
-          json_out["return_val"] = hook(**hook_input["kwargs"])
-                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 204, in prepare_metadata_for_build_editable
-          whl_basename = build_hook(metadata_directory, config_settings)
-                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/build.py", line 83, in build_editable
-          return os.path.basename(next(builder.build(directory=wheel_directory, versions=["editable"])))
-                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/builders/plugin/interface.py", line 157, in build
-          artifact = version_api[version](directory, **build_data)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/builders/wheel.py", line 547, in build_editable
-          return self.build_editable_detection(directory, **build_data)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/builders/wheel.py", line 550, in build_editable_detection
-          from editables import EditableProject
-      ModuleNotFoundError: No module named 'editables'
-      [end of output]
-
-  note: This error originates from a subprocess, and is likely not a problem with pip.
+(base) wcsadmin@scp-wcsdgpu1:/tmp/lf_deps$ ls -la /data/sample_train/data/train.jsonl
+-rw-r--r-- 1 wcsadmin wcsadmin 60095 Jul 29 16:08 /data/sample_train/data/train.jsonl
+(base) wcsadmin@scp-wcsdgpu1:/tmp/lf_deps$ wc -l /data/sample_train/data/train.jsonl
+200 /data/sample_train/data/train.jsonl
+(base) wcsadmin@scp-wcsdgpu1:/tmp/lf_deps$ head -1 /data/sample_train/data/train.jsonl
+{"image": "/data/sample_train/data/images/20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg", "conversations": [{"role": "user", "content": "<image>\n이 상자 이미지에 파손이 있습니까? '예' 또는 '아니오'로만 답하세요."}, {"role": "assistant", "content": "예"}]}
