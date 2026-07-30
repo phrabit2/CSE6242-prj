@@ -1,19 +1,41 @@
-(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ pip install --no-deps -e .
+base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ pip install --no-deps --no-build-isolation -e .
 Obtaining file:///data/LLaMA-Factory
-  Installing build dependencies ... error
+  Checking if build backend supports build_editable ... done
+  Preparing editable metadata (pyproject.toml) ... error
   error: subprocess-exited-with-error
 
-  × installing build dependencies did not run successfully.
+  × Preparing editable metadata (pyproject.toml) did not run successfully.
   │ exit code: 1
-  ╰─> [7 lines of output]
-      WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e7728a0e90>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
-      WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772a97d40>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
-      WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772748890>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
-      WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772748a70>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
-      WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<pip._vendor.urllib3.connection.HTTPSConnection object at 0x73e772748c80>, 'Connection to pypi.org timed out. (connect timeout=15)')': /simple/hatchling/
-      ERROR: Could not find a version that satisfies the requirement hatchling (from versions: none)
-      ERROR: No matching distribution found for hatchling
+  ╰─> [29 lines of output]
+      Traceback (most recent call last):
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 195, in prepare_metadata_for_build_editable
+          hook = backend.prepare_metadata_for_build_editable
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      AttributeError: module 'hatchling.build' has no attribute 'prepare_metadata_for_build_editable'
+
+      During handling of the above exception, another exception occurred:
+
+      Traceback (most recent call last):
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 389, in <module>
+          main()
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 373, in main
+          json_out["return_val"] = hook(**hook_input["kwargs"])
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 204, in prepare_metadata_for_build_editable
+          whl_basename = build_hook(metadata_directory, config_settings)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/build.py", line 83, in build_editable
+          return os.path.basename(next(builder.build(directory=wheel_directory, versions=["editable"])))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/builders/plugin/interface.py", line 157, in build
+          artifact = version_api[version](directory, **build_data)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/builders/wheel.py", line 547, in build_editable
+          return self.build_editable_detection(directory, **build_data)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/home/wcsadmin/miniconda3/lib/python3.12/site-packages/hatchling/builders/wheel.py", line 550, in build_editable_detection
+          from editables import EditableProject
+      ModuleNotFoundError: No module named 'editables'
       [end of output]
 
   note: This error originates from a subprocess, and is likely not a problem with pip.
-ERROR: Failed to build 'file:///data/LLaMA-Factory' when installing build dependencies
