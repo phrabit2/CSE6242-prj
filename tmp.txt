@@ -1,3 +1,5 @@
-grep -n "AutoModelForCausalLMWithValueHead\|ValueHead" /data/LLaMA-Factory/src/llamafactory/model/loader.py
-
-python3 -c "import trl; print([x for x in dir(trl) if 'Value' in x or 'AutoModel' in x])"
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ grep -n "AutoModelForCausalLMWithValueHead\|ValueHead" /data/LLaMA-Factory/src/llamafactory/model/loader.py
+28:from trl import AutoModelForCausalLMWithValueHead
+186:        model = AutoModelForCausalLMWithValueHead.from_pretrained(model)
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ python3 -c "import trl; print([x for x in dir(trl) if 'Value' in x or 'AutoModel' in x])"
+[]
