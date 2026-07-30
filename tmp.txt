@@ -1,3 +1,22 @@
-SITE=$(python3 -c "import site; print(site.getsitepackages()[0])")
-mkdir -p "$SITE/torchaudio"
-printf '__version__ = "2.11.0"\n' > "$SITE/torchaudio/__init__.py"
+(base) wcsadmin@scp-wcsdgpu1:/data/LLaMA-Factory$ DISABLE_VERSION_CHECK=1 GRADIO_SEDRVER_NAME=0.0.0.0 GRADIO_SERVER_PORT=7860 llamafactory-cli webui
+Traceback (most recent call last):
+  File "/home/wcsadmin/miniconda3/bin/llamafactory-cli", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/data/LLaMA-Factory/src/llamafactory/cli.py", line 24, in main
+    launcher.launch()
+  File "/data/LLaMA-Factory/src/llamafactory/launcher.py", line 165, in launch
+    from .webui.interface import run_web_ui
+  File "/data/LLaMA-Factory/src/llamafactory/webui/interface.py", line 21, in <module>
+    from .components import (
+  File "/data/LLaMA-Factory/src/llamafactory/webui/components/__init__.py", line 16, in <module>
+    from .eval import create_eval_tab
+  File "/data/LLaMA-Factory/src/llamafactory/webui/components/eval.py", line 19, in <module>
+    from ..control import list_datasets
+  File "/data/LLaMA-Factory/src/llamafactory/webui/control.py", line 32, in <module>
+    from ..model import QuantizationMethod
+  File "/data/LLaMA-Factory/src/llamafactory/model/__init__.py", line 15, in <module>
+    from .loader import load_config, load_model, load_tokenizer
+  File "/data/LLaMA-Factory/src/llamafactory/model/loader.py", line 28, in <module>
+    from trl import AutoModelForCausalLMWithValueHead
+ImportError: cannot import name 'AutoModelForCausalLMWithValueHead' from 'trl' (/home/wcsadmin/miniconda3/lib/python3.12/site-packages/trl/__init__.py)
