@@ -1,7 +1,1 @@
-cp /data/LLaMA-Factory/src/llamafactory/model/loader.py /data/LLaMA-Factory/src/llamafactory/model/loader.py.bak
-
-sed -n '28p' /data/LLaMA-Factory/src/llamafactory/model/loader.py
-
-sed -i '28s/.*/try:\n    from trl import AutoModelForCausalLMWithValueHead\nexcept ImportError:\n    AutoModelForCausalLMWithValueHead = None/' /data/LLaMA-Factory/src/llamafactory/model/loader.py
-
-sed -n '28,32p' /data/LLaMA-Factory/src/llamafactory/model/loader.py
+https://wave.sec.samsung.net/wcs/api/codeService/searchCodeDetail
