@@ -1,167 +1,249 @@
-Request URL
-https://wave.sec.samsung.net/wcs/api/sessionService/login
-Request Method
-POST
-Status Code
-200 OK
-Remote Address
-10.194.178.21:443
-Referrer Policy
-strict-origin-when-cross-origin
-cache-control
-no-store
-connection
-keep-alive
-content-encoding
-gzip
-content-language
-ko-KR
-content-type
-application/json;charset=UTF-8
-date
-Fri, 31 Jul 2026 07:00:35 GMT
-server
-nginx/1.30.3
-transfer-encoding
-chunked
-vary
-origin,access-control-request-method,access-control-request-headers,accept-encoding
-x-content-type-options
-nosniff
-x-frame-options
-SAMEORIGIN
-x-xss-protection
-0
-accept
-application/json, text/plain, */*
-content-type
-application/json
-referer
-https://wave.sec.samsung.net/
-sec-ch-ua
-"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
-sec-ch-ua-mobile
-?0
-sec-ch-ua-platform
-"Windows"
-user-agent
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
+@echo off
+chcp 65001 > nul
+REM =====================================================
+REM  WCS 부하테스트 실행 스크립트 (Non-GUI 모드)
+REM  사용법: 이 파일을 wcs_loadtest.jmx 와 같은 폴더에 두고 더블클릭
+REM =====================================================
+setlocal
 
-Response:
-{
-    "sessionInfo": {
-        "WH_NM": "일죽CDC",
-        "OWNER_NM": null,
-        "LANG_CD": "KO",
-        "warehouseList": [
-            {
-                "wh_nm": "고창CDC",
-                "wh_id": "1760"
-            },
-            {
-                "wh_nm": "일죽CDC",
-                "wh_id": "1340"
-            },
-            {
-                "wh_nm": "평택CDC",
-                "wh_id": "1750"
-            }
-        ],
-        "USER_NM": "이창희",
-        "WH_ID": "1340",
-        "ownerList": [
-            {
-                "owner_id": "002",
-                "owner_nm": "삼성판매"
-            },
-            {
-                "owner_id": "001",
-                "owner_nm": "한국총괄"
-            }
-        ],
-        "USER_ID": "cahlee.lee",
-        "ALARM_RCV_YN": "Y",
-        "OWNER_ID": null
-    },
-    "ErrorMsg": "OK",
-    "ErrorCode": 0,
-    "success": true
-}
-====
+REM ---- 환경에 맞게 수정할 부분 ----
+set JMETER_HOME=C:\apache-jmeter-5.6.3
+set TEST_PLAN=wcs_loadtest.jmx
+REM ---------------------------------
 
-Request URL
-https://wave.sec.samsung.net/wcs/api/codeService/searchCodeDetail
-Request Method
-POST
-Status Code
-200 OK
-Remote Address
-10.194.178.21:443
-Referrer Policy
-strict-origin-when-cross-origin
-cache-control
-no-store
-connection
-keep-alive
-content-encoding
-gzip
-content-language
-ko-KR
-content-type
-application/json;charset=UTF-8
-date
-Fri, 31 Jul 2026 07:05:04 GMT
-server
-nginx/1.30.3
-transfer-encoding
-chunked
-vary
-origin,access-control-request-method,access-control-request-headers,accept-encoding
-x-content-type-options
-nosniff
-x-frame-options
-SAMEORIGIN
-x-xss-protection
-0
-accept
-application/json, text/plain, */*
-content-type
-application/json
-referer
-https://wave.sec.samsung.net/
-sec-ch-ua
-"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
-sec-ch-ua-mobile
-?0
-sec-ch-ua-platform
-"Windows"
-user-agent
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
+REM 실행 시각으로 결과 폴더명 생성 (기존 폴더 충돌 방지: -e -o 는 빈 폴더를 요구함)
+set TS=%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
+set TS=%TS: =0%
+set RESULT_DIR=results\%TS%
 
+mkdir "%RESULT_DIR%" 2>nul
 
+echo.
+echo ===== 부하테스트 시작 : %TS% =====
+echo  결과 폴더 : %RESULT_DIR%
+echo.
 
-Request Payload:
-{MENU_ID: "ADM110100", SES_USER_ID: "cahlee.lee", SES_WH_ID: "1340", SES_LANG_CD: "KO",…}
-CODE
-: 
-"ACPT_SCD"
-CURRENT_PAGE
-: 
-1
-MENU_ID
-: 
-"ADM110100"
-PAGE_SIZE
-: 
-999999
-SES_LANG_CD
-: 
-"KO"
-SES_USER_ID
-: 
-"cahlee.lee"
-SES_WH_ID
-: 
-"1340"
+call "%JMETER_HOME%\bin\jmeter.bat" -n ^
+  -t "%TEST_PLAN%" ^
+  -l "%RESULT_DIR%\result.jtl" ^
+  -j "%RESULT_DIR%\jmeter.log" ^
+  -e -o "%RESULT_DIR%\html_report"
 
+echo.
+echo ===== 테스트 완료 =====
+echo  HTML 리포트 : %RESULT_DIR%\html_report\index.html
+echo  원시결과(jtl): %RESULT_DIR%\result.jtl
+echo.
+pause
+endlocal
+
+======
+
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="WCS_LoadTest_searchCodeDetail" enabled="true">
+      <stringProp name="TestPlan.comments">WCS searchCodeDetail POST API 부하테스트 (로그인은 스레드당 1회 세션확보용)</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="HOST" elementType="Argument">
+            <stringProp name="Argument.name">HOST</stringProp>
+            <stringProp name="Argument.value">wave.sec.samsung.net</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="USER" elementType="Argument">
+            <stringProp name="Argument.name">USER</stringProp>
+            <stringProp name="Argument.value">cahlee.lee</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PASS" elementType="Argument">
+            <stringProp name="Argument.name">PASS</stringProp>
+            <stringProp name="Argument.value">1</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port"></stringProp>
+        <stringProp name="HTTPSampler.protocol">https</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout">10000</stringProp>
+        <stringProp name="HTTPSampler.response_timeout">30000</stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager (JSESSIONID 등 세션쿠키 자동보관)" enabled="true">
+        <collectionProp name="CookieManager.cookies"/>
+        <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+        <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+      </CookieManager>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager (브라우저 헤더 재현)" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Content-Type</stringProp>
+            <stringProp name="Header.value">application/json</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept</stringProp>
+            <stringProp name="Header.value">application/json, text/plain, */*</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept-Encoding</stringProp>
+            <stringProp name="Header.value">gzip, deflate</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Origin</stringProp>
+            <stringProp name="Header.value">https://wave.sec.samsung.net</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Referer</stringProp>
+            <stringProp name="Header.value">https://wave.sec.samsung.net/</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">User-Agent</stringProp>
+            <stringProp name="Header.value">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36</stringProp>
+          </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup guiclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroupGui" testclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup" testname="bzm - Concurrency Thread Group (계단식)" enabled="true">
+        <elementProp name="ThreadGroup.main_controller" elementType="com.blazemeter.jmeter.control.VirtualUserController"/>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <stringProp name="TargetLevel">50</stringProp>
+        <stringProp name="RampUp">5</stringProp>
+        <stringProp name="Steps">5</stringProp>
+        <stringProp name="Hold">5</stringProp>
+        <stringProp name="LogFilename"></stringProp>
+        <stringProp name="Iterations"></stringProp>
+        <stringProp name="Unit">M</stringProp>
+      </com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup>
+      <hashTree>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller (스레드당 로그인 1회)" enabled="true"/>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST Login (세션확보용) [바디 필드명 확인필요]" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&quot;USER_ID&quot;:&quot;${USER}&quot;,&quot;PASSWORD&quot;:&quot;${PASS}&quot;}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/wcs/api/sessionService/login</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="세션값 추출 (JSON Extractor)" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">SES_USER_ID;SES_WH_ID;SES_LANG_CD</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.sessionInfo.USER_ID;$.sessionInfo.WH_ID;$.sessionInfo.LANG_CD</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1;1;1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">NOTFOUND;NOTFOUND;NOTFOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="로그인 성공 검증 (success:true)" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-1">&quot;success&quot;\s*:\s*true</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message">로그인 실패(세션 확보 안됨)</stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">2</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="TX_SearchCodeDetail (부하 측정 대상)" enabled="true">
+          <boolProp name="TransactionController.parent">false</boolProp>
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+        </TransactionController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST searchCodeDetail [부하대상 API]" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&quot;MENU_ID&quot;:&quot;ADM110100&quot;,&quot;SES_USER_ID&quot;:&quot;${SES_USER_ID}&quot;,&quot;SES_WH_ID&quot;:&quot;${SES_WH_ID}&quot;,&quot;SES_LANG_CD&quot;:&quot;${SES_LANG_CD}&quot;,&quot;CODE&quot;:&quot;ACPT_SCD&quot;,&quot;CURRENT_PAGE&quot;:1,&quot;PAGE_SIZE&quot;:999999}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/wcs/api/codeService/searchCodeDetail</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="조회 성공 검증 (success:true)" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-1">&quot;success&quot;\s*:\s*true</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message">조회 실패</stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">2</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree [디버깅용-부하시 비활성]" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>true</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
 
