@@ -1,136 +1,33 @@
-로그인 시 
-
-1. encrypt-key
 Request URL
-https://wave.sec.samsung.net/wcs/api/encrypt-key
+https://wave.sec.samsung.net/assets/lang-DHyYqss4.js
 Request Method
 GET
 Status Code
-200 OK
-Remote Address
-10.194.178.21:443
+200 OK (from service worker)
 Referrer Policy
 strict-origin-when-cross-origin
+accept-ranges
+bytes
 cache-control
-no-cache, no-store, max-age=0, must-revalidate
+no-cache, no-store, must-revalidate
 connection
 keep-alive
-content-encoding
-gzip
+content-length
+85459
 content-type
-application/json
+application/javascript
 date
-Mon, 03 Aug 2026 23:16:17 GMT
+Mon, 03 Aug 2026 23:41:52 GMT
+etag
+"6a685bf2-14dd3"
 expires
 0
+last-modified
+Tue, 28 Jul 2026 07:36:18 GMT
 pragma
 no-cache
 server
 nginx/1.30.3
-transfer-encoding
-chunked
-vary
-origin,access-control-request-method,access-control-request-headers,accept-encoding
-x-content-type-options
-nosniff
-x-frame-options
-SAMEORIGIN
-x-xss-protection
-0
-accept
-*/*
-accept-encoding
-gzip, deflate, br, zstd
-accept-language
-ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
-connection
-keep-alive
-cookie
-saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; saveLoginId=suho_ibm.lee; EP_LOGINID=suho_ibm.lee; EPV8PISID=S0VhhokL0j0XJflnKIMZDX2crvv0hNYWjvyGAAEb; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0knMqXIkp/4bKHTQBtILmhcHVnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785798636922; EPV8PTSID=8DFWuBaXlI80_FL4YO9FTrmcIc1SKjw-0Im-sSms; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8EMSID=FVqGE8FdP1Am0S72Hqd-zdNO7KEfyaEGxtHtbC5s; EPV8MLSID=ja4ceB4agseSxWY3Oi0j92BWeJuZSzl1wOPZCoda; SESSION=NWU4ZDUwNmQtNDUzZC00ZjhjLWIyMDAtYTRiYWMwOGZiYTc3
-host
-wave.sec.samsung.net
-referer
-https://wave.sec.samsung.net/
-sec-ch-ua
-"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
-sec-ch-ua-mobile
-?0
-sec-ch-ua-platform
-"Windows"
-sec-fetch-dest
-empty
-sec-fetch-mode
-cors
-sec-fetch-site
-same-origin
-user-agent
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
-
-[Preview]
-publicKey
-: 
-"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmtnzUN2mPCeA1kwxnqvJnTkS5cyW9Kvmbq78j3JXYmSd31bXt0Y2j9luOjx07kJ+M5AQzOrxp2V8q3elqT9lwfUjAvawraRapXrH/t07lcV72uoAIEwzygYiBWND31s+8aN1qf+tRDHLqpF2ymLRKTsvZtXBHHKd91jBlQgv5ePfTTFlFUuvmVOH3gN7ndrNv6eCwqpCJJ51vlAuAoCFJWt82sGio8PcgImw0PsDDfW+BA2ksKAH8rbrbTHHVru3Y9jnly6H4fpGu8ZtFmqvuf/yEM5iTil0rSx9c5BkJWhFxK637kDegTsLRdUctZBsU55YidmdqzKqTFByPbYjlwIDAQAB"
-
-[Response]
-{
-    "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmtnzUN2mPCeA1kwxnqvJnTkS5cyW9Kvmbq78j3JXYmSd31bXt0Y2j9luOjx07kJ+M5AQzOrxp2V8q3elqT9lwfUjAvawraRapXrH/t07lcV72uoAIEwzygYiBWND31s+8aN1qf+tRDHLqpF2ymLRKTsvZtXBHHKd91jBlQgv5ePfTTFlFUuvmVOH3gN7ndrNv6eCwqpCJJ51vlAuAoCFJWt82sGio8PcgImw0PsDDfW+BA2ksKAH8rbrbTHHVru3Y9jnly6H4fpGu8ZtFmqvuf/yEM5iTil0rSx9c5BkJWhFxK637kDegTsLRdUctZBsU55YidmdqzKqTFByPbYjlwIDAQAB"
-}
-
-
-=====
-
-
-2. Login
-Request URL
-https://wave.sec.samsung.net/wcs/api/sessionService/login
-Request Method
-POST
-Status Code
-200 OK
-Remote Address
-10.194.178.21:443
-Referrer Policy
-strict-origin-when-cross-origin
-cache-control
-no-store
-connection
-keep-alive
-content-encoding
-gzip
-content-language
-ko-KR
-content-type
-application/json;charset=UTF-8
-date
-Mon, 03 Aug 2026 23:16:22 GMT
-server
-nginx/1.30.3
-transfer-encoding
-chunked
-vary
-origin,access-control-request-method,access-control-request-headers,accept-encoding
-x-content-type-options
-nosniff
-x-frame-options
-SAMEORIGIN
-x-xss-protection
-0
-accept
-application/json, text/plain, */*
-accept-encoding
-gzip, deflate, br, zstd
-accept-language
-ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
-connection
-keep-alive
-content-length
-502
-content-type
-application/json
-cookie
-saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; saveLoginId=suho_ibm.lee; EP_LOGINID=suho_ibm.lee; EPV8PISID=S0VhhokL0j0XJflnKIMZDX2crvv0hNYWjvyGAAEb; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0knMqXIkp/4bKHTQBtILmhcHVnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785798636922; EPV8PTSID=8DFWuBaXlI80_FL4YO9FTrmcIc1SKjw-0Im-sSms; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8EMSID=FVqGE8FdP1Am0S72Hqd-zdNO7KEfyaEGxtHtbC5s; EPV8MLSID=ja4ceB4agseSxWY3Oi0j92BWeJuZSzl1wOPZCoda; SESSION=NWU4ZDUwNmQtNDUzZC00ZjhjLWIyMDAtYTRiYWMwOGZiYTc3
-host
-wave.sec.samsung.net
 origin
 https://wave.sec.samsung.net
 referer
@@ -141,168 +38,412 @@ sec-ch-ua-mobile
 ?0
 sec-ch-ua-platform
 "Windows"
-sec-fetch-dest
-empty
-sec-fetch-mode
-cors
-sec-fetch-site
-same-origin
 user-agent
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
 
-[payload]
-{USER_ID: "Y2FobGVlLmxlZQ==",…}
-ENCRYPTED_PASSWORD
-: 
-"L5LIrd50LQAFlPIcCLaUMp9eaVHnsYxShmfTX4XOJ1HJ/OKnZP7lepC010ULpnwyxM890xuikEiKyutcuLhJSBCPvX2jneEC69T2Uumu8ig1dm11I6YxwfMRK7sZO/KapuGjaMu7zMyppmdy60jSE1hWVotUtGrOIy+2JxpgvBBr5H2WYwuRojH0m9YtYO0w6J3BS6sx7B0kKmCK95Vy3fT9bsxUmcPC0VhoakdeYqLkJxUYjVsBQU1QxOg1+B8ea2bCTOwlyOuq8hG7cno95nmMz8P5J3wL4y87Gk7ErKic0Rg9zX9i8K8nX7yaHxztE9iQAIENSEHG6WLwLI8oiw=="
-PASSWORD
-: 
-"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
-SELLANGBEFORELOGIN
-: 
-"KO"
-USER_ID
-: 
-"Y2FobGVlLmxlZQ=="
+[code]
 
-[response]
-{
-    "sessionInfo": {
-        "WH_NM": "일죽CDC",
-        "OWNER_NM": null,
-        "LANG_CD": "KO",
-        "warehouseList": [
-            {
-                "wh_nm": "고창CDC",
-                "wh_id": "1760"
-            },
-            {
-                "wh_nm": "일죽CDC",
-                "wh_id": "1340"
-            },
-            {
-                "wh_nm": "평택CDC",
-                "wh_id": "1750"
-            }
-        ],
-        "USER_NM": "이창희",
-        "WH_ID": "1340",
-        "ownerList": [
-            {
-                "owner_id": "002",
-                "owner_nm": "삼성판매"
-            },
-            {
-                "owner_id": "001",
-                "owner_nm": "한국총괄"
-            }
-        ],
-        "USER_ID": "cahlee.lee",
-        "ALARM_RCV_YN": "Y",
-        "OWNER_ID": null
-    },
-    "ErrorMsg": "OK",
-    "ErrorCode": 0,
-    "success": true
+    }
+      , a = t && setTimeout( () => {
+        a = null,
+        i(new z(`timeout of ${t}ms exceeded`,z.ETIMEDOUT))
+    }
+    , t)
+      , o = () => {
+        e &&= (a && clearTimeout(a),
+        a = null,
+        e.forEach(e => {
+            e.unsubscribe ? e.unsubscribe(i) : e.removeEventListener(`abort`, i)
+        }
+        ),
+        null)
+    }
+    ;
+    e.forEach(e => e.addEventListener(`abort`, i, {
+        once: !0
+    }));
+    let {signal: s} = n;
+    return s.unsubscribe = () => L.asap(o),
+    s
 }
-
-
-
-=====
-
-
-3. getUserPersonalInfo
-
-Request URL
-https://wave.sec.samsung.net/wcs/api/sessionService/getUserPersonalInfo
-Request Method
-POST
-Status Code
-200 OK
-Remote Address
-10.194.178.21:443
-Referrer Policy
-strict-origin-when-cross-origin
-cache-control
-no-store
-connection
-keep-alive
-content-encoding
-gzip
-content-language
-ko-KR
-content-type
-application/json;charset=UTF-8
-date
-Mon, 03 Aug 2026 23:16:22 GMT
-server
-nginx/1.30.3
-transfer-encoding
-chunked
-vary
-origin,access-control-request-method,access-control-request-headers,accept-encoding
-x-content-type-options
-nosniff
-x-frame-options
-SAMEORIGIN
-x-xss-protection
-0
-accept
-application/json, text/plain, */*
-accept-encoding
-gzip, deflate, br, zstd
-accept-language
-ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
-connection
-keep-alive
-content-length
-24
-content-type
-application/json
-cookie
-saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; saveLoginId=suho_ibm.lee; EP_LOGINID=suho_ibm.lee; EPV8PISID=S0VhhokL0j0XJflnKIMZDX2crvv0hNYWjvyGAAEb; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0knMqXIkp/4bKHTQBtILmhcHVnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785798636922; EPV8PTSID=8DFWuBaXlI80_FL4YO9FTrmcIc1SKjw-0Im-sSms; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8EMSID=FVqGE8FdP1Am0S72Hqd-zdNO7KEfyaEGxtHtbC5s; EPV8MLSID=ja4ceB4agseSxWY3Oi0j92BWeJuZSzl1wOPZCoda; SESSION=NWU4ZDUwNmQtNDUzZC00ZjhjLWIyMDAtYTRiYWMwOGZiYTc3
-host
-wave.sec.samsung.net
-origin
-https://wave.sec.samsung.net
-referer
-https://wave.sec.samsung.net/
-sec-ch-ua
-"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
-sec-ch-ua-mobile
-?0
-sec-ch-ua-platform
-"Windows"
-sec-fetch-dest
-empty
-sec-fetch-mode
-cors
-sec-fetch-site
-same-origin
-user-agent
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
-
-
-[payload]
-{USER_ID: "cahlee.lee"}
-USER_ID
-: 
-"cahlee.lee"
-
-[Response]
-{
-    "USER_NM": "이창희",
-    "success": true,
-    "ErrorMsg": "OK",
-    "USER_ID": "cahlee.lee",
-    "TEL": null,
-    "ErrorCode": 0,
-    "EMAIL": null,
-    "MOBILE": null
+  , pn = function*(e, t) {
+    let n = e.byteLength;
+    if (!t || n < t) {
+        yield e;
+        return
+    }
+    let r = 0, i;
+    for (; r < n; )
+        i = r + t,
+        yield e.slice(r, i),
+        r = i
 }
-
-
-
-
-
-3. getUserPersonalInfo
+  , mn = async function*(e, t) {
+    for await(let n of hn(e))
+        yield*pn(n, t)
+}
+  , hn = async function*(e) {
+    if (e[Symbol.asyncIterator]) {
+        yield*e;
+        return
+    }
+    let t = e.getReader();
+    try {
+        for (; ; ) {
+            let {done: e, value: n} = await t.read();
+            if (e)
+                break;
+            yield n
+        }
+    } finally {
+        await t.cancel()
+    }
+}
+  , gn = (e, t, n, r) => {
+    let i = mn(e, t), a = 0, o, s = e => {
+        o || (o = !0,
+        r && r(e))
+    }
+    ;
+    return new ReadableStream({
+        async pull(e) {
+            try {
+                let {done: t, value: r} = await i.next();
+                if (t) {
+                    s(),
+                    e.close();
+                    return
+                }
+                let o = r.byteLength;
+                n && n(a += o),
+                e.enqueue(new Uint8Array(r))
+            } catch (e) {
+                throw s(e),
+                e
+            }
+        },
+        cancel(e) {
+            return s(e),
+            i.return()
+        }
+    },{
+        highWaterMark: 2
+    })
+}
+  , _n = e => e >= 48 && e <= 57 || e >= 65 && e <= 70 || e >= 97 && e <= 102
+  , vn = (e, t, n) => t + 2 < n && _n(e.charCodeAt(t + 1)) && _n(e.charCodeAt(t + 2));
+function yn(e) {
+    if (!e || typeof e != `string` || !e.startsWith(`data:`))
+        return 0;
+    let t = e.indexOf(`,`);
+    if (t < 0)
+        return 0;
+    let n = e.slice(5, t)
+      , r = e.slice(t + 1);
+    if (/;base64/i.test(n)) {
+        let e = r.length
+          , t = r.length;
+        for (let n = 0; n < t; n++)
+            if (r.charCodeAt(n) === 37 && n + 2 < t) {
+                let t = r.charCodeAt(n + 1)
+                  , i = r.charCodeAt(n + 2);
+                _n(t) && _n(i) && (e -= 2,
+                n += 2)
+            }
+        let n = 0
+          , i = t - 1
+          , a = e => e >= 2 && r.charCodeAt(e - 2) === 37 && r.charCodeAt(e - 1) === 51 && (r.charCodeAt(e) === 68 || r.charCodeAt(e) === 100);
+        i >= 0 && (r.charCodeAt(i) === 61 ? (n++,
+        i--) : a(i) && (n++,
+        i -= 3)),
+        n === 1 && i >= 0 && (r.charCodeAt(i) === 61 || a(i)) && n++;
+        let o = Math.floor(e / 4) * 3 - (n || 0);
+        return o > 0 ? o : 0
+    }
+    let i = 0;
+    for (let e = 0, t = r.length; e < t; e++) {
+        let n = r.charCodeAt(e);
+        if (n === 37 && vn(r, e, t))
+            i += 1,
+            e += 2;
+        else if (n < 128)
+            i += 1;
+        else if (n < 2048)
+            i += 2;
+        else if (n >= 55296 && n <= 56319 && e + 1 < t) {
+            let t = r.charCodeAt(e + 1);
+            t >= 56320 && t <= 57343 ? (i += 4,
+            e++) : i += 3
+        } else
+            i += 3
+    }
+    return i
+}
+var bn = `1.18.1`
+  , xn = 64 * 1024
+  , {isFunction: Sn} = L
+  , Cn = e => encodeURIComponent(e).replace(/%([0-9A-F]{2})/gi, (e, t) => String.fromCharCode(parseInt(t, 16)))
+  , wn = e => {
+    if (!L.isString(e))
+        return e;
+    try {
+        return decodeURIComponent(e)
+    } catch {
+        return e
+    }
+}
+  , Tn = (e, ...t) => {
+    try {
+        return !!e(...t)
+    } catch {
+        return !1
+    }
+}
+  , En = e => {
+    let t = e.indexOf(`://`)
+      , n = e;
+    return t !== -1 && (n = n.slice(t + 3)),
+    n.includes(`@`) || n.includes(`:`)
+}
+  , Dn = e => {
+    let t = L.global !== void 0 && L.global !== null ? L.global : globalThis
+      , {ReadableStream: n, TextEncoder: r} = t;
+    e = L.merge.call({
+        skipUndefined: !0
+    }, {
+        Request: t.Request,
+        Response: t.Response
+    }, e);
+    let {fetch: i, Request: a, Response: o} = e
+      , s = i ? Sn(i) : typeof fetch == `function`
+      , c = Sn(a)
+      , l = Sn(o);
+    if (!s)
+        return !1;
+    let u = s && Sn(n)
+      , d = s && (typeof r == `function` ? (e => t => e.encode(t))(new r) : async e => new Uint8Array(await new a(e).arrayBuffer()))
+      , f = c && u && Tn( () => {
+        let e = !1
+          , t = new a(B.origin,{
+            body: new n,
+            method: `POST`,
+            get duplex() {
+                return e = !0,
+                `half`
+            }
+        })
+          , r = t.headers.has(`Content-Type`);
+        return t.body != null && t.body.cancel(),
+        e && !r
+    }
+    )
+      , p = l && u && Tn( () => L.isReadableStream(new o(``).body))
+      , m = {
+        stream: p && (e => e.body)
+    };
+    s && [`text`, `arrayBuffer`, `blob`, `formData`, `stream`].forEach(e => {
+        !m[e] && (m[e] = (t, n) => {
+            let r = t && t[e];
+            if (r)
+                return r.call(t);
+            throw new z(`Response type '${e}' is not supported`,z.ERR_NOT_SUPPORT,n)
+        }
+        )
+    }
+    );
+    let h = async e => {
+        if (e == null)
+            return 0;
+        if (L.isBlob(e))
+            return e.size;
+        if (L.isSpecCompliantForm(e))
+            return (await new a(B.origin,{
+                method: `POST`,
+                body: e
+            }).arrayBuffer()).byteLength;
+        if (L.isArrayBufferView(e) || L.isArrayBuffer(e))
+            return e.byteLength;
+        if (L.isURLSearchParams(e) && (e += ``),
+        L.isString(e))
+            return (await d(e)).byteLength
+    }
+      , g = async (e, t) => L.toFiniteNumber(e.getContentLength()) ?? h(t);
+    return async e => {
+        let {url: t, method: n, data: s, signal: l, cancelToken: d, timeout: _, onDownloadProgress: v, onUploadProgress: y, responseType: b, headers: x, withCredentials: S=`same-origin`, fetchOptions: C, maxContentLength: w, maxBodyLength: T} = un(e)
+          , E = L.isNumber(w) && w > -1
+          , D = L.isNumber(T) && T > -1
+          , ee = t => L.hasOwnProp(e, t) ? e[t] : void 0
+          , te = i || fetch;
+        b = b ? (b + ``).toLowerCase() : `text`;
+        let O = fn([l, d && d.toAbortSignal()], _), k = null, A = O && O.unsubscribe && ( () => {
+            O.unsubscribe()
+        }
+        ), j, M = null, N = () => new z(`Request body larger than maxBodyLength limit`,z.ERR_BAD_REQUEST,e,k);
+        try {
+            let i, l = ee(`auth`);
+            if (l && (i = {
+                username: L.getSafeProp(l, `username`) || ``,
+                password: L.getSafeProp(l, `password`) || ``
+            }),
+            En(t)) {
+                let e = new URL(t,B.origin);
+                !i && (e.username || e.password) && (i = {
+                    username: wn(e.username),
+                    password: wn(e.password)
+                }),
+                (e.username || e.password) && (e.username = ``,
+                e.password = ``,
+                t = e.href)
+            }
+            if (i && (x.delete(`authorization`),
+            x.set(`Authorization`, `Basic ` + btoa(Cn((i.username || ``) + `:` + (i.password || ``))))),
+            E && typeof t == `string` && t.startsWith(`data:`) && yn(t) > w)
+                throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k);
+            if (D && n !== `get` && n !== `head`) {
+                let e = await h(s);
+                if (typeof e == `number` && isFinite(e) && (j = e,
+                e > T))
+                    throw N()
+            }
+            let d = D && (L.isReadableStream(s) || L.isStream(s))
+              , _ = (e, t, n) => gn(e, xn, e => {
+                if (D && e > T)
+                    throw M = N();
+                t && t(e)
+            }
+            , n);
+            if (f && n !== `get` && n !== `head` && (y || d)) {
+                if (j ??= await g(x, s),
+                j !== 0 || d) {
+                    let e = new a(t,{
+                        method: `POST`,
+                        body: s,
+                        duplex: `half`
+                    }), n;
+                    if (L.isFormData(s) && (n = e.headers.get(`content-type`)) && x.setContentType(n),
+                    e.body) {
+                        let[t,n] = y && qt(j, Kt(Jt(y))) || [];
+                        s = _(e.body, t, n)
+                    }
+                }
+            } else if (d && !c && u && n !== `get` && n !== `head`)
+                s = _(s);
+            else if (d && c && !f && n !== `get` && n !== `head`)
+                throw new z(`Stream request bodies are not supported by the current fetch implementation`,z.ERR_NOT_SUPPORT,e,k);
+            L.isString(S) || (S = S ? `include` : `omit`);
+            let ne = c && `credentials`in a.prototype;
+            if (L.isFormData(s)) {
+                let e = x.getContentType();
+                e && /^multipart\/form-data/i.test(e) && !/boundary=/i.test(e) && x.delete(`content-type`)
+            }
+            x.set(`User-Agent`, `axios/` + bn, !1);
+            let re = {
+                ...C,
+                signal: O,
+                method: n.toUpperCase(),
+                headers: tt(x.normalize()),
+                body: s,
+                duplex: `half`,
+                credentials: ne ? S : void 0
+            };
+            k = c && new a(t,re);
+            let P = await (c ? te(k, C) : te(t, re))
+              , ie = R.from(P.headers);
+            if (E) {
+                let t = L.toFiniteNumber(ie.getContentLength());
+                if (t != null && t > w)
+                    throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k)
+            }
+            let ae = p && (b === `stream` || b === `response`);
+            if (p && P.body && (v || E || ae && A)) {
+                let t = {};
+                [`status`, `statusText`, `headers`].forEach(e => {
+                    t[e] = P[e]
+                }
+                );
+                let n = L.toFiniteNumber(ie.getContentLength())
+                  , [r,i] = v && qt(n, Kt(Jt(v), !0)) || []
+                  , a = 0;
+                P = new o(gn(P.body, xn, t => {
+                    if (E && (a = t,
+                    a > w))
+                        throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k);
+                    r && r(t)
+                }
+                , () => {
+                    i && i(),
+                    A && A()
+                }
+                ),t)
+            }
+            b ||= `text`;
+            let F = await m[L.findKey(m, b) || `text`](P, e);
+            if (E && !p && !ae) {
+                let t;
+                if (F != null && (typeof F.byteLength == `number` ? t = F.byteLength : typeof F.size == `number` ? t = F.size : typeof F == `string` && (t = typeof r == `function` ? new r().encode(F).byteLength : F.length)),
+                typeof t == `number` && t > w)
+                    throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k)
+            }
+            return !ae && A && A(),
+            await new Promise( (t, n) => {
+                Ht(t, n, {
+                    data: F,
+                    headers: R.from(P.headers),
+                    status: P.status,
+                    statusText: P.statusText,
+                    config: e,
+                    request: k
+                })
+            }
+            )
+        } catch (t) {
+            if (A && A(),
+            O && O.aborted && O.reason instanceof z) {
+                let n = O.reason;
+                throw n.config = e,
+                k && (n.request = k),
+                t !== n && Object.defineProperty(n, "cause", {
+                    __proto__: null,
+                    value: t,
+                    writable: !0,
+                    enumerable: !1,
+                    configurable: !0
+                }),
+                n
+            }
+            if (M)
+                throw k && !M.request && (M.request = k),
+                M;
+            if (t instanceof z)
+                throw k && !t.request && (t.request = k),
+                t;
+            if (t && t.name === `TypeError` && /Load failed|fetch/i.test(t.message)) {
+                let n = new z(`Network Error`,z.ERR_NETWORK,e,k,t && t.response);
+                throw Object.defineProperty(n, "cause", {
+                    __proto__: null,
+                    value: t.cause || t,
+                    writable: !0,
+                    enumerable: !1,
+                    configurable: !0
+                }),
+                n
+            }
+            throw z.from(t, t && t.code, e, k, t && t.response)
+        }
+    }
+}
+  , On = new Map
+  , kn = e => {
+    let t = e && e.env || {}, {fetch: n, Request: r, Response: i} = t, a = [r, i, n], o = a.length, s, c, l = On;
+    for (; o--; )
+        s = a[o],
+        c = l.get(s),
+        c === void 0 && l.set(s, c = o ? new Map : Dn(t)),
+        l = c;
+    return c
+}
+;
+kn();
+var An = {
+    http: null,
+    xhr: dn,
