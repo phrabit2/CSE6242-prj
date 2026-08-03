@@ -1,37 +1,4 @@
-[post login]
-
-1. sampler result
-Thread Name:bzm - Concurrency Thread Group (계단식)-ThreadStarter 1-1
-Sample Start:2026-08-03 08:47:24 KST
-Load time:17
-Connect Time:0
-Latency:17
-Size in bytes:546
-Sent bytes:534
-Headers size in bytes:432
-Body size in bytes:114
-Sample Count:1
-Error Count:1
-Data type ("text"|"bin"|""):text
-Response code:500
-Response message:
-
-
-HTTPSampleResult fields:
-ContentType: application/json;charset=UTF-8
-DataEncoding: UTF-8
-
-2. Request
-
-POST https://wave.sec.samsung.net/wcs/api/sessionService/login
-
-POST data:
-{"USER_ID":"cahlee.lee","PASSWORD":"1"}
-
-Cookie Data:
-SESSION=MjIzOTIyYjAtODhlNi00NDU2LTgwNDYtMTFhNTM2MDBiNzRk
-
-3. Request Header
+Login Request Payload
 
 Connection: keep-alive
 Content-Type: application/json
@@ -42,8 +9,3 @@ Referer: https://wave.sec.samsung.net/
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
 Content-Length: 39
 Host: wave.sec.samsung.net
-
-
-===================
-
-
