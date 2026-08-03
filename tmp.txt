@@ -1,6 +1,50 @@
-{
-    "USER_ID": "Y2FobGVlLmxlZQ==",
-    "PASSWORD": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
-    "ENCRYPTED_PASSWORD": "bbk1QS4Q1gM0RCJ1ndckIEa6bHX4Wyr1D8nxJU8/Zlf5q33zNYxGJMhJdZZjtSfFjrAccovK7gZHVulDRdNSmjefTI523M75GLD5TB5ylDYN+4jIs2fTi0G37//OrTVmcgV5pAI4/OtM9DBtVha5/BNBk4Ti2Ok4XWIoKBWwFUY801jV6TbzbQBGu2xMqx0p8FwUh+Drxj3vEnYjj33J/PNt3vqXW+4i1yGiBo41CmT6euwb0vojENxYIY2DmJZTpVf559qW33ESjcug+AewKobhkwc9z2dg6HoqKvsrBUfWM2iTHL60+msVa3yA059I6by528l17HGHYZizEvFDPA==",
-    "SELLANGBEFORELOGIN": "KO"
-}
+[Encrypt Key]
+
+Request URL
+https://wave.sec.samsung.net/wcs/api/encrypt-key
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+10.194.178.21:443
+Referrer Policy
+strict-origin-when-cross-origin
+cache-control
+no-cache, no-store, max-age=0, must-revalidate
+connection
+keep-alive
+content-encoding
+gzip
+content-type
+application/json
+date
+Sun, 02 Aug 2026 23:59:04 GMT
+expires
+0
+pragma
+no-cache
+server
+nginx/1.30.3
+transfer-encoding
+chunked
+vary
+origin,access-control-request-method,access-control-request-headers,accept-encoding
+x-content-type-options
+nosniff
+x-frame-options
+SAMEORIGIN
+x-xss-protection
+0
+referer
+https://wave.sec.samsung.net/
+sec-ch-ua
+"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
+
+
