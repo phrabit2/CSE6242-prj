@@ -1,11 +1,6 @@
-Login Request Payload
-
-Connection: keep-alive
-Content-Type: application/json
-Accept: application/json, text/plain, */*
-Accept-Encoding: gzip, deflate
-Origin: https://wave.sec.samsung.net
-Referer: https://wave.sec.samsung.net/
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
-Content-Length: 39
-Host: wave.sec.samsung.net
+{
+    "USER_ID": "Y2FobGVlLmxlZQ==",
+    "PASSWORD": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+    "ENCRYPTED_PASSWORD": "bbk1QS4Q1gM0RCJ1ndckIEa6bHX4Wyr1D8nxJU8/Zlf5q33zNYxGJMhJdZZjtSfFjrAccovK7gZHVulDRdNSmjefTI523M75GLD5TB5ylDYN+4jIs2fTi0G37//OrTVmcgV5pAI4/OtM9DBtVha5/BNBk4Ti2Ok4XWIoKBWwFUY801jV6TbzbQBGu2xMqx0p8FwUh+Drxj3vEnYjj33J/PNt3vqXW+4i1yGiBo41CmT6euwb0vojENxYIY2DmJZTpVf559qW33ESjcug+AewKobhkwc9z2dg6HoqKvsrBUfWM2iTHL60+msVa3yA059I6by528l17HGHYZizEvFDPA==",
+    "SELLANGBEFORELOGIN": "KO"
+}
