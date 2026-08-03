@@ -1,42 +1,38 @@
-[API 호출]
+@echo off
+chcp 65001 > nul
+REM =====================================================
+REM  WCS 부하테스트 실행 스크립트 (Non-GUI 모드)
+REM  사용법: 이 파일을 wcs_loadtest.jmx 와 같은 폴더에 두고 더블클릭
+REM =====================================================
+setlocal
 
-Thread Name:bzm - Concurrency Thread Group (계단식)-ThreadStarter 1-1
-Sample Start:2026-08-03 10:01:56 KST
-Load time:9
-Connect Time:0
-Latency:9
-Size in bytes:755
-Sent bytes:654
-Headers size in bytes:419
-Body size in bytes:336
-Sample Count:1
-Error Count:0
-Data type ("text"|"bin"|""):text
-Response code:200
-Response message:
+REM ---- 환경에 맞게 수정할 부분 ----
+set JMETER_HOME=C:\apache-jmeter-5.6.3
+set TEST_PLAN=wcs_loadtest.jmx
+REM ---------------------------------
 
+REM 실행 시각으로 결과 폴더명 생성 (기존 폴더 충돌 방지: -e -o 는 빈 폴더를 요구함)
+set TS=%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
+set TS=%TS: =0%
+set RESULT_DIR=results\%TS%
 
-HTTPSampleResult fields:
-ContentType: application/json;charset=UTF-8
-DataEncoding: UTF-8
+mkdir "%RESULT_DIR%" 2>nul
 
-Connection: keep-alive
-Content-Type: application/json
-Accept: application/json, text/plain, */*
-Accept-Encoding: gzip, deflate
-Origin: https://wave.sec.samsung.net
-Referer: https://wave.sec.samsung.net/
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
-Content-Length: 150
-Host: wave.sec.samsung.net
+echo.
+echo ===== 부하테스트 시작 : %TS% =====
+echo  결과 폴더 : %RESULT_DIR%
+echo.
 
-POST https://wave.sec.samsung.net/wcs/api/codeService/searchCodeDetail
+call "%JMETER_HOME%\bin\jmeter.bat" -n ^
+  -t "%TEST_PLAN%" ^
+  -l "%RESULT_DIR%\result.jtl" ^
+  -j "%RESULT_DIR%\jmeter.log" ^
+  -e -o "%RESULT_DIR%\html_report"
 
-POST data:
-{"MENU_ID":"ADM110100","SES_USER_ID":"NOTFOUND","SES_WH_ID":"NOTFOUND","SES_LANG_CD":"NOTFOUND","CODE":"ACPT_SCD","CURRENT_PAGE":1,"PAGE_SIZE":999999}
-
-Cookie Data:
-SESSION=NmNlYjc0OTYtMzdiYy00MzI1LWEwN2ItNjAwODJlMDg3MDg3
-
-
-{"ErrorMsg":"OK","DS_OUT":[{"VALUE1_DESC":null,"VALUE5_DESC":null,"DETAIL_CODE":"0","VALUE2_DESC":null,"VALUE3_DESC":null,"CODE":"ACPT_SCD","USE_YN":"Y","ORDERS":10,"VALUE1":"1","VALUE2":null,"VALUE3":null,"VALUE4":null,"UPD_DATETIME":"2026-05-28 09:37:21","VALUE5":null,"VALUE4_DESC":null,"DESCR":"승인대기","UPD_USER_ID":"JIYU.HWANG"},{"VALUE1_DESC":null,"VALUE5_DESC":null,"DETAIL_CODE":"1","VALUE2_DESC":null,"VALUE3_DESC":null,"CODE":"ACPT_SCD","USE_YN":"Y","ORDERS":20,"VALUE1":null,"VALUE2":null,"VALUE3":null,"VALUE4":null,"UPD_DATETIME":"2026-01-14 16:13:45","VALUE5":null,"VALUE4_DESC":null,"DESCR":"승인","UPD_USER_ID":"ADM"},{"VALUE1_DESC":null,"VALUE5_DESC":null,"DETAIL_CODE":"9","VALUE2_DESC":null,"VALUE3_DESC":null,"CODE":"ACPT_SCD","USE_YN":"Y","ORDERS":30,"VALUE1":null,"VALUE2":null,"VALUE3":null,"VALUE4":null,"UPD_DATETIME":"2026-01-14 16:13:45","VALUE5":null,"VALUE4_DESC":null,"DESCR":"반려","UPD_USER_ID":"ADM"}],"DS_TOTALCOUNT":3,"ErrorCode":0,"success":true}
+echo.
+echo ===== 테스트 완료 =====
+echo  HTML 리포트 : %RESULT_DIR%\html_report\index.html
+echo  원시결과(jtl): %RESULT_DIR%\result.jtl
+echo.
+pause
+endlocal
