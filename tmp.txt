@@ -1,203 +1,308 @@
-<!DOCTYPE html>
-<html lang="en">
+로그인 시 
 
-<head>
+1. encrypt-key
+Request URL
+https://wave.sec.samsung.net/wcs/api/encrypt-key
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+10.194.178.21:443
+Referrer Policy
+strict-origin-when-cross-origin
+cache-control
+no-cache, no-store, max-age=0, must-revalidate
+connection
+keep-alive
+content-encoding
+gzip
+content-type
+application/json
+date
+Mon, 03 Aug 2026 23:16:17 GMT
+expires
+0
+pragma
+no-cache
+server
+nginx/1.30.3
+transfer-encoding
+chunked
+vary
+origin,access-control-request-method,access-control-request-headers,accept-encoding
+x-content-type-options
+nosniff
+x-frame-options
+SAMEORIGIN
+x-xss-protection
+0
+accept
+*/*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+connection
+keep-alive
+cookie
+saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; saveLoginId=suho_ibm.lee; EP_LOGINID=suho_ibm.lee; EPV8PISID=S0VhhokL0j0XJflnKIMZDX2crvv0hNYWjvyGAAEb; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0knMqXIkp/4bKHTQBtILmhcHVnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785798636922; EPV8PTSID=8DFWuBaXlI80_FL4YO9FTrmcIc1SKjw-0Im-sSms; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8EMSID=FVqGE8FdP1Am0S72Hqd-zdNO7KEfyaEGxtHtbC5s; EPV8MLSID=ja4ceB4agseSxWY3Oi0j92BWeJuZSzl1wOPZCoda; SESSION=NWU4ZDUwNmQtNDUzZC00ZjhjLWIyMDAtYTRiYWMwOGZiYTc3
+host
+wave.sec.samsung.net
+referer
+https://wave.sec.samsung.net/
+sec-ch-ua
+"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-origin
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+[Preview]
+publicKey
+: 
+"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmtnzUN2mPCeA1kwxnqvJnTkS5cyW9Kvmbq78j3JXYmSd31bXt0Y2j9luOjx07kJ+M5AQzOrxp2V8q3elqT9lwfUjAvawraRapXrH/t07lcV72uoAIEwzygYiBWND31s+8aN1qf+tRDHLqpF2ymLRKTsvZtXBHHKd91jBlQgv5ePfTTFlFUuvmVOH3gN7ndrNv6eCwqpCJJ51vlAuAoCFJWt82sGio8PcgImw0PsDDfW+BA2ksKAH8rbrbTHHVru3Y9jnly6H4fpGu8ZtFmqvuf/yEM5iTil0rSx9c5BkJWhFxK637kDegTsLRdUctZBsU55YidmdqzKqTFByPbYjlwIDAQAB"
 
-    <title>Apache JMeter Dashboard</title>
+[Response]
+{
+    "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmtnzUN2mPCeA1kwxnqvJnTkS5cyW9Kvmbq78j3JXYmSd31bXt0Y2j9luOjx07kJ+M5AQzOrxp2V8q3elqT9lwfUjAvawraRapXrH/t07lcV72uoAIEwzygYiBWND31s+8aN1qf+tRDHLqpF2ymLRKTsvZtXBHHKd91jBlQgv5ePfTTFlFUuvmVOH3gN7ndrNv6eCwqpCJJ51vlAuAoCFJWt82sGio8PcgImw0PsDDfW+BA2ksKAH8rbrbTHHVru3Y9jnly6H4fpGu8ZtFmqvuf/yEM5iTil0rSx9c5BkJWhFxK637kDegTsLRdUctZBsU55YidmdqzKqTFByPbYjlwIDAQAB"
+}
 
-     <!-- Bootstrap Core CSS -->
-    <link href="sbadmin2-1.0.7/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- MetisMenu CSS -->
-    <link href="sbadmin2-1.0.7/bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
+=====
 
-    <!-- Custom CSS -->
-    <link href="sbadmin2-1.0.7/dist/css/sb-admin-2.css" rel="stylesheet">
 
-    <!-- Dashboard css -->
-    <link href="content/css/dashboard.css" rel="stylesheet">
+2. Login
+Request URL
+https://wave.sec.samsung.net/wcs/api/sessionService/login
+Request Method
+POST
+Status Code
+200 OK
+Remote Address
+10.194.178.21:443
+Referrer Policy
+strict-origin-when-cross-origin
+cache-control
+no-store
+connection
+keep-alive
+content-encoding
+gzip
+content-language
+ko-KR
+content-type
+application/json;charset=UTF-8
+date
+Mon, 03 Aug 2026 23:16:22 GMT
+server
+nginx/1.30.3
+transfer-encoding
+chunked
+vary
+origin,access-control-request-method,access-control-request-headers,accept-encoding
+x-content-type-options
+nosniff
+x-frame-options
+SAMEORIGIN
+x-xss-protection
+0
+accept
+application/json, text/plain, */*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+connection
+keep-alive
+content-length
+502
+content-type
+application/json
+cookie
+saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; saveLoginId=suho_ibm.lee; EP_LOGINID=suho_ibm.lee; EPV8PISID=S0VhhokL0j0XJflnKIMZDX2crvv0hNYWjvyGAAEb; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0knMqXIkp/4bKHTQBtILmhcHVnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785798636922; EPV8PTSID=8DFWuBaXlI80_FL4YO9FTrmcIc1SKjw-0Im-sSms; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8EMSID=FVqGE8FdP1Am0S72Hqd-zdNO7KEfyaEGxtHtbC5s; EPV8MLSID=ja4ceB4agseSxWY3Oi0j92BWeJuZSzl1wOPZCoda; SESSION=NWU4ZDUwNmQtNDUzZC00ZjhjLWIyMDAtYTRiYWMwOGZiYTc3
+host
+wave.sec.samsung.net
+origin
+https://wave.sec.samsung.net
+referer
+https://wave.sec.samsung.net/
+sec-ch-ua
+"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-origin
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
 
-    <!-- Table sorter -->
-    <link href="content/css/theme.blue.css" rel="stylesheet">
+[payload]
+{USER_ID: "Y2FobGVlLmxlZQ==",…}
+ENCRYPTED_PASSWORD
+: 
+"L5LIrd50LQAFlPIcCLaUMp9eaVHnsYxShmfTX4XOJ1HJ/OKnZP7lepC010ULpnwyxM890xuikEiKyutcuLhJSBCPvX2jneEC69T2Uumu8ig1dm11I6YxwfMRK7sZO/KapuGjaMu7zMyppmdy60jSE1hWVotUtGrOIy+2JxpgvBBr5H2WYwuRojH0m9YtYO0w6J3BS6sx7B0kKmCK95Vy3fT9bsxUmcPC0VhoakdeYqLkJxUYjVsBQU1QxOg1+B8ea2bCTOwlyOuq8hG7cno95nmMz8P5J3wL4y87Gk7ErKic0Rg9zX9i8K8nX7yaHxztE9iQAIENSEHG6WLwLI8oiw=="
+PASSWORD
+: 
+"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+SELLANGBEFORELOGIN
+: 
+"KO"
+USER_ID
+: 
+"Y2FobGVlLmxlZQ=="
 
-    <!-- icon -->
-    <link rel="icon" type="image/png" href="content/pages/icon-apache.png" />
+[response]
+{
+    "sessionInfo": {
+        "WH_NM": "일죽CDC",
+        "OWNER_NM": null,
+        "LANG_CD": "KO",
+        "warehouseList": [
+            {
+                "wh_nm": "고창CDC",
+                "wh_id": "1760"
+            },
+            {
+                "wh_nm": "일죽CDC",
+                "wh_id": "1340"
+            },
+            {
+                "wh_nm": "평택CDC",
+                "wh_id": "1750"
+            }
+        ],
+        "USER_NM": "이창희",
+        "WH_ID": "1340",
+        "ownerList": [
+            {
+                "owner_id": "002",
+                "owner_nm": "삼성판매"
+            },
+            {
+                "owner_id": "001",
+                "owner_nm": "한국총괄"
+            }
+        ],
+        "USER_ID": "cahlee.lee",
+        "ALARM_RCV_YN": "Y",
+        "OWNER_ID": null
+    },
+    "ErrorMsg": "OK",
+    "ErrorCode": 0,
+    "success": true
+}
 
-    <!-- Custom Fonts -->
-    <link href="sbadmin2-1.0.7/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-</head>
 
-<body>
-    <div id="wrapper">
-        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="index.html">Apache JMeter Dashboard</a>
-            </div>
-            <div class="navbar-default sidebar" role="navigation">
-                <div class="sidebar-nav navbar-collapse">
-                    <ul class="nav" id="side-menu">
-                        <li>
-                            <a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i> Charts<span class="fa arrow"></span></a>
-                            <ul class="nav nav-second-level">
-                                <li>
-                                    <a href="content/pages/OverTime.html">Over Time</a>
-                                </li>
-                                <li>
-                                    <a href="content/pages/Throughput.html">Throughput</a>
-                                </li>
-                                <li>
-                                    <a href="content/pages/ResponseTimes.html">Response Times</a>
-                                </li>
-                            </ul>
-                            <!-- /.nav-second-level -->
-                        </li>
-                        
-                        <li>
-                            <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i> Customs Graphs<span class="fa arrow"></span></a>
-                            <ul class="nav nav-second-level">
-                                <li>
-                                    <a href="content/pages/CustomsGraphs.html">Over Time</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <div id="page-wrapper">
-            <div class="row">
-                <div class="col-lg-12">
-                     <div class="panel panel-default" >
-                        <div class="panel-heading" style="text-align:center;">
-                           <p class="dashboard-title">Test and Report information</p>
-                        </div>
-                        <div class="panel-body">
-                        <table id="generalInfos" class="table table-bordered table-condensed " >
-                            <tr>
-                                <td>Source file</td>
-                                <td>"result.jtl"</td>
-                            </tr>
-                            <tr>
-                                <td>Start Time</td>
-                                <td>"8/3/26, 11:18 AM"</td>
-                            </tr>
-                            <tr>
-                                <td>End Time</td>
-                                <td>"8/3/26, 11:19 AM"</td>
-                            </tr>
-                                <tr>
-                                    <td>Filter for display</td>
-                                    <td>""</td>
-                                </tr>
-                        </table>
-                     </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="panel panel-default" style="text-align:center;">
-                        <div class="panel-heading">
-                           <p class="dashboard-title"><a href="https://en.wikipedia.org/wiki/Apdex" target="_blank">APDEX (Application Performance Index)</a></p>
-                        </div>
-                        <div class="panel-body">
-                            <section id="apdex" class="col-md-12 table-responsive">
-                                <table id="apdexTable" class="table table-bordered table-condensed tablesorter ">
-                                </table>
-                            </section>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6" >
-                    <div class="panel panel-default" style="text-align:center;">
-                        <div class="panel-heading">
-                           <p class="dashboard-title">Requests Summary</p>
-                        </div>
-                           <div class="panel-body">
-                            <div class="flot-chart" style="height:200px;">
-                                <div class="flot-chart-content" id="flot-requests-summary" style="height:200px;"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-12">
-                <div class="panel panel-default" style="text-align:center;">
-                       <div class="panel-heading" >
-                           <p class="dashboard-title">Statistics</p>
-                       </div>
-                <div class="panel-body ">
-                    <section class="col-md-12 table-responsive">
-                        <table id="statisticsTable" class="table table-bordered table-condensed tablesorter " >
-                        </table>
-                    </section>
-                </div>
-            </div>
-            <div class="col-lg-12">
-                <div class="panel panel-default" style="text-align:center;">
-                    <div class="panel-heading">
-                        <p class="dashboard-title">Errors</p>
-                    </div>
-                    <div class="panel-body">
-                        <section class="col-md-12 table-responsive">
-                            <table id="errorsTable" class="table table-bordered table-condensed tablesorter ">
-                            </table>
-                        </section>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-12">
-                <div class="panel panel-default" style="text-align:center;">
-                    <div class="panel-heading">
-                        <p class="dashboard-title">Top 5 Errors by sampler</p>
-                    </div>
-                    <div class="panel-body">
-                        <section class="col-md-12 table-responsive">
-                            <table id="top5ErrorsBySamplerTable" class="table table-bordered table-condensed tablesorter ">
-                            </table>
-                        </section>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- jQuery -->
-    <script src="sbadmin2-1.0.7/bower_components/jquery/dist/jquery.min.js"></script>
+=====
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="sbadmin2-1.0.7/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="sbadmin2-1.0.7/bower_components/flot/excanvas.min.js"></script>
-    <script src="sbadmin2-1.0.7/bower_components/flot/jquery.flot.js"></script>
-    <script src="sbadmin2-1.0.7/bower_components/flot/jquery.flot.pie.js"></script>
-    <script src="sbadmin2-1.0.7/bower_components/flot/jquery.flot.resize.js"></script>
-    <script src="sbadmin2-1.0.7/bower_components/flot/jquery.flot.time.js"></script>
-    <script src="sbadmin2-1.0.7/bower_components/flot.tooltip/js/jquery.flot.tooltip.min.js"></script>
-    <script src="sbadmin2-1.0.7/bower_components/flot-axislabels/jquery.flot.axislabels.js"></script>
-    <!-- Metis Menu Plugin JavaScript -->
-    <script src="sbadmin2-1.0.7/bower_components/metisMenu/dist/metisMenu.min.js"></script>
 
-    <script src="content/js/dashboard-commons.js"></script>
-    <script src="content/js/dashboard.js"></script>
+3. getUserPersonalInfo
 
-    <!-- Custom Theme JavaScript -->
-    <script src="sbadmin2-1.0.7/dist/js/sb-admin-2.js"></script>
-    <script type="text/javascript" src="content/js/jquery.tablesorter.min.js"></script>
+Request URL
+https://wave.sec.samsung.net/wcs/api/sessionService/getUserPersonalInfo
+Request Method
+POST
+Status Code
+200 OK
+Remote Address
+10.194.178.21:443
+Referrer Policy
+strict-origin-when-cross-origin
+cache-control
+no-store
+connection
+keep-alive
+content-encoding
+gzip
+content-language
+ko-KR
+content-type
+application/json;charset=UTF-8
+date
+Mon, 03 Aug 2026 23:16:22 GMT
+server
+nginx/1.30.3
+transfer-encoding
+chunked
+vary
+origin,access-control-request-method,access-control-request-headers,accept-encoding
+x-content-type-options
+nosniff
+x-frame-options
+SAMEORIGIN
+x-xss-protection
+0
+accept
+application/json, text/plain, */*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+connection
+keep-alive
+content-length
+24
+content-type
+application/json
+cookie
+saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; saveLoginId=suho_ibm.lee; EP_LOGINID=suho_ibm.lee; EPV8PISID=S0VhhokL0j0XJflnKIMZDX2crvv0hNYWjvyGAAEb; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0knMqXIkp/4bKHTQBtILmhcHVnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785798636922; EPV8PTSID=8DFWuBaXlI80_FL4YO9FTrmcIc1SKjw-0Im-sSms; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8EMSID=FVqGE8FdP1Am0S72Hqd-zdNO7KEfyaEGxtHtbC5s; EPV8MLSID=ja4ceB4agseSxWY3Oi0j92BWeJuZSzl1wOPZCoda; SESSION=NWU4ZDUwNmQtNDUzZC00ZjhjLWIyMDAtYTRiYWMwOGZiYTc3
+host
+wave.sec.samsung.net
+origin
+https://wave.sec.samsung.net
+referer
+https://wave.sec.samsung.net/
+sec-ch-ua
+"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-origin
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
 
-</body>
 
-</html>
+[payload]
+{USER_ID: "cahlee.lee"}
+USER_ID
+: 
+"cahlee.lee"
+
+[Response]
+{
+    "USER_NM": "이창희",
+    "success": true,
+    "ErrorMsg": "OK",
+    "USER_ID": "cahlee.lee",
+    "TEL": null,
+    "ErrorCode": 0,
+    "EMAIL": null,
+    "MOBILE": null
+}
+
+
+
+
+
+3. getUserPersonalInfo
