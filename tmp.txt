@@ -1,37 +1,22 @@
-(cmd)
+[Request Header]
 
-curl ^"https://wave.sec.samsung.net/wcs/api/sessionService/login^" ^
-  -H ^"Accept: application/json, text/plain, */*^" ^
-  -H ^"Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7^" ^
-  -H ^"Connection: keep-alive^" ^
-  -H ^"Content-Type: application/json^" ^
-  -b ^"saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407^$o1^$g1^$t1779070434^$j33^$l0^$h0; _ga_T11SF3WXX2=GS2.1.s1779070407^$o1^$g1^$t1779070434^$j33^$l0^$h0; _ga_K2SPJK2C73=GS2.1.s1779070407^$o1^$g1^$t1779070434^$j33^$l0^$h0; saveLoginId=suho_ibm.lee; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; EP_LOGINID=suho_ibm.lee; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; EPV8PISID=2QPktha5Jc1HZ6n3EKltMd73kwOmhyt8w-BWw-RY; EP6_UTOKEN=^\^"4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0ku41x3AS1gxaaZukzAh5ky7VnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg==^\^"; EP_BROWSERID=1785716180997; EPV8PTSID=7hBJG1lEuTCvBITtMO4zehlYQcp-4iU_fQtYHVp6; KNOX_ANID=^\^"5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg==^\^"; EPV8MLSID=sKuhUaMIy0Tb5FXmH2aXNc88hcnznuqHZ42QjCGW; EPV8EMSID=BnUMv5SNEx1P4i6iDA2ftqgR5jbzL6oztT8qq2_W; EPV8APSID=kctCU7APne1AIRNnXq0Y0i5Aefzha9Tao8N-dO4y; SESSION=MzkxMTYzZWUtM2U1OC00MDcxLWI2NGItNzFmMWMzY2Y3NDMz^" ^
-  -H ^"Origin: https://wave.sec.samsung.net^" ^
-  -H ^"Referer: https://wave.sec.samsung.net/^" ^
-  -H ^"Sec-Fetch-Dest: empty^" ^
-  -H ^"Sec-Fetch-Mode: cors^" ^
-  -H ^"Sec-Fetch-Site: same-origin^" ^
-  -H ^"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36^" ^
-  -H ^"sec-ch-ua: ^\^"Not;A=Brand^\^";v=^\^"8^\^", ^\^"Chromium^\^";v=^\^"150^\^", ^\^"Google Chrome^\^";v=^\^"150^\^"^" ^
-  -H ^"sec-ch-ua-mobile: ?0^" ^
-  -H ^"sec-ch-ua-platform: ^\^"Windows^\^"^" ^
-  --data-raw ^"^{^\^"USER_ID^\^":^\^"Y2FobGVlLmxlZQ==^\^",^\^"PASSWORD^\^":^\^"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b^\^",^\^"ENCRYPTED_PASSWORD^\^":^\^"BgxZBUWFZuTtMbpDBUsj869D1t64dEyLCkvqeIE2re1UtX6IZKUZNGy1I3u58MPtGblYTQPwGVP/Id30Tn3wmJt2ScJO/Y00mLlBTglw3PO40TsPNWnja7Bjv28a8fqrD7XZTiAcS2UFtnaDmEw+Oz8TkV64vyDXJxHTNSpK3QxSXC2ADSa6pPrYOh2m0pF+7R+1WI6z7Qh+qiF+O4oMVYOBdMKt0x7klFOqTtiQv9RrumB2n23d01Prj0KBqi27TDndyUi4WKzAYHGNsuGpbb3OCvQ+mzqwB66QoU3wuppY9hJ4xC+ZHPGphrlQrndPgQdVMEtKxR7p7HkbJbYawQ==^\^",^\^"SELLANGBEFORELOGIN^\^":^\^"KO^\^"^}^"
+Connection: keep-alive
+Content-Type: application/json
+Accept: application/json, text/plain, */*
+Accept-Encoding: gzip, deflate
+Origin: https://wave.sec.samsung.net
+Referer: https://wave.sec.samsung.net/
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
+Host: wave.sec.samsung.net
 
-(bash)
+[Request Body]
+GET https://wave.sec.samsung.net/
 
-curl 'https://wave.sec.samsung.net/wcs/api/sessionService/login' \
-  -H 'Accept: application/json, text/plain, */*' \
-  -H 'Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7' \
-  -H 'Connection: keep-alive' \
-  -H 'Content-Type: application/json' \
-  -b 'saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; saveLoginId=suho_ibm.lee; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; EP_LOGINID=suho_ibm.lee; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; EPV8PISID=2QPktha5Jc1HZ6n3EKltMd73kwOmhyt8w-BWw-RY; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0ku41x3AS1gxaaZukzAh5ky7VnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785716180997; EPV8PTSID=7hBJG1lEuTCvBITtMO4zehlYQcp-4iU_fQtYHVp6; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8MLSID=sKuhUaMIy0Tb5FXmH2aXNc88hcnznuqHZ42QjCGW; EPV8EMSID=BnUMv5SNEx1P4i6iDA2ftqgR5jbzL6oztT8qq2_W; EPV8APSID=kctCU7APne1AIRNnXq0Y0i5Aefzha9Tao8N-dO4y; SESSION=MzkxMTYzZWUtM2U1OC00MDcxLWI2NGItNzFmMWMzY2Y3NDMz' \
-  -H 'Origin: https://wave.sec.samsung.net' \
-  -H 'Referer: https://wave.sec.samsung.net/' \
-  -H 'Sec-Fetch-Dest: empty' \
-  -H 'Sec-Fetch-Mode: cors' \
-  -H 'Sec-Fetch-Site: same-origin' \
-  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36' \
-  -H 'sec-ch-ua: "Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"' \
-  -H 'sec-ch-ua-mobile: ?0' \
-  -H 'sec-ch-ua-platform: "Windows"' \
-  --data-raw '{"USER_ID":"Y2FobGVlLmxlZQ==","PASSWORD":"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b","ENCRYPTED_PASSWORD":"BgxZBUWFZuTtMbpDBUsj869D1t64dEyLCkvqeIE2re1UtX6IZKUZNGy1I3u58MPtGblYTQPwGVP/Id30Tn3wmJt2ScJO/Y00mLlBTglw3PO40TsPNWnja7Bjv28a8fqrD7XZTiAcS2UFtnaDmEw+Oz8TkV64vyDXJxHTNSpK3QxSXC2ADSa6pPrYOh2m0pF+7R+1WI6z7Qh+qiF+O4oMVYOBdMKt0x7klFOqTtiQv9RrumB2n23d01Prj0KBqi27TDndyUi4WKzAYHGNsuGpbb3OCvQ+mzqwB66QoU3wuppY9hJ4xC+ZHPGphrlQrndPgQdVMEtKxR7p7HkbJbYawQ==","SELLANGBEFORELOGIN":"KO"}'
+GET data:
+
+
+[no cookies]
+
+
+=======
+
