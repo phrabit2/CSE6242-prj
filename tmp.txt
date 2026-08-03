@@ -1,3 +1,38 @@
-{
-    "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmtnzUN2mPCeA1kwxnqvJnTkS5cyW9Kvmbq78j3JXYmSd31bXt0Y2j9luOjx07kJ+M5AQzOrxp2V8q3elqT9lwfUjAvawraRapXrH/t07lcV72uoAIEwzygYiBWND31s+8aN1qf+tRDHLqpF2ymLRKTsvZtXBHHKd91jBlQgv5ePfTTFlFUuvmVOH3gN7ndrNv6eCwqpCJJ51vlAuAoCFJWt82sGio8PcgImw0PsDDfW+BA2ksKAH8rbrbTHHVru3Y9jnly6H4fpGu8ZtFmqvuf/yEM5iTil0rSx9c5BkJWhFxK637kDegTsLRdUctZBsU55YidmdqzKqTFByPbYjlwIDAQAB"
-}
+@echo off
+chcp 65001 > nul
+REM =====================================================
+REM  WCS 부하테스트 실행 스크립트 (Non-GUI 모드)
+REM  사용법: 이 파일을 wcs_loadtest.jmx 와 같은 폴더에 두고 더블클릭
+REM =====================================================
+setlocal
+
+REM ---- 환경에 맞게 수정할 부분 ----
+set JMETER_HOME=C:\apache-jmeter-5.6.3
+set TEST_PLAN=wcs_loadtest.jmx
+REM ---------------------------------
+
+REM 실행 시각으로 결과 폴더명 생성 (기존 폴더 충돌 방지: -e -o 는 빈 폴더를 요구함)
+set TS=%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
+set TS=%TS: =0%
+set RESULT_DIR=results\%TS%
+
+mkdir "%RESULT_DIR%" 2>nul
+
+echo.
+echo ===== 부하테스트 시작 : %TS% =====
+echo  결과 폴더 : %RESULT_DIR%
+echo.
+
+call "%JMETER_HOME%\bin\jmeter.bat" -n ^
+  -t "%TEST_PLAN%" ^
+  -l "%RESULT_DIR%\result.jtl" ^
+  -j "%RESULT_DIR%\jmeter.log" ^
+  -e -o "%RESULT_DIR%\html_report"
+
+echo.
+echo ===== 테스트 완료 =====
+echo  HTML 리포트 : %RESULT_DIR%\html_report\index.html
+echo  원시결과(jtl): %RESULT_DIR%\result.jtl
+echo.
+pause
+endlocal
