@@ -1,38 +1,47 @@
-@echo off
-chcp 65001 > nul
-REM =====================================================
-REM  WCS 부하테스트 실행 스크립트 (Non-GUI 모드)
-REM  사용법: 이 파일을 wcs_loadtest.jmx 와 같은 폴더에 두고 더블클릭
-REM =====================================================
-setlocal
+Thread Name:bzm - Concurrency Thread Group (계단식)-ThreadStarter 1-1
+Sample Start:2026-08-03 09:20:29 KST
+Load time:52
+Connect Time:0
+Latency:52
+Size in bytes:348
+Sent bytes:932
+Headers size in bytes:207
+Body size in bytes:141
+Sample Count:1
+Error Count:1
+Data type ("text"|"bin"|""):text
+Response code:400
+Response message:
 
-REM ---- 환경에 맞게 수정할 부분 ----
-set JMETER_HOME=C:\apache-jmeter-5.6.3
-set TEST_PLAN=wcs_loadtest.jmx
-REM ---------------------------------
 
-REM 실행 시각으로 결과 폴더명 생성 (기존 폴더 충돌 방지: -e -o 는 빈 폴더를 요구함)
-set TS=%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
-set TS=%TS: =0%
-set RESULT_DIR=results\%TS%
+HTTPSampleResult fields:
+ContentType: application/json
+DataEncoding: null
 
-mkdir "%RESULT_DIR%" 2>nul
+===
+Request Header
+Connection: keep-alive
+Content-Type: application/json
+Accept: application/json, text/plain, */*
+Accept-Encoding: gzip, deflate
+Origin: https://wave.sec.samsung.net
+Referer: https://wave.sec.samsung.net/
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
+Content-Length: 502
+Host: wave.sec.samsung.net
 
-echo.
-echo ===== 부하테스트 시작 : %TS% =====
-echo  결과 폴더 : %RESULT_DIR%
-echo.
 
-call "%JMETER_HOME%\bin\jmeter.bat" -n ^
-  -t "%TEST_PLAN%" ^
-  -l "%RESULT_DIR%\result.jtl" ^
-  -j "%RESULT_DIR%\jmeter.log" ^
-  -e -o "%RESULT_DIR%\html_report"
+Request Body
 
-echo.
-echo ===== 테스트 완료 =====
-echo  HTML 리포트 : %RESULT_DIR%\html_report\index.html
-echo  원시결과(jtl): %RESULT_DIR%\result.jtl
-echo.
-pause
-endlocal
+POST https://wave.sec.samsung.net/wcs/api/sessionService/login
+
+POST data:
+{"USER_ID":"Y2FobGVlLmxlZQ==","PASSWORD":"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b","ENCRYPTED_PASSWORD":"VjxG9PnsCTgY3OcIx+AVyBpcp3QBp5C0b33X7m6D+534mWu/nNpWbXPGMPnUec0D8jhn2fED0FPLGJZEb7/+gRg1h9kyHN0DaCjAhzj55jeVKjb0Cb0d81vAcWM9uUNQ+stkuiPjOPL74K1BLLwttdfe67/80Sfl1WBcKS1Ev9QPxSZjE8dPw/XfOPrgHlXMxLMSDP4n7Hsh4jGlaFhHjjJl5CpUDk0jcjC5wHWZjerKZf4rY45//FPXGCNIyHpylAd4DRhE2eFowHKdrNtLrqBeXK8iSFJlYQq0HA7YwJ0ZiZC/3IHI9i4FK8CNmjn5p64OWpAuYnkvnxGpYr+Ksg==","SELLANGBEFORELOGIN":"KO"}
+
+[no cookies]
+'
+
+===
+Response Data
+
+{"timestamp":"2026-08-03 09:20:29","status":400,"error":"Bad Request","path":"/wcs/api/sessionService/login"}
