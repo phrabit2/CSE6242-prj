@@ -1,10 +1,12 @@
+[Post Login]
+
 Thread Name:bzm - Concurrency Thread Group (계단식)-ThreadStarter 1-1
-Sample Start:2026-08-03 09:37:39 KST
-Load time:8
+Sample Start:2026-08-03 09:57:25 KST
+Load time:10
 Connect Time:0
-Latency:8
+Latency:10
 Size in bytes:348
-Sent bytes:932
+Sent bytes:998
 Headers size in bytes:207
 Body size in bytes:141
 Sample Count:1
@@ -17,8 +19,6 @@ Response message:
 HTTPSampleResult fields:
 ContentType: application/json
 DataEncoding: null
-
-===
 
 Connection: keep-alive
 Content-Type: application/json
@@ -33,19 +33,9 @@ Host: wave.sec.samsung.net
 POST https://wave.sec.samsung.net/wcs/api/sessionService/login
 
 POST data:
-{"USER_ID":"Y2FobGVlLmxlZQ==","PASSWORD":"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b","ENCRYPTED_PASSWORD":"inLNPb8JjChXVsTh21MJTIDInyCo5bDUQKpyDuL96yGlEJFNmdl0dW7kFSE/P7ag0E5f1f3kXGmTGdA9Y1JDWtxuUACYHziCRR9KWgFoNLDF6W15OoehpRFHCwGnNerfbYzYX0pG9J4MrfjIw0eOyjBJhoNY5vMe/P00CHaAajruDmN6lTa06oOLv59IFRAAnYEbeuU3CKXh/vLk0ewC6jm06jgvh4bC+11AFxATwO8MARS2uho9X4ZCrM2BN8o+/cu7AE8TTgcOvMPUOjIEirIaZ+HGrpqZY7pkmEl88s5xsgJI0OXIP9fewqthkbCMFfHgMPRdS0WkSEg8jjN9UA==","SELLANGBEFORELOGIN":"KO"}
+{"USER_ID":"Y2FobGVlLmxlZQ==","PASSWORD":"6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b","ENCRYPTED_PASSWORD":"d6g2I4nvFC4eSY5Lq0LvoeEKP6MgHM39aKmIh3ezLsv+5b3/Hflry4GFCrAURHlpTwgoCZ15IDPgVQJTXEhePA37vJOH/PA9XtXM9q2r6m8mTXZTb0MoC5FejF/XPDjd2NRVNb6OFv8oKF6PrqtxBnvbUhr3CXAKN2ugHcfZiJ3z9ilktg1FySzpmk0/yGmurYzoNfSo5UO7NaQKEvAYH8FuZI0ndut98Ek0DhoidVaCVyVuCPNmocXzRhAlgzWBVhTE+hpCThoYLRAUf3L/af3hCU8f+fs/Cde4eWAp3hYM6vjJ4DapALqg8Y5iJNlEKBZtzGqwQ0P7iy4x5IqKng==","SELLANGBEFORELOGIN":"KO"}
 
-[no cookies]
+Cookie Data:
+SESSION=NmNlYjc0OTYtMzdiYy00MzI1LWEwN2ItNjAwODJlMDg3MDg3
 
-===
-
-{"timestamp":"2026-08-03 09:37:39","status":400,"error":"Bad Request","path":"/wcs/api/sessionService/login"}
-
-
-====================================
-
-Request URL
-https://wave.sec.samsung.net/assets/main.esm-CMwaoTcK.js
-
-cookie
-saveLanguage=ko_KR.EUC-KR; logimage.index=0; _ga=GA1.1.1933143595.1779070407; _ga_0C4M1PWYZ7=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_T11SF3WXX2=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; _ga_K2SPJK2C73=GS2.1.s1779070407$o1$g1$t1779070434$j33$l0$h0; saveLoginId=suho_ibm.lee; TL_INFO=EN_KR; EPV8PCSID=RCPcAIdm0T16UQoZN0d7uWWtI0fMBg58xIW7yEaV; PP_SERVER_JSESSIONID=FDC2DFCFF791E8B8CB54CD989970F366; EPV8PISID=2QPktha5Jc1HZ6n3EKltMd73kwOmhyt8w-BWw-RY; EP6_UTOKEN="4FTGYEZmNKLOHLnRNF2CBkB7laqSRku6PnABAvB5kWLsjK3OHQWAIpFomrSpvKPF5/SNc06G+Dg8eXmNU7f4pQsLRDw7IPhPq8QTJ+F91c1LJ2EwumVShE8tIVUF7+Jqit8NMycasgxenLN6nQK0kroEshZA7oi4xFbjY7d2C/vVnmoVZIdlccFdHnhnK9qprR3xfdKtZxMD3KRFnhmGVDviWfNQY2MErwRf0Td22ZIFHJ6Hf+8D2QMPQ+5gzmllwIuJkSV8LcgV6NB3Z/OQa2GMu0JiPZJnOTxPQnL7sX+s+XwbAOgJx3QPn0v8rO547G1zs0IdlHA5yBdWLBuKEg=="; EP_BROWSERID=1785717402798; EP_LOGINID=suho_ibm.lee; EPV8PTSID=qURzzt0rNc-chsQfCn0uonCW42OSYexHzZaPrmaR; KNOX_ANID="5UboEV7VmdLjGwpbOsNwx/ZISuy4Lty1WbhXBORECt5+Cvp3r4yYbOA//FsFDw6C1s9NtGIjcSoRFYog/EOlOg=="; EPV8MLSID=gMlmDHNLe1fEO8hru_TfSuTFDnAtZmlPJ991-tU1; EPV8EMSID=SRmRDsSGZPDu5vOBQCnOZ003UxiDC4hqjUDdOAhI; SESSION=NmNlYjc0OTYtMzdiYy00MzI1LWEwN2ItNjAwODJlMDg3MDg3
+{"timestamp":"2026-08-03 09:57:25","status":400,"error":"Bad Request","path":"/wcs/api/sessionService/login"}
