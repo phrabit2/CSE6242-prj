@@ -1,38 +1,137 @@
-@echo off
-chcp 65001 > nul
-REM =====================================================
-REM  WCS 부하테스트 실행 스크립트 (Non-GUI 모드)
-REM  사용법: 이 파일을 wcs_loadtest.jmx 와 같은 폴더에 두고 더블클릭
-REM =====================================================
-setlocal
+[INFO|2026-08-04 04:17:31] llamafactory.hparams.parser:614 >> Process rank: 0, world size: 1, device: cuda:0, distributed training: False, compute dtype: torch.bfloat16
+[INFO|hub.py:364] 2026-08-04 04:17:31,324 >> Offline mode: forcing local_files_only=True
+[INFO|hub.py:364] 2026-08-04 04:17:31,324 >> Offline mode: forcing local_files_only=True
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 422, in cached_files
+    hf_hub_download(
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 84, in _inner_fn
+    validate_repo_id(arg_value)
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 132, in validate_repo_id
+    raise HFValidationError(
+huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/Qwen2.5-72B-Instruct'. Use `repo_type` argument if needed.
 
-REM ---- 환경에 맞게 수정할 부분 ----
-set JMETER_HOME=C:\apache-jmeter-5.6.3
-set TEST_PLAN=wcs_loadtest.jmx
-REM ---------------------------------
+The above exception was the direct cause of the following exception:
 
-REM 실행 시각으로 결과 폴더명 생성 (기존 폴더 충돌 방지: -e -o 는 빈 폴더를 요구함)
-set TS=%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
-set TS=%TS: =0%
-set RESULT_DIR=results\%TS%
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.11/site-packages/transformers/models/auto/tokenization_auto.py", line 692, in from_pretrained
+    config = AutoConfig.from_pretrained(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/models/auto/configuration_auto.py", line 374, in from_pretrained
+    config_dict, unused_kwargs = PreTrainedConfig.get_config_dict(pretrained_model_name_or_path, **kwargs)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 682, in get_config_dict
+    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 737, in _get_config_dict
+    resolved_config_file = cached_file(
+                           ^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 278, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 473, in cached_files
+    raise OSError(f"{e}") from e
+OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/Qwen2.5-72B-Instruct'. Use `repo_type` argument if needed.
 
-mkdir "%RESULT_DIR%" 2>nul
+During handling of the above exception, another exception occurred:
 
-echo.
-echo ===== 부하테스트 시작 : %TS% =====
-echo  결과 폴더 : %RESULT_DIR%
-echo.
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 422, in cached_files
+    hf_hub_download(
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 84, in _inner_fn
+    validate_repo_id(arg_value)
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 132, in validate_repo_id
+    raise HFValidationError(
+huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/Qwen2.5-72B-Instruct'. Use `repo_type` argument if needed.
 
-call "%JMETER_HOME%\bin\jmeter.bat" -n ^
-  -t "%TEST_PLAN%" ^
-  -l "%RESULT_DIR%\result.jtl" ^
-  -j "%RESULT_DIR%\jmeter.log" ^
-  -e -o "%RESULT_DIR%\html_report"
+The above exception was the direct cause of the following exception:
 
-echo.
-echo ===== 테스트 완료 =====
-echo  HTML 리포트 : %RESULT_DIR%\html_report\index.html
-echo  원시결과(jtl): %RESULT_DIR%\result.jtl
-echo.
-pause
-endlocal
+Traceback (most recent call last):
+  File "/app/src/llamafactory/model/loader.py", line 78, in load_tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/models/auto/tokenization_auto.py", line 696, in from_pretrained
+    config = PreTrainedConfig.from_pretrained(pretrained_model_name_or_path, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 641, in from_pretrained
+    config_dict, kwargs = cls.get_config_dict(pretrained_model_name_or_path, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 682, in get_config_dict
+    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 737, in _get_config_dict
+    resolved_config_file = cached_file(
+                           ^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 278, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 473, in cached_files
+    raise OSError(f"{e}") from e
+OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/models/Qwen2.5-72B-Instruct'. Use `repo_type` argument if needed.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/conda/bin/llamafactory-cli", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/app/src/llamafactory/cli.py", line 24, in main
+    launcher.launch()
+  File "/app/src/llamafactory/launcher.py", line 157, in launch
+    run_exp()
+  File "/app/src/llamafactory/train/tuner.py", line 173, in run_exp
+    _training_function(config={"args": args, "callbacks": callbacks})
+  File "/app/src/llamafactory/train/tuner.py", line 141, in _training_function
+    run_sft(model_args, data_args, training_args, finetuning_args, generating_args, callbacks)
+  File "/app/src/llamafactory/train/sft/workflow.py", line 49, in run_sft
+    tokenizer_module = load_tokenizer(model_args)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/src/llamafactory/model/loader.py", line 93, in load_tokenizer
+    raise OSError("Failed to load tokenizer.") from e
+OSError: Failed to load tokenizer.
+
+
+
+
+====
+
+
+(base) wcsadmin@scp-wcsdgpu1:/data/llamafactory$ sudo docker exec llamafactory ls -la /models/Qwen2.5-VL-7B-Instruct/
+total 16207152
+drwxr-xr-x 3 1101 1101       4096 Jul  1 06:10 .
+drwxrwxr-x 7 1101 1101       4096 Jul  1 08:03 ..
+-rwxr-xr-x 1 1101 1101        163 Jun 22 08:55 ._.cache
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._.gitattributes
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._README.md
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._chat_template.json
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._config.json
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._generation_config.json
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._merges.txt
+-rw-r--r-- 1 1101 1101        163 Jun 22 09:16 ._model-00001-of-00005.safetensors
+-rw-r--r-- 1 1101 1101        163 Jun 22 09:16 ._model-00002-of-00005.safetensors
+-rw-r--r-- 1 1101 1101        163 Jun 22 09:13 ._model-00003-of-00005.safetensors
+-rw-r--r-- 1 1101 1101        163 Jun 22 09:16 ._model-00004-of-00005.safetensors
+-rw-r--r-- 1 1101 1101        163 Jun 22 09:00 ._model-00005-of-00005.safetensors
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._model.safetensors.index.json
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._preprocessor_config.json
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._tokenizer.json
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._tokenizer_config.json
+-rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._vocab.json
+drwxr-xr-x 3 1101 1101       4096 Jun 23 01:27 .cache
+-rw-r--r-- 1 1101 1101       1519 Jun 22 08:55 .gitattributes
+-rw-r--r-- 1 1101 1101      18574 Jun 22 08:55 README.md
+-rw-r--r-- 1 1101 1101       1050 Jun 22 08:55 chat_template.json
+-rw-r--r-- 1 1101 1101       1374 Jun 22 08:55 config.json
+-rw-r--r-- 1 1101 1101        216 Jun 22 08:55 generation_config.json
+-rw-r--r-- 1 1101 1101    1671839 Jun 22 08:55 merges.txt
+-rw-r--r-- 1 1101 1101 3900233256 Jun 22 09:16 model-00001-of-00005.safetensors
+-rw-r--r-- 1 1101 1101 3864726320 Jun 22 09:16 model-00002-of-00005.safetensors
+-rw-r--r-- 1 1101 1101 3864726424 Jun 22 09:13 model-00003-of-00005.safetensors
+-rw-r--r-- 1 1101 1101 3864733680 Jun 22 09:16 model-00004-of-00005.safetensors
+-rw-r--r-- 1 1101 1101 1089994880 Jun 22 09:00 model-00005-of-00005.safetensors
+-rw-r--r-- 1 1101 1101      57619 Jun 22 08:55 model.safetensors.index.json
+-rw-r--r-- 1 1101 1101        350 Jun 22 08:55 preprocessor_config.json
+-rw-r--r-- 1 1101 1101    7031645 Jun 22 08:55 tokenizer.json
+-rw-r--r-- 1 1101 1101       5702 Jun 22 08:55 tokenizer_config.json
+-rw-r--r-- 1 1101 1101    2776833 Jun 22 08:55 vocab.json
+
+
