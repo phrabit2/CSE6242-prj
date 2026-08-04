@@ -1,159 +1,33 @@
--04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_013650_ca68d8c3-eefe-42e8-949e-66a6eb8c8b40_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_013811_645d8522-12dd-4919-9bec-a38d8b5d2595_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_020746_9656b115-a82a-462f-87ad-4f0963f7ed6b_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_023015_bbd93b64-42a3-4b58-91ba-bca917f63960_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_051239_14ca9cba-d728-4d64-aa83-ccb81e78942a_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_052358_efe2c525-3eeb-46bc-9fd0-e673e278b53f_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_052436_d7726fad-5c13-49b4-b551-1aefd1b00a2c_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_054341_bbadc257-9901-47f0-b503-74a8d0614291_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_134023_d4330b3a-b1b9-475b-9294-021c39dde275_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_134023_d4330b3a-b1b9-475b-9294-021c39dde275_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_134023_d4330b3a-b1b9-475b-9294-021c39dde275_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_135605_d2be423c-c0de-45e1-a49e-8cee627f651b_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_135605_d2be423c-c0de-45e1-a49e-8cee627f651b_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_143017_87fc8b17-d116-4893-a481-aac7eb20a52f_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_163101_3eb519b8-ee01-45ce-b393-d39ae10bbc1c_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_164936_ecd3ee12-415b-4b82-83b1-8ebae57a7691_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_165144_0c536f5f-49c4-4095-bd6b-4f3091490345_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_165246_07f51082-4352-48da-bf9f-65c4b64b635a_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_165758_97609f87-5356-42aa-87b6-06926572646c_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_170919_1c8f45ee-12f7-411a-8ceb-f5114a8dffc5_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_171017_57430116-1d83-4b55-a283-de7c9afc725c_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_145515_699988df-6235-41e0-8430-175f1476532c_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_171919_b27b8419-4578-4144-af63-9ddd89590beb_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_142218_82c7f9b6-6226-4735-a4c1-354a5bb0d4f7_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_143256_eb955dbb-c202-4ac0-a38c-d3709db4cd29_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_143256_eb955dbb-c202-4ac0-a38c-d3709db4cd29_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_145339_73599d7f-af42-4ddb-831b-de79e9899cc8_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_145943_51cd3a9e-0103-4eeb-8218-7166fc7f6f37_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_150606_db8770c8-8a4b-431f-b938-0017ffeeb560_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_154158_4392a376-80e6-4fa7-8758-c3b5d7c479f6_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_160053_8ac89148-ff21-425c-bcbe-2f4129153314_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_145339_73599d7f-af42-4ddb-831b-de79e9899cc8_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_162643_793bad6e-5dcd-4bbf-b89e-99eee9fa2c24_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_160218_f2e224b0-ac84-4868-8318-dcb857e94ab1_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_160218_f2e224b0-ac84-4868-8318-dcb857e94ab1_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_161714_d9ad8e29-dd48-4f09-af44-39e06925b756_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_161714_d9ad8e29-dd48-4f09-af44-39e06925b756_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_162606_5081bb32-84cb-44ba-8998-a9b03ff7449a_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_162606_5081bb32-84cb-44ba-8998-a9b03ff7449a_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_154451_941b4536-6f83-4271-84e0-8e8a6878d8a7_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251107_162850_18a5ec5e-4445-4c76-a66e-06704bb9d815_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_155047_3cd8c02b-854a-4c38-af90-94585a6a8c5b_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_163220_c40d5380-9e19-4957-93f1-831af6cd28e9_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_155316_c4cf2333-7122-4db6-a48d-992ad27a6da8_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_160839_bfc6fc8a-a9fd-4382-b6fd-f26131edf1ca_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_164204_2b2e2324-1cf2-4ec4-be9d-8273cd297781_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_161348_efa1634f-0174-427d-b9fd-ff827b0b5e21_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_164204_2b2e2324-1cf2-4ec4-be9d-8273cd297781_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_161639_a75c1a58-26e4-45e7-b787-24cb4aa75a69_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_165350_442f5f56-8101-4b92-b160-36010ea26152_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_161821_02784f94-9086-4806-a833-7533a1e05c4b_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_170521_8c631bf6-6a02-4b26-83d8-7d9e52f2039e_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_161821_02784f94-9086-4806-a833-7533a1e05c4b_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_162321_8368979f-d97d-4912-8794-021a1d90a5db_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_170744_aa137bdb-e836-46a4-ad8b-1c72d071db80_left.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_162546_270d7472-905c-43a1-853d-2a8086857769_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_171027_b86c367e-49da-490f-a8d9-ed71caf11d83_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_162546_270d7472-905c-43a1-853d-2a8086857769_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_171723_3da0afed-5fc1-47b1-bace-1f256b652600_front.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_172222_8c39800a-df3f-4805-8aa8-f5cd5c082e6f_right.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_172619_f7c2a94f-f95e-486b-9426-e5669d3c5e6f_back.jpg does not exist in `media_dir`. Use original path.
-[WARNING|2026-08-04 04:31:39] llamafactory.data.converter:155 >> Media /data/sample_train/data/images/20251110_172619_f7c2a94f-f95e-486b-9426-e5669d3c5e6f_front.jpg does not exist in `media_dir`. Use original path.
+sudo docker rm -f llamafactory
 
-Converting format of dataset (num_proc=16): 100%|██████████| 200/200 [00:00<00:00, 704.06 examples/s]
+sudo docker run -d --name llamafactory \
+  --gpus all \
+  --ipc=host \
+  -p 7860:7860 \
+  -v /data/ai-models:/models \
+  -v /data/sample_train:/data/sample_train \
+  -v /data/llamafactory/output:/output \
+  -v /data/llamafactory/dataset_info.json:/app/data/dataset_info.json \
+  -e GRADIO_SERVER_NAME=0.0.0.0 \
+  -e GRADIO_SERVER_PORT=7860 \
+  -e HF_HUB_OFFLINE=1 \
+  -e TRANSFORMERS_OFFLINE=1 \
+  hiyouga/llamafactory:latest \
+  llamafactory-cli webui
 
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:00<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:01<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:02<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:03<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:04<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:06<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:07<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:08<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:09<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:10<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:11<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:12<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:13<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:14<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:15<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:16<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:17<?, ? examples/s]
-Running tokenizer on dataset (num_proc=16):   0%|          | 0/200 [00:17<?, ? examples/s]
-multiprocess.pool.RemoteTraceback: 
-"""
-Traceback (most recent call last):
-  File "/opt/conda/lib/python3.11/site-packages/multiprocess/pool.py", line 125, in worker
-    result = (True, func(*args, **kwds))
-                    ^^^^^^^^^^^^^^^^^^^
-  File "/opt/conda/lib/python3.11/site-packages/datasets/utils/py_utils.py", line 586, in _write_generator_to_queue
-    for i, result in enumerate(func(**kwargs)):
-  File "/opt/conda/lib/python3.11/site-packages/datasets/arrow_dataset.py", line 3674, in _map_single
-    for i, batch in iter_outputs(shard_iterable):
-  File "/opt/conda/lib/python3.11/site-packages/datasets/arrow_dataset.py", line 3624, in iter_outputs
-    yield i, apply_function(example, i, offset=offset)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/conda/lib/python3.11/site-packages/datasets/arrow_dataset.py", line 3547, in apply_function
-    processed_inputs = function(*fn_args, *additional_args, **fn_kwargs)
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/processor/supervised.py", line 119, in preprocess_dataset
-    input_ids, labels = self._encode_data_example(
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/processor/supervised.py", line 62, in _encode_data_example
-    messages = self.template.mm_plugin.process_messages(prompt + response, images, videos, audios, self.processor)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/mm_plugin.py", line 2222, in process_messages
-    mm_inputs = self._get_mm_token_metadata(images, videos, audios, processor)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/mm_plugin.py", line 2160, in _get_mm_token_metadata
-    mm_inputs.update(self._get_mm_inputs(images, [], [], processor))
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/mm_plugin.py", line 2183, in _get_mm_inputs
-    images = self._regularize_images(
-             ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/mm_plugin.py", line 262, in _regularize_images
-    image = Image.open(image)
-            ^^^^^^^^^^^^^^^^^
-  File "/opt/conda/lib/python3.11/site-packages/PIL/Image.py", line 3469, in open
-    fp = builtins.open(filename, "rb")
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '/data/sample_train/data/images/20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg'
-"""
 
-The above exception was the direct cause of the following exception:
+===
 
-Traceback (most recent call last):
-  File "/opt/conda/bin/llamafactory-cli", line 6, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/app/src/llamafactory/cli.py", line 24, in main
-    launcher.launch()
-  File "/app/src/llamafactory/launcher.py", line 157, in launch
-    run_exp()
-  File "/app/src/llamafactory/train/tuner.py", line 173, in run_exp
-    _training_function(config={"args": args, "callbacks": callbacks})
-  File "/app/src/llamafactory/train/tuner.py", line 141, in _training_function
-    run_sft(model_args, data_args, training_args, finetuning_args, generating_args, callbacks)
-  File "/app/src/llamafactory/train/sft/workflow.py", line 52, in run_sft
-    dataset_module = get_dataset(template, model_args, data_args, training_args, stage="sft", **tokenizer_module)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/loader.py", line 318, in get_dataset
-    train_dict["train"] = _get_preprocessed_dataset(
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/src/llamafactory/data/loader.py", line 255, in _get_preprocessed_dataset
-    dataset = dataset.map(
-              ^^^^^^^^^^^^
-  File "/opt/conda/lib/python3.11/site-packages/datasets/arrow_dataset.py", line 560, in wrapper
-    out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
-                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/conda/lib/python3.11/site-packages/datasets/arrow_dataset.py", line 3309, in map
-    for rank, done, content in iflatmap_unordered(
-  File "/opt/conda/lib/python3.11/site-packages/datasets/utils/py_utils.py", line 626, in iflatmap_unordered
-    [async_result.get(timeout=0.05) for async_result in async_results]
-  File "/opt/conda/lib/python3.11/site-packages/datasets/utils/py_utils.py", line 626, in <listcomp>
-    [async_result.get(timeout=0.05) for async_result in async_results]
-     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/conda/lib/python3.11/site-packages/multiprocess/pool.py", line 774, in get
-    raise self._value
-FileNotFoundError: [Errno 2] No such file or directory: '/data/sample_train/data/images/20251103_152941_bdf71914-c9cc-47d7-a2ba-6e813ca612c4_front.jpg'
+
+# 1. dataset_info.json의 file_name을 호스트 경로로
+python3 << 'EOF'
+import json
+p = "/data/llamafactory/dataset_info.json"
+d = json.load(open(p))
+d["damage_vl"]["file_name"] = "/data/sample_train/data/llamafactory_train.json"
+json.dump(d, open(p, "w"), ensure_ascii=False, indent=2)
+print("file_name:", d["damage_vl"]["file_name"])
+EOF
+
+# 2. 컨테이너 재실행 (마운트 경로 통일)
+sudo docker rm -f llamafactory
