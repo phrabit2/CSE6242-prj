@@ -1,33 +1,495 @@
-sudo docker rm -f llamafactory
+ssing_base.py:268 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] image_processing_base.py:342 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/preprocessor_config.json
+[INFO|2026-08-04 04:42:58] processing_utils.py:950 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] processing_utils.py:1122 >> loading configuration file None
+[INFO|2026-08-04 04:42:58] image_processing_base.py:268 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] image_processing_base.py:342 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/preprocessor_config.json
+[WARNING|2026-08-04 04:42:58] logging.py:340 >> The `use_fast` parameter is deprecated and will be removed in a future version. Use `backend="torchvision"` instead of `use_fast=True`, or `backend="pil"` instead of `use_fast=False`.
+[INFO|2026-08-04 04:42:58] image_processing_base.py:268 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] image_processing_base.py:342 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/preprocessor_config.json
+[INFO|2026-08-04 04:42:58] image_processing_base.py:385 >> Image processor Qwen2VLImageProcessor {
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "image_mean": [
+    0.48145466,
+    0.4578275,
+    0.40821073
+  ],
+  "image_processor_type": "Qwen2VLImageProcessor",
+  "image_std": [
+    0.26862954,
+    0.26130258,
+    0.27577711
+  ],
+  "merge_size": 2,
+  "patch_size": 14,
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "size": {
+    "longest_edge": 12845056,
+    "shortest_edge": 3136
+  },
+  "temporal_patch_size": 2
+}
 
-sudo docker run -d --name llamafactory \
-  --gpus all \
-  --ipc=host \
-  -p 7860:7860 \
-  -v /data/ai-models:/models \
-  -v /data/sample_train:/data/sample_train \
-  -v /data/llamafactory/output:/output \
-  -v /data/llamafactory/dataset_info.json:/app/data/dataset_info.json \
-  -e GRADIO_SERVER_NAME=0.0.0.0 \
-  -e GRADIO_SERVER_PORT=7860 \
-  -e HF_HUB_OFFLINE=1 \
-  -e TRANSFORMERS_OFFLINE=1 \
-  hiyouga/llamafactory:latest \
-  llamafactory-cli webui
+[INFO|2026-08-04 04:42:58] hub.py:364 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] configuration_utils.py:778 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/config.json
+[INFO|2026-08-04 04:42:58] configuration_utils.py:856 >> Model config Qwen2_5_VLConfig {
+  "architectures": [
+    "Qwen2_5_VLForConditionalGeneration"
+  ],
+  "dtype": "bfloat16",
+  "image_token_id": 151655,
+  "model_type": "qwen2_5_vl",
+  "text_config": {
+    "attention_dropout": 0.0,
+    "bos_token_id": 151643,
+    "dtype": "bfloat16",
+    "eos_token_id": 151645,
+    "hidden_act": "silu",
+    "hidden_size": 3584,
+    "initializer_range": 0.02,
+    "intermediate_size": 18944,
+    "layer_types": [
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention"
+    ],
+    "max_position_embeddings": 128000,
+    "max_window_layers": 28,
+    "model_type": "qwen2_5_vl_text",
+    "num_attention_heads": 28,
+    "num_hidden_layers": 28,
+    "num_key_value_heads": 4,
+    "pad_token_id": null,
+    "rms_norm_eps": 1e-06,
+    "rope_parameters": {
+      "mrope_section": [
+        16,
+        24,
+        24
+      ],
+      "rope_theta": 1000000.0,
+      "rope_type": "default",
+      "type": "mrope"
+    },
+    "sliding_window": null,
+    "use_cache": true,
+    "use_sliding_window": false,
+    "vocab_size": 152064
+  },
+  "tie_word_embeddings": false,
+  "transformers_version": "5.8.0",
+  "video_token_id": 151656,
+  "vision_config": {
+    "depth": 32,
+    "fullatt_block_indexes": [
+      7,
+      15,
+      23,
+      31
+    ],
+    "hidden_act": "silu",
+    "hidden_size": 1280,
+    "in_channels": 3,
+    "in_chans": 3,
+    "initializer_range": 0.02,
+    "intermediate_size": 3420,
+    "model_type": "qwen2_5_vl_vision",
+    "num_heads": 16,
+    "out_hidden_size": 3584,
+    "patch_size": 14,
+    "spatial_merge_size": 2,
+    "spatial_patch_size": 14,
+    "temporal_patch_size": 2,
+    "tokens_per_second": 2,
+    "window_size": 112
+  },
+  "vision_end_token_id": 151653,
+  "vision_start_token_id": 151652,
+  "vision_token_id": 151654
+}
+
+[INFO|2026-08-04 04:42:58] hub.py:364 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] tokenization_utils_base.py:1595 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] video_processing_utils.py:600 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] video_processing_utils.py:684 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/preprocessor_config.json
+[INFO|2026-08-04 04:42:58] video_processing_utils.py:600 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:42:58] video_processing_utils.py:684 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/preprocessor_config.json
+[INFO|2026-08-04 04:42:58] video_processing_utils.py:727 >> Video processor Qwen2VLVideoProcessor {
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "do_sample_frames": false,
+  "image_mean": [
+    0.48145466,
+    0.4578275,
+    0.40821073
+  ],
+  "image_std": [
+    0.26862954,
+    0.26130258,
+    0.27577711
+  ],
+  "max_frames": 768,
+  "merge_size": 2,
+  "min_frames": 4,
+  "patch_size": 14,
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "return_metadata": false,
+  "size": {
+    "longest_edge": 12845056,
+    "shortest_edge": 3136
+  },
+  "temporal_patch_size": 2,
+  "video_processor_type": "Qwen2VLVideoProcessor"
+}
+
+[INFO|2026-08-04 04:42:58] processing_utils.py:1199 >> Processor Qwen2_5_VLProcessor:
+- image_processor: Qwen2VLImageProcessor {
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "image_mean": [
+    0.48145466,
+    0.4578275,
+    0.40821073
+  ],
+  "image_processor_type": "Qwen2VLImageProcessor",
+  "image_std": [
+    0.26862954,
+    0.26130258,
+    0.27577711
+  ],
+  "merge_size": 2,
+  "patch_size": 14,
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "size": {
+    "longest_edge": 12845056,
+    "shortest_edge": 3136
+  },
+  "temporal_patch_size": 2
+}
+
+- tokenizer: Qwen2Tokenizer(name_or_path='/models/Qwen2.5-VL-7B-Instruct', vocab_size=151643, model_max_length=131072, padding_side='right', truncation_side='right', special_tokens={'eos_token': '<|im_end|>', 'pad_token': '<|endoftext|>'}, added_tokens_decoder={
+        151643: AddedToken("<|endoftext|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151644: AddedToken("<|im_start|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151645: AddedToken("<|im_end|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151646: AddedToken("<|object_ref_start|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151647: AddedToken("<|object_ref_end|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151648: AddedToken("<|box_start|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151649: AddedToken("<|box_end|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151650: AddedToken("<|quad_start|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151651: AddedToken("<|quad_end|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151652: AddedToken("<|vision_start|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151653: AddedToken("<|vision_end|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151654: AddedToken("<|vision_pad|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151655: AddedToken("<|image_pad|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151656: AddedToken("<|video_pad|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        151657: AddedToken("<tool_call>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+        151658: AddedToken("</tool_call>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+        151659: AddedToken("<|fim_prefix|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+        151660: AddedToken("<|fim_middle|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+        151661: AddedToken("<|fim_suffix|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+        151662: AddedToken("<|fim_pad|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+        151663: AddedToken("<|repo_name|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+        151664: AddedToken("<|file_sep|>", rstrip=False, lstrip=False, single_word=False, normalized=False, special=False),
+})
+- video_processor: Qwen2VLVideoProcessor {
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "do_sample_frames": false,
+  "image_mean": [
+    0.48145466,
+    0.4578275,
+    0.40821073
+  ],
+  "image_std": [
+    0.26862954,
+    0.26130258,
+    0.27577711
+  ],
+  "max_frames": 768,
+  "merge_size": 2,
+  "min_frames": 4,
+  "patch_size": 14,
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "return_metadata": false,
+  "size": {
+    "longest_edge": 12845056,
+    "shortest_edge": 3136
+  },
+  "temporal_patch_size": 2,
+  "video_processor_type": "Qwen2VLVideoProcessor"
+}
 
 
-===
+{
+  "image_processor": {
+    "do_convert_rgb": true,
+    "do_normalize": true,
+    "do_rescale": true,
+    "do_resize": true,
+    "image_mean": [
+      0.48145466,
+      0.4578275,
+      0.40821073
+    ],
+    "image_processor_type": "Qwen2VLImageProcessor",
+    "image_std": [
+      0.26862954,
+      0.26130258,
+      0.27577711
+    ],
+    "merge_size": 2,
+    "patch_size": 14,
+    "resample": 3,
+    "rescale_factor": 0.00392156862745098,
+    "size": {
+      "longest_edge": 12845056,
+      "shortest_edge": 3136
+    },
+    "temporal_patch_size": 2
+  },
+  "processor_class": "Qwen2_5_VLProcessor",
+  "video_processor": {
+    "do_convert_rgb": true,
+    "do_normalize": true,
+    "do_rescale": true,
+    "do_resize": true,
+    "do_sample_frames": false,
+    "image_mean": [
+      0.48145466,
+      0.4578275,
+      0.40821073
+    ],
+    "image_std": [
+      0.26862954,
+      0.26130258,
+      0.27577711
+    ],
+    "max_frames": 768,
+    "merge_size": 2,
+    "min_frames": 4,
+    "patch_size": 14,
+    "resample": 3,
+    "rescale_factor": 0.00392156862745098,
+    "return_metadata": false,
+    "size": {
+      "longest_edge": 12845056,
+      "shortest_edge": 3136
+    },
+    "temporal_patch_size": 2,
+    "video_processor_type": "Qwen2VLVideoProcessor"
+  }
+}
+
+[INFO|2026-08-04 04:42:58] logging.py:144 >> Loading dataset /data/sample_train/data/llamafactory_train.json...
+[INFO|2026-08-04 04:43:20] hub.py:364 >> Offline mode: forcing local_files_only=True
+[INFO|2026-08-04 04:43:20] configuration_utils.py:778 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/config.json
+[INFO|2026-08-04 04:43:20] configuration_utils.py:856 >> Model config Qwen2_5_VLConfig {
+  "architectures": [
+    "Qwen2_5_VLForConditionalGeneration"
+  ],
+  "dtype": "bfloat16",
+  "image_token_id": 151655,
+  "model_type": "qwen2_5_vl",
+  "text_config": {
+    "attention_dropout": 0.0,
+    "bos_token_id": 151643,
+    "dtype": "bfloat16",
+    "eos_token_id": 151645,
+    "hidden_act": "silu",
+    "hidden_size": 3584,
+    "initializer_range": 0.02,
+    "intermediate_size": 18944,
+    "layer_types": [
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention"
+    ],
+    "max_position_embeddings": 128000,
+    "max_window_layers": 28,
+    "model_type": "qwen2_5_vl_text",
+    "num_attention_heads": 28,
+    "num_hidden_layers": 28,
+    "num_key_value_heads": 4,
+    "pad_token_id": null,
+    "rms_norm_eps": 1e-06,
+    "rope_parameters": {
+      "mrope_section": [
+        16,
+        24,
+        24
+      ],
+      "rope_theta": 1000000.0,
+      "rope_type": "default",
+      "type": "mrope"
+    },
+    "sliding_window": null,
+    "use_cache": true,
+    "use_sliding_window": false,
+    "vocab_size": 152064
+  },
+  "tie_word_embeddings": false,
+  "transformers_version": "5.8.0",
+  "video_token_id": 151656,
+  "vision_config": {
+    "depth": 32,
+    "fullatt_block_indexes": [
+      7,
+      15,
+      23,
+      31
+    ],
+    "hidden_act": "silu",
+    "hidden_size": 1280,
+    "in_channels": 3,
+    "in_chans": 3,
+    "initializer_range": 0.02,
+    "intermediate_size": 3420,
+    "model_type": "qwen2_5_vl_vision",
+    "num_heads": 16,
+    "out_hidden_size": 3584,
+    "patch_size": 14,
+    "spatial_merge_size": 2,
+    "spatial_patch_size": 14,
+    "temporal_patch_size": 2,
+    "tokens_per_second": 2,
+    "window_size": 112
+  },
+  "vision_end_token_id": 151653,
+  "vision_start_token_id": 151652,
+  "vision_token_id": 151654
+}
+
+[INFO|2026-08-04 04:43:20] logging.py:144 >> KV cache is disabled during training.
+[INFO|2026-08-04 04:43:21] modeling_utils.py:766 >> loading weights file /models/Qwen2.5-VL-7B-Instruct/model.safetensors.index.json
+[INFO|2026-08-04 04:43:21] modeling_utils.py:839 >> Will use dtype=torch.bfloat16 as defined in model's config object
+[INFO|2026-08-04 04:43:21] configuration_utils.py:1086 >> Generate config GenerationConfig {
+  "output_attentions": false,
+  "output_hidden_states": false,
+  "use_cache": false
+}
+
+[INFO|2026-08-04 04:43:23] configuration_utils.py:1037 >> loading configuration file /models/Qwen2.5-VL-7B-Instruct/generation_config.json
+[INFO|2026-08-04 04:43:23] configuration_utils.py:1086 >> Generate config GenerationConfig {
+  "bos_token_id": 151643,
+  "do_sample": true,
+  "eos_token_id": [
+    151645,
+    151643
+  ],
+  "pad_token_id": 151643,
+  "repetition_penalty": 1.05,
+  "temperature": 1e-06
+}
+
+[INFO|2026-08-04 04:43:23] dynamic_module_utils.py:441 >> Could not locate the custom_generate/generate.py inside /models/Qwen2.5-VL-7B-Instruct.
+[INFO|2026-08-04 04:43:23] logging.py:144 >> Gradient checkpointing enabled.
+[INFO|2026-08-04 04:43:23] logging.py:144 >> Using torch SDPA for faster training and inference.
+[INFO|2026-08-04 04:43:23] logging.py:144 >> Upcasting trainable params to float32.
+[INFO|2026-08-04 04:43:23] logging.py:144 >> Fine-tuning method: LoRA
+[INFO|2026-08-04 04:43:23] logging.py:144 >> Found linear modules: down_proj,k_proj,up_proj,gate_proj,q_proj,o_proj,v_proj
+[INFO|2026-08-04 04:43:23] logging.py:144 >> Set vision model not trainable: ['visual.patch_embed', 'visual.blocks'].
+[INFO|2026-08-04 04:43:23] logging.py:144 >> Set multi model projector not trainable: ['visual.merger'].
+[INFO|2026-08-04 04:43:24] logging.py:144 >> trainable params: 20,185,088 || all params: 8,312,351,744 || trainable%: 0.2428
+[WARNING|2026-08-04 04:43:25] trainer_utils.py:1238 >> The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 151645, 'bos_token_id': None, 'pad_token_id': 151643}.
+[INFO|2026-08-04 04:43:25] trainer.py:1469 >> ***** Running training *****
+[INFO|2026-08-04 04:43:25] trainer.py:1470 >>   Num examples = 200
+[INFO|2026-08-04 04:43:25] trainer.py:1471 >>   Num Epochs = 3
+[INFO|2026-08-04 04:43:25] trainer.py:1472 >>   Num update steps per epoch = 13
+[INFO|2026-08-04 04:43:25] trainer.py:1473 >>   Instantaneous batch size per device = 2
+[INFO|2026-08-04 04:43:25] trainer.py:1476 >>   Total train batch size (w. parallel, distributed & accumulation) = 16
+[INFO|2026-08-04 04:43:25] trainer.py:1477 >>   Gradient Accumulation steps = 8
+[INFO|2026-08-04 04:43:25] trainer.py:1478 >>   Total optimization steps = 39
+[INFO|2026-08-04 04:43:25] trainer.py:1479 >>   Number of trainable parameters = 20,185,088
+[INFO|2026-08-04 04:44:11] logging.py:144 >> {'loss': 1.5732, 'learning_rate': 4.8713e-05, 'epoch': 0.40, 'throughput': 1461.70}
+[INFO|2026-08-04 04:44:54] logging.py:144 >> {'loss': 0.1215, 'learning_rate': 4.3713e-05, 'epoch': 0.80, 'throughput': 1488.13}
+[INFO|2026-08-04 04:45:33] logging.py:144 >> {'loss': 0.0012, 'learning_rate': 3.5717e-05, 'epoch': 1.16, 'throughput': 1497.85}
+[INFO|2026-08-04 04:46:17] logging.py:144 >> {'loss': 0.0003, 'learning_rate': 2.6007e-05, 'epoch': 1.56, 'throughput': 1503.30}
+[INFO|2026-08-04 04:47:00] logging.py:144 >> {'loss': 0.0002, 'learning_rate': 1.6135e-05, 'epoch': 1.96, 'throughput': 1506.83}
+[INFO|2026-08-04 04:47:39] logging.py:144 >> {'loss': 0.0002, 'learning_rate': 7.6819e-06, 'epoch': 2.32, 'throughput': 1508.00}
+[INFO|2026-08-04 04:48:22] logging.py:144 >> {'loss': 0.0002, 'learning_rate': 2.0005e-06, 'epoch': 2.72, 'throughput': 1509.74}
+[INFO|2026-08-04 04:48:53] trainer.py:3815 >> Saving model checkpoint to output/damage_lora_v2/checkpoint-39
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:3281 >> chat template saved in output/damage_lora_v2/checkpoint-39/chat_template.jinja
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:2114 >> tokenizer config file saved in output/damage_lora_v2/checkpoint-39/tokenizer_config.json
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:3281 >> chat template saved in output/damage_lora_v2/checkpoint-39/chat_template.jinja
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:2114 >> tokenizer config file saved in output/damage_lora_v2/checkpoint-39/tokenizer_config.json
+[INFO|2026-08-04 04:48:53] processing_utils.py:881 >> chat template saved in output/damage_lora_v2/checkpoint-39/chat_template.jinja
+[INFO|2026-08-04 04:48:53] processing_utils.py:899 >> processor saved in output/damage_lora_v2/checkpoint-39/processor_config.json
+[INFO|2026-08-04 04:48:53] trainer.py:1823 >> 
+
+Training completed. Do not forget to share your model on huggingface.co/models =)
 
 
-# 1. dataset_info.json의 file_name을 호스트 경로로
-python3 << 'EOF'
-import json
-p = "/data/llamafactory/dataset_info.json"
-d = json.load(open(p))
-d["damage_vl"]["file_name"] = "/data/sample_train/data/llamafactory_train.json"
-json.dump(d, open(p, "w"), ensure_ascii=False, indent=2)
-print("file_name:", d["damage_vl"]["file_name"])
-EOF
-
-# 2. 컨테이너 재실행 (마운트 경로 통일)
-sudo docker rm -f llamafactory
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:3281 >> chat template saved in output/damage_lora_v2/chat_template.jinja
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:2114 >> tokenizer config file saved in output/damage_lora_v2/tokenizer_config.json
+[INFO|2026-08-04 04:48:53] processing_utils.py:881 >> chat template saved in output/damage_lora_v2/chat_template.jinja
+[INFO|2026-08-04 04:48:53] processing_utils.py:899 >> processor saved in output/damage_lora_v2/processor_config.json
+[INFO|2026-08-04 04:48:53] trainer.py:3815 >> Saving model checkpoint to output/damage_lora_v2
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:3281 >> chat template saved in output/damage_lora_v2/chat_template.jinja
+[INFO|2026-08-04 04:48:53] tokenization_utils_base.py:2114 >> tokenizer config file saved in output/damage_lora_v2/tokenizer_config.json
+[WARNING|2026-08-04 04:48:53] logging.py:149 >> No metric eval_loss to plot.
+[WARNING|2026-08-04 04:48:53] logging.py:149 >> No metric eval_accuracy to plot.
+[INFO|2026-08-04 04:48:53] modelcard.py:263 >> Dropping the following result as it does not have all the necessary fields:
+{'task': {'name': 'Causal Language Modeling', 'type': 'text-generation'}}
