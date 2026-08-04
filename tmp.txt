@@ -1,170 +1,38 @@
-[credentials.js]
+@echo off
+chcp 65001 > nul
+REM =====================================================
+REM  WCS 부하테스트 실행 스크립트 (Non-GUI 모드)
+REM  사용법: 이 파일을 wcs_loadtest.jmx 와 같은 폴더에 두고 더블클릭
+REM =====================================================
+setlocal
 
-/**
- * @file 백엔드 SLP 로그인 계약에 맞춰 자격증명을 인코딩한다.
- *   - USER_ID: Base64 (백엔드 PcLoginRequest.searchUser → base64Decoding)
- *   - PASSWORD: SHA-256 소문자 hex (백엔드 PasswordMatchValidator 평문 .equals, DB는 hash 저장)
- *   - ENCRYPTED_PASSWORD: RSA-OAEP 공개키로 평문 암호화 (전송 보안, 심층 방어)
- * 원본 wms4 login.html:245-246 (Ext.util.Base64.encode + VC.util.SHA256.encode)과 동일.
- * js-sha256 사용 — http(비secure context)에서도 동작(crypto.subtle 의존 회피).
- *
- * 암호화 키 획득 방식:
- *   - GET /api/encrypt-key → 서버에서 RSA-2048 공개키(SPKI/DER → Base64) 획득
- *   - 공개키로 암호화 → 개인키는 서버에만 존재 → 네트워크 노출 시에도 복호화 불가
- * @module api/core/credentials
- */
-import { sha256 } from 'js-sha256'
-import { rsaEncrypt } from './rsa-encrypt'
+REM ---- 환경에 맞게 수정할 부분 ----
+set JMETER_HOME=C:\apache-jmeter-5.6.3
+set TEST_PLAN=wcs_loadtest.jmx
+REM ---------------------------------
 
-/** 서버에서 획득한 RSA 공개키 캐시 (최초 1회만 API 호출) */
-let _cachedPublicKey = null
+REM 실행 시각으로 결과 폴더명 생성 (기존 폴더 충돌 방지: -e -o 는 빈 폴더를 요구함)
+set TS=%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
+set TS=%TS: =0%
+set RESULT_DIR=results\%TS%
 
-/**
- * 서버에서 RSA-2048 공개키를 런타임에 획득한다.
- * 최초 호출 시에만 API를 호출하고 이후에는 캐시된 값을 반환한다.
- *
- * @returns {Promise<string>} Base64 인코딩된 공개키 (빈 문자열이면 암호화 비활성화)
- */
-async function getPublicKey() {
-    if (_cachedPublicKey !== null) {
-        return _cachedPublicKey
-    }
+mkdir "%RESULT_DIR%" 2>nul
 
-    try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
-        const response = await fetch(`${baseUrl}/encrypt-key`, {
-            method: 'GET',
-            credentials: 'include',
-        })
+echo.
+echo ===== 부하테스트 시작 : %TS% =====
+echo  결과 폴더 : %RESULT_DIR%
+echo.
 
-        if (!response.ok) {
-            console.warn('[credentials] encrypt-key 조회 실패:', response.status)
-            _cachedPublicKey = ''
-            return ''
-        }
+call "%JMETER_HOME%\bin\jmeter.bat" -n ^
+  -t "%TEST_PLAN%" ^
+  -l "%RESULT_DIR%\result.jtl" ^
+  -j "%RESULT_DIR%\jmeter.log" ^
+  -e -o "%RESULT_DIR%\html_report"
 
-        const data = await response.json()
-        _cachedPublicKey = data.publicKey || ''
-        return _cachedPublicKey
-    } catch (e) {
-        console.warn('[credentials] encrypt-key 조회 중 오류:', e.message)
-        _cachedPublicKey = ''
-        return ''
-    }
-}
-
-/**
- * 캐시된 공개키를 초기화한다.
- * 세션 만료 후 재로그인 시 새 키를 받아오도록 한다.
- */
-export function clearEncryptKeyCache() {
-    _cachedPublicKey = null
-}
-
-export function encodeCredentials(userId, password) {
-    return { USER_ID: btoa(userId), PASSWORD: sha256(password) }
-}
-
-/**
- * 평문 password를 RSA-OAEP 공개키로 암호화하여 ENCRYPTED_PASSWORD를 추가한다.
- * - PASSWORD: SHA-256 해시값 (백워드 호환 — 공개키 미획득 시에도 로그인 가능)
- * - ENCRYPTED_PASSWORD: 평문을 RSA-OAEP 암호화한 값 (서버에서 개인키로 복호화 후 SHA-256 해시하여 검증)
- *
- * @param {string} userId - 로그인 식별자
- * @param {string} password - 평문 비밀번호
- * @returns {Promise<{ USER_ID: string, PASSWORD: string, ENCRYPTED_PASSWORD: string }>}
- */
-export async function encodeCredentialsWithEncryption(userId, password) {
-    // HTTP(비-secure context)에서는 crypto.subtle이 undefined → RSA 암호화 불가
-    // SHA-256(js-sha256)은 순수 JS 구현이므로 항상 동작 → 폴백 보장
-    const hasSubtle = typeof crypto !== 'undefined' && crypto.subtle
-    if (!hasSubtle) {
-        return { USER_ID: btoa(userId), PASSWORD: sha256(password), ENCRYPTED_PASSWORD: '' }
-    }
-
-    try {
-        const publicKey = await getPublicKey()
-        const encryptedPassword = publicKey
-            ? await rsaEncrypt(password, publicKey)
-            : ''
-        return { USER_ID: btoa(userId), PASSWORD: sha256(password), ENCRYPTED_PASSWORD: encryptedPassword }
-    } catch (e) {
-        console.warn('[credentials] RSA 암호화 실패, SHA-256만으로 폴백:', e.message)
-        return { USER_ID: btoa(userId), PASSWORD: sha256(password), ENCRYPTED_PASSWORD: '' }
-    }
-}
-
-==============================================================================
-
-[rsa-encrypt]
-/**
- * @file RSA-OAEP 공개키 암호화 유틸리티 (Web Crypto API)
- *   - 브라우저 내장 crypto.subtle 사용 (외부 의존성 없음)
- *   - 서버에서 RSA-2048 공개키(SPKI/DER → Base64)를 획득하여 암호화
- *   - 개인키는 서버에만 존재 → 네트워크 스니핑으로도 복호화 불가
- *
- * 암호문 포맷: Base64( RSA-OAEP 암호문 )
- *   - RSA-2048 → 암호문 길이 256바이트 → Base64 344자
- *
- * @module api/core/rsa-encrypt
- */
-
-/**
- * Base64 문자열을 ArrayBuffer로 변환한다.
- * @param {string} base64 - Base64 인코딩된 문자열
- * @returns {ArrayBuffer} 디코딩된 바이너리 데이터
- */
-function base64ToArrayBuffer(base64) {
-    const binaryString = atob(base64)
-    const bytes = new Uint8Array(binaryString.length)
-    for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i)
-    }
-    return bytes.buffer
-}
-
-/**
- * 서버에서 받은 Base64(SPKI/DER) 공개키를 CryptoKey로 임포트한다.
- *
- * @param {string} publicKeyBase64 - Base64 인코딩된 SPKI/DER 공개키
- * @returns {Promise<CryptoKey>} RSA-OAEP 암호화용 CryptoKey
- */
-async function importPublicKey(publicKeyBase64) {
-    const keyBuffer = base64ToArrayBuffer(publicKeyBase64)
-    return crypto.subtle.importKey(
-        'spki',
-        keyBuffer,
-        { name: 'RSA-OAEP', hash: 'SHA-256' },
-        false,
-        ['encrypt'],
-    )
-}
-
-/**
- * 평문을 RSA-OAEP 공개키로 암호화하여 Base64 문자열로 반환한다.
- *
- * @param {string} plaintext - 암호화할 평문 (비밀번호)
- * @param {string} publicKeyBase64 - Base64 인코딩된 SPKI/DER 공개키
- * @returns {Promise<string>} Base64 인코딩된 RSA 암호문
- */
-export async function rsaEncrypt(plaintext, publicKeyBase64) {
-    if (!publicKeyBase64) {
-        throw new Error('RSA 공개키가 설정되지 않았습니다.')
-    }
-
-    const publicKey = await importPublicKey(publicKeyBase64)
-    const encoder = new TextEncoder()
-    const encrypted = await crypto.subtle.encrypt(
-        { name: 'RSA-OAEP' },
-        publicKey,
-        encoder.encode(plaintext),
-    )
-
-    // ArrayBuffer → Base64
-    const bytes = new Uint8Array(encrypted)
-    let binary = ''
-    for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i])
-    }
-    return btoa(binary)
-}
+echo.
+echo ===== 테스트 완료 =====
+echo  HTML 리포트 : %RESULT_DIR%\html_report\index.html
+echo  원시결과(jtl): %RESULT_DIR%\result.jtl
+echo.
+pause
+endlocal
