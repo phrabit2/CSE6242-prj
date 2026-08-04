@@ -88,50 +88,107 @@ Traceback (most recent call last):
   File "/app/src/llamafactory/model/loader.py", line 93, in load_tokenizer
     raise OSError("Failed to load tokenizer.") from e
 OSError: Failed to load tokenizer.
+[INFO|2026-08-04 04:19:49] llamafactory.hparams.parser:614 >> Process rank: 0, world size: 1, device: cuda:0, distributed training: False, compute dtype: torch.bfloat16
+[INFO|hub.py:364] 2026-08-04 04:19:49,847 >> Offline mode: forcing local_files_only=True
+[INFO|hub.py:364] 2026-08-04 04:19:49,848 >> Offline mode: forcing local_files_only=True
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 422, in cached_files
+    hf_hub_download(
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1013, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1165, in _hf_hub_download_to_cache_dir
+    _raise_on_head_call_error(head_call_error, force_download, local_files_only)
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1860, in _raise_on_head_call_error
+    raise LocalEntryNotFoundError(
+huggingface_hub.errors.LocalEntryNotFoundError: Cannot find the requested files in the disk cache and outgoing traffic has been disabled. To enable hf.co look-ups and downloads online, set 'local_files_only' to False.
 
+The above exception was the direct cause of the following exception:
 
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.11/site-packages/transformers/models/auto/tokenization_auto.py", line 692, in from_pretrained
+    config = AutoConfig.from_pretrained(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/models/auto/configuration_auto.py", line 374, in from_pretrained
+    config_dict, unused_kwargs = PreTrainedConfig.get_config_dict(pretrained_model_name_or_path, **kwargs)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 682, in get_config_dict
+    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 737, in _get_config_dict
+    resolved_config_file = cached_file(
+                           ^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 278, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 498, in cached_files
+    raise OSError(
+OSError: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.
 
+During handling of the above exception, another exception occurred:
 
-====
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 422, in cached_files
+    hf_hub_download(
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1013, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1165, in _hf_hub_download_to_cache_dir
+    _raise_on_head_call_error(head_call_error, force_download, local_files_only)
+  File "/opt/conda/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1860, in _raise_on_head_call_error
+    raise LocalEntryNotFoundError(
+huggingface_hub.errors.LocalEntryNotFoundError: Cannot find the requested files in the disk cache and outgoing traffic has been disabled. To enable hf.co look-ups and downloads online, set 'local_files_only' to False.
 
+The above exception was the direct cause of the following exception:
 
-(base) wcsadmin@scp-wcsdgpu1:/data/llamafactory$ sudo docker exec llamafactory ls -la /models/Qwen2.5-VL-7B-Instruct/
-total 16207152
-drwxr-xr-x 3 1101 1101       4096 Jul  1 06:10 .
-drwxrwxr-x 7 1101 1101       4096 Jul  1 08:03 ..
--rwxr-xr-x 1 1101 1101        163 Jun 22 08:55 ._.cache
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._.gitattributes
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._README.md
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._chat_template.json
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._config.json
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._generation_config.json
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._merges.txt
--rw-r--r-- 1 1101 1101        163 Jun 22 09:16 ._model-00001-of-00005.safetensors
--rw-r--r-- 1 1101 1101        163 Jun 22 09:16 ._model-00002-of-00005.safetensors
--rw-r--r-- 1 1101 1101        163 Jun 22 09:13 ._model-00003-of-00005.safetensors
--rw-r--r-- 1 1101 1101        163 Jun 22 09:16 ._model-00004-of-00005.safetensors
--rw-r--r-- 1 1101 1101        163 Jun 22 09:00 ._model-00005-of-00005.safetensors
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._model.safetensors.index.json
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._preprocessor_config.json
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._tokenizer.json
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._tokenizer_config.json
--rw-r--r-- 1 1101 1101        163 Jun 22 08:55 ._vocab.json
-drwxr-xr-x 3 1101 1101       4096 Jun 23 01:27 .cache
--rw-r--r-- 1 1101 1101       1519 Jun 22 08:55 .gitattributes
--rw-r--r-- 1 1101 1101      18574 Jun 22 08:55 README.md
--rw-r--r-- 1 1101 1101       1050 Jun 22 08:55 chat_template.json
--rw-r--r-- 1 1101 1101       1374 Jun 22 08:55 config.json
--rw-r--r-- 1 1101 1101        216 Jun 22 08:55 generation_config.json
--rw-r--r-- 1 1101 1101    1671839 Jun 22 08:55 merges.txt
--rw-r--r-- 1 1101 1101 3900233256 Jun 22 09:16 model-00001-of-00005.safetensors
--rw-r--r-- 1 1101 1101 3864726320 Jun 22 09:16 model-00002-of-00005.safetensors
--rw-r--r-- 1 1101 1101 3864726424 Jun 22 09:13 model-00003-of-00005.safetensors
--rw-r--r-- 1 1101 1101 3864733680 Jun 22 09:16 model-00004-of-00005.safetensors
--rw-r--r-- 1 1101 1101 1089994880 Jun 22 09:00 model-00005-of-00005.safetensors
--rw-r--r-- 1 1101 1101      57619 Jun 22 08:55 model.safetensors.index.json
--rw-r--r-- 1 1101 1101        350 Jun 22 08:55 preprocessor_config.json
--rw-r--r-- 1 1101 1101    7031645 Jun 22 08:55 tokenizer.json
--rw-r--r-- 1 1101 1101       5702 Jun 22 08:55 tokenizer_config.json
--rw-r--r-- 1 1101 1101    2776833 Jun 22 08:55 vocab.json
+Traceback (most recent call last):
+  File "/app/src/llamafactory/model/loader.py", line 78, in load_tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/models/auto/tokenization_auto.py", line 696, in from_pretrained
+    config = PreTrainedConfig.from_pretrained(pretrained_model_name_or_path, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 641, in from_pretrained
+    config_dict, kwargs = cls.get_config_dict(pretrained_model_name_or_path, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 682, in get_config_dict
+    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/configuration_utils.py", line 737, in _get_config_dict
+    resolved_config_file = cached_file(
+                           ^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 278, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.11/site-packages/transformers/utils/hub.py", line 498, in cached_files
+    raise OSError(
+OSError: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.
 
+The above exception was the direct cause of the following exception:
 
+Traceback (most recent call last):
+  File "/opt/conda/bin/llamafactory-cli", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/app/src/llamafactory/cli.py", line 24, in main
+    launcher.launch()
+  File "/app/src/llamafactory/launcher.py", line 157, in launch
+    run_exp()
+  File "/app/src/llamafactory/train/tuner.py", line 173, in run_exp
+    _training_function(config={"args": args, "callbacks": callbacks})
+  File "/app/src/llamafactory/train/tuner.py", line 141, in _training_function
+    run_sft(model_args, data_args, training_args, finetuning_args, generating_args, callbacks)
+  File "/app/src/llamafactory/train/sft/workflow.py", line 49, in run_sft
+    tokenizer_module = load_tokenizer(model_args)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/src/llamafactory/model/loader.py", line 93, in load_tokenizer
+    raise OSError("Failed to load tokenizer.") from e
+OSError: Failed to load tokenizer.
