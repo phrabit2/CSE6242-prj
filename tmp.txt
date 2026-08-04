@@ -1,449 +1,170 @@
-Request URL
-https://wave.sec.samsung.net/assets/lang-DHyYqss4.js
-Request Method
-GET
-Status Code
-200 OK (from service worker)
-Referrer Policy
-strict-origin-when-cross-origin
-accept-ranges
-bytes
-cache-control
-no-cache, no-store, must-revalidate
-connection
-keep-alive
-content-length
-85459
-content-type
-application/javascript
-date
-Mon, 03 Aug 2026 23:41:52 GMT
-etag
-"6a685bf2-14dd3"
-expires
-0
-last-modified
-Tue, 28 Jul 2026 07:36:18 GMT
-pragma
-no-cache
-server
-nginx/1.30.3
-origin
-https://wave.sec.samsung.net
-referer
-https://wave.sec.samsung.net/
-sec-ch-ua
-"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"
-sec-ch-ua-mobile
-?0
-sec-ch-ua-platform
-"Windows"
-user-agent
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
+[credentials.js]
 
-[code]
+/**
+ * @file 백엔드 SLP 로그인 계약에 맞춰 자격증명을 인코딩한다.
+ *   - USER_ID: Base64 (백엔드 PcLoginRequest.searchUser → base64Decoding)
+ *   - PASSWORD: SHA-256 소문자 hex (백엔드 PasswordMatchValidator 평문 .equals, DB는 hash 저장)
+ *   - ENCRYPTED_PASSWORD: RSA-OAEP 공개키로 평문 암호화 (전송 보안, 심층 방어)
+ * 원본 wms4 login.html:245-246 (Ext.util.Base64.encode + VC.util.SHA256.encode)과 동일.
+ * js-sha256 사용 — http(비secure context)에서도 동작(crypto.subtle 의존 회피).
+ *
+ * 암호화 키 획득 방식:
+ *   - GET /api/encrypt-key → 서버에서 RSA-2048 공개키(SPKI/DER → Base64) 획득
+ *   - 공개키로 암호화 → 개인키는 서버에만 존재 → 네트워크 노출 시에도 복호화 불가
+ * @module api/core/credentials
+ */
+import { sha256 } from 'js-sha256'
+import { rsaEncrypt } from './rsa-encrypt'
 
+/** 서버에서 획득한 RSA 공개키 캐시 (최초 1회만 API 호출) */
+let _cachedPublicKey = null
+
+/**
+ * 서버에서 RSA-2048 공개키를 런타임에 획득한다.
+ * 최초 호출 시에만 API를 호출하고 이후에는 캐시된 값을 반환한다.
+ *
+ * @returns {Promise<string>} Base64 인코딩된 공개키 (빈 문자열이면 암호화 비활성화)
+ */
+async function getPublicKey() {
+    if (_cachedPublicKey !== null) {
+        return _cachedPublicKey
     }
-      , a = t && setTimeout( () => {
-        a = null,
-        i(new z(`timeout of ${t}ms exceeded`,z.ETIMEDOUT))
-    }
-    , t)
-      , o = () => {
-        e &&= (a && clearTimeout(a),
-        a = null,
-        e.forEach(e => {
-            e.unsubscribe ? e.unsubscribe(i) : e.removeEventListener(`abort`, i)
-        }
-        ),
-        null)
-    }
-    ;
-    e.forEach(e => e.addEventListener(`abort`, i, {
-        once: !0
-    }));
-    let {signal: s} = n;
-    return s.unsubscribe = () => L.asap(o),
-    s
-}
-  , pn = function*(e, t) {
-    let n = e.byteLength;
-    if (!t || n < t) {
-        yield e;
-        return
-    }
-    let r = 0, i;
-    for (; r < n; )
-        i = r + t,
-        yield e.slice(r, i),
-        r = i
-}
-  , mn = async function*(e, t) {
-    for await(let n of hn(e))
-        yield*pn(n, t)
-}
-  , hn = async function*(e) {
-    if (e[Symbol.asyncIterator]) {
-        yield*e;
-        return
-    }
-    let t = e.getReader();
+
     try {
-        for (; ; ) {
-            let {done: e, value: n} = await t.read();
-            if (e)
-                break;
-            yield n
-        }
-    } finally {
-        await t.cancel()
-    }
-}
-  , gn = (e, t, n, r) => {
-    let i = mn(e, t), a = 0, o, s = e => {
-        o || (o = !0,
-        r && r(e))
-    }
-    ;
-    return new ReadableStream({
-        async pull(e) {
-            try {
-                let {done: t, value: r} = await i.next();
-                if (t) {
-                    s(),
-                    e.close();
-                    return
-                }
-                let o = r.byteLength;
-                n && n(a += o),
-                e.enqueue(new Uint8Array(r))
-            } catch (e) {
-                throw s(e),
-                e
-            }
-        },
-        cancel(e) {
-            return s(e),
-            i.return()
-        }
-    },{
-        highWaterMark: 2
-    })
-}
-  , _n = e => e >= 48 && e <= 57 || e >= 65 && e <= 70 || e >= 97 && e <= 102
-  , vn = (e, t, n) => t + 2 < n && _n(e.charCodeAt(t + 1)) && _n(e.charCodeAt(t + 2));
-function yn(e) {
-    if (!e || typeof e != `string` || !e.startsWith(`data:`))
-        return 0;
-    let t = e.indexOf(`,`);
-    if (t < 0)
-        return 0;
-    let n = e.slice(5, t)
-      , r = e.slice(t + 1);
-    if (/;base64/i.test(n)) {
-        let e = r.length
-          , t = r.length;
-        for (let n = 0; n < t; n++)
-            if (r.charCodeAt(n) === 37 && n + 2 < t) {
-                let t = r.charCodeAt(n + 1)
-                  , i = r.charCodeAt(n + 2);
-                _n(t) && _n(i) && (e -= 2,
-                n += 2)
-            }
-        let n = 0
-          , i = t - 1
-          , a = e => e >= 2 && r.charCodeAt(e - 2) === 37 && r.charCodeAt(e - 1) === 51 && (r.charCodeAt(e) === 68 || r.charCodeAt(e) === 100);
-        i >= 0 && (r.charCodeAt(i) === 61 ? (n++,
-        i--) : a(i) && (n++,
-        i -= 3)),
-        n === 1 && i >= 0 && (r.charCodeAt(i) === 61 || a(i)) && n++;
-        let o = Math.floor(e / 4) * 3 - (n || 0);
-        return o > 0 ? o : 0
-    }
-    let i = 0;
-    for (let e = 0, t = r.length; e < t; e++) {
-        let n = r.charCodeAt(e);
-        if (n === 37 && vn(r, e, t))
-            i += 1,
-            e += 2;
-        else if (n < 128)
-            i += 1;
-        else if (n < 2048)
-            i += 2;
-        else if (n >= 55296 && n <= 56319 && e + 1 < t) {
-            let t = r.charCodeAt(e + 1);
-            t >= 56320 && t <= 57343 ? (i += 4,
-            e++) : i += 3
-        } else
-            i += 3
-    }
-    return i
-}
-var bn = `1.18.1`
-  , xn = 64 * 1024
-  , {isFunction: Sn} = L
-  , Cn = e => encodeURIComponent(e).replace(/%([0-9A-F]{2})/gi, (e, t) => String.fromCharCode(parseInt(t, 16)))
-  , wn = e => {
-    if (!L.isString(e))
-        return e;
-    try {
-        return decodeURIComponent(e)
-    } catch {
-        return e
-    }
-}
-  , Tn = (e, ...t) => {
-    try {
-        return !!e(...t)
-    } catch {
-        return !1
-    }
-}
-  , En = e => {
-    let t = e.indexOf(`://`)
-      , n = e;
-    return t !== -1 && (n = n.slice(t + 3)),
-    n.includes(`@`) || n.includes(`:`)
-}
-  , Dn = e => {
-    let t = L.global !== void 0 && L.global !== null ? L.global : globalThis
-      , {ReadableStream: n, TextEncoder: r} = t;
-    e = L.merge.call({
-        skipUndefined: !0
-    }, {
-        Request: t.Request,
-        Response: t.Response
-    }, e);
-    let {fetch: i, Request: a, Response: o} = e
-      , s = i ? Sn(i) : typeof fetch == `function`
-      , c = Sn(a)
-      , l = Sn(o);
-    if (!s)
-        return !1;
-    let u = s && Sn(n)
-      , d = s && (typeof r == `function` ? (e => t => e.encode(t))(new r) : async e => new Uint8Array(await new a(e).arrayBuffer()))
-      , f = c && u && Tn( () => {
-        let e = !1
-          , t = new a(B.origin,{
-            body: new n,
-            method: `POST`,
-            get duplex() {
-                return e = !0,
-                `half`
-            }
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+        const response = await fetch(`${baseUrl}/encrypt-key`, {
+            method: 'GET',
+            credentials: 'include',
         })
-          , r = t.headers.has(`Content-Type`);
-        return t.body != null && t.body.cancel(),
-        e && !r
+
+        if (!response.ok) {
+            console.warn('[credentials] encrypt-key 조회 실패:', response.status)
+            _cachedPublicKey = ''
+            return ''
+        }
+
+        const data = await response.json()
+        _cachedPublicKey = data.publicKey || ''
+        return _cachedPublicKey
+    } catch (e) {
+        console.warn('[credentials] encrypt-key 조회 중 오류:', e.message)
+        _cachedPublicKey = ''
+        return ''
     }
+}
+
+/**
+ * 캐시된 공개키를 초기화한다.
+ * 세션 만료 후 재로그인 시 새 키를 받아오도록 한다.
+ */
+export function clearEncryptKeyCache() {
+    _cachedPublicKey = null
+}
+
+export function encodeCredentials(userId, password) {
+    return { USER_ID: btoa(userId), PASSWORD: sha256(password) }
+}
+
+/**
+ * 평문 password를 RSA-OAEP 공개키로 암호화하여 ENCRYPTED_PASSWORD를 추가한다.
+ * - PASSWORD: SHA-256 해시값 (백워드 호환 — 공개키 미획득 시에도 로그인 가능)
+ * - ENCRYPTED_PASSWORD: 평문을 RSA-OAEP 암호화한 값 (서버에서 개인키로 복호화 후 SHA-256 해시하여 검증)
+ *
+ * @param {string} userId - 로그인 식별자
+ * @param {string} password - 평문 비밀번호
+ * @returns {Promise<{ USER_ID: string, PASSWORD: string, ENCRYPTED_PASSWORD: string }>}
+ */
+export async function encodeCredentialsWithEncryption(userId, password) {
+    // HTTP(비-secure context)에서는 crypto.subtle이 undefined → RSA 암호화 불가
+    // SHA-256(js-sha256)은 순수 JS 구현이므로 항상 동작 → 폴백 보장
+    const hasSubtle = typeof crypto !== 'undefined' && crypto.subtle
+    if (!hasSubtle) {
+        return { USER_ID: btoa(userId), PASSWORD: sha256(password), ENCRYPTED_PASSWORD: '' }
+    }
+
+    try {
+        const publicKey = await getPublicKey()
+        const encryptedPassword = publicKey
+            ? await rsaEncrypt(password, publicKey)
+            : ''
+        return { USER_ID: btoa(userId), PASSWORD: sha256(password), ENCRYPTED_PASSWORD: encryptedPassword }
+    } catch (e) {
+        console.warn('[credentials] RSA 암호화 실패, SHA-256만으로 폴백:', e.message)
+        return { USER_ID: btoa(userId), PASSWORD: sha256(password), ENCRYPTED_PASSWORD: '' }
+    }
+}
+
+==============================================================================
+
+[rsa-encrypt]
+/**
+ * @file RSA-OAEP 공개키 암호화 유틸리티 (Web Crypto API)
+ *   - 브라우저 내장 crypto.subtle 사용 (외부 의존성 없음)
+ *   - 서버에서 RSA-2048 공개키(SPKI/DER → Base64)를 획득하여 암호화
+ *   - 개인키는 서버에만 존재 → 네트워크 스니핑으로도 복호화 불가
+ *
+ * 암호문 포맷: Base64( RSA-OAEP 암호문 )
+ *   - RSA-2048 → 암호문 길이 256바이트 → Base64 344자
+ *
+ * @module api/core/rsa-encrypt
+ */
+
+/**
+ * Base64 문자열을 ArrayBuffer로 변환한다.
+ * @param {string} base64 - Base64 인코딩된 문자열
+ * @returns {ArrayBuffer} 디코딩된 바이너리 데이터
+ */
+function base64ToArrayBuffer(base64) {
+    const binaryString = atob(base64)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i)
+    }
+    return bytes.buffer
+}
+
+/**
+ * 서버에서 받은 Base64(SPKI/DER) 공개키를 CryptoKey로 임포트한다.
+ *
+ * @param {string} publicKeyBase64 - Base64 인코딩된 SPKI/DER 공개키
+ * @returns {Promise<CryptoKey>} RSA-OAEP 암호화용 CryptoKey
+ */
+async function importPublicKey(publicKeyBase64) {
+    const keyBuffer = base64ToArrayBuffer(publicKeyBase64)
+    return crypto.subtle.importKey(
+        'spki',
+        keyBuffer,
+        { name: 'RSA-OAEP', hash: 'SHA-256' },
+        false,
+        ['encrypt'],
     )
-      , p = l && u && Tn( () => L.isReadableStream(new o(``).body))
-      , m = {
-        stream: p && (e => e.body)
-    };
-    s && [`text`, `arrayBuffer`, `blob`, `formData`, `stream`].forEach(e => {
-        !m[e] && (m[e] = (t, n) => {
-            let r = t && t[e];
-            if (r)
-                return r.call(t);
-            throw new z(`Response type '${e}' is not supported`,z.ERR_NOT_SUPPORT,n)
-        }
-        )
-    }
-    );
-    let h = async e => {
-        if (e == null)
-            return 0;
-        if (L.isBlob(e))
-            return e.size;
-        if (L.isSpecCompliantForm(e))
-            return (await new a(B.origin,{
-                method: `POST`,
-                body: e
-            }).arrayBuffer()).byteLength;
-        if (L.isArrayBufferView(e) || L.isArrayBuffer(e))
-            return e.byteLength;
-        if (L.isURLSearchParams(e) && (e += ``),
-        L.isString(e))
-            return (await d(e)).byteLength
-    }
-      , g = async (e, t) => L.toFiniteNumber(e.getContentLength()) ?? h(t);
-    return async e => {
-        let {url: t, method: n, data: s, signal: l, cancelToken: d, timeout: _, onDownloadProgress: v, onUploadProgress: y, responseType: b, headers: x, withCredentials: S=`same-origin`, fetchOptions: C, maxContentLength: w, maxBodyLength: T} = un(e)
-          , E = L.isNumber(w) && w > -1
-          , D = L.isNumber(T) && T > -1
-          , ee = t => L.hasOwnProp(e, t) ? e[t] : void 0
-          , te = i || fetch;
-        b = b ? (b + ``).toLowerCase() : `text`;
-        let O = fn([l, d && d.toAbortSignal()], _), k = null, A = O && O.unsubscribe && ( () => {
-            O.unsubscribe()
-        }
-        ), j, M = null, N = () => new z(`Request body larger than maxBodyLength limit`,z.ERR_BAD_REQUEST,e,k);
-        try {
-            let i, l = ee(`auth`);
-            if (l && (i = {
-                username: L.getSafeProp(l, `username`) || ``,
-                password: L.getSafeProp(l, `password`) || ``
-            }),
-            En(t)) {
-                let e = new URL(t,B.origin);
-                !i && (e.username || e.password) && (i = {
-                    username: wn(e.username),
-                    password: wn(e.password)
-                }),
-                (e.username || e.password) && (e.username = ``,
-                e.password = ``,
-                t = e.href)
-            }
-            if (i && (x.delete(`authorization`),
-            x.set(`Authorization`, `Basic ` + btoa(Cn((i.username || ``) + `:` + (i.password || ``))))),
-            E && typeof t == `string` && t.startsWith(`data:`) && yn(t) > w)
-                throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k);
-            if (D && n !== `get` && n !== `head`) {
-                let e = await h(s);
-                if (typeof e == `number` && isFinite(e) && (j = e,
-                e > T))
-                    throw N()
-            }
-            let d = D && (L.isReadableStream(s) || L.isStream(s))
-              , _ = (e, t, n) => gn(e, xn, e => {
-                if (D && e > T)
-                    throw M = N();
-                t && t(e)
-            }
-            , n);
-            if (f && n !== `get` && n !== `head` && (y || d)) {
-                if (j ??= await g(x, s),
-                j !== 0 || d) {
-                    let e = new a(t,{
-                        method: `POST`,
-                        body: s,
-                        duplex: `half`
-                    }), n;
-                    if (L.isFormData(s) && (n = e.headers.get(`content-type`)) && x.setContentType(n),
-                    e.body) {
-                        let[t,n] = y && qt(j, Kt(Jt(y))) || [];
-                        s = _(e.body, t, n)
-                    }
-                }
-            } else if (d && !c && u && n !== `get` && n !== `head`)
-                s = _(s);
-            else if (d && c && !f && n !== `get` && n !== `head`)
-                throw new z(`Stream request bodies are not supported by the current fetch implementation`,z.ERR_NOT_SUPPORT,e,k);
-            L.isString(S) || (S = S ? `include` : `omit`);
-            let ne = c && `credentials`in a.prototype;
-            if (L.isFormData(s)) {
-                let e = x.getContentType();
-                e && /^multipart\/form-data/i.test(e) && !/boundary=/i.test(e) && x.delete(`content-type`)
-            }
-            x.set(`User-Agent`, `axios/` + bn, !1);
-            let re = {
-                ...C,
-                signal: O,
-                method: n.toUpperCase(),
-                headers: tt(x.normalize()),
-                body: s,
-                duplex: `half`,
-                credentials: ne ? S : void 0
-            };
-            k = c && new a(t,re);
-            let P = await (c ? te(k, C) : te(t, re))
-              , ie = R.from(P.headers);
-            if (E) {
-                let t = L.toFiniteNumber(ie.getContentLength());
-                if (t != null && t > w)
-                    throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k)
-            }
-            let ae = p && (b === `stream` || b === `response`);
-            if (p && P.body && (v || E || ae && A)) {
-                let t = {};
-                [`status`, `statusText`, `headers`].forEach(e => {
-                    t[e] = P[e]
-                }
-                );
-                let n = L.toFiniteNumber(ie.getContentLength())
-                  , [r,i] = v && qt(n, Kt(Jt(v), !0)) || []
-                  , a = 0;
-                P = new o(gn(P.body, xn, t => {
-                    if (E && (a = t,
-                    a > w))
-                        throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k);
-                    r && r(t)
-                }
-                , () => {
-                    i && i(),
-                    A && A()
-                }
-                ),t)
-            }
-            b ||= `text`;
-            let F = await m[L.findKey(m, b) || `text`](P, e);
-            if (E && !p && !ae) {
-                let t;
-                if (F != null && (typeof F.byteLength == `number` ? t = F.byteLength : typeof F.size == `number` ? t = F.size : typeof F == `string` && (t = typeof r == `function` ? new r().encode(F).byteLength : F.length)),
-                typeof t == `number` && t > w)
-                    throw new z(`maxContentLength size of ` + w + ` exceeded`,z.ERR_BAD_RESPONSE,e,k)
-            }
-            return !ae && A && A(),
-            await new Promise( (t, n) => {
-                Ht(t, n, {
-                    data: F,
-                    headers: R.from(P.headers),
-                    status: P.status,
-                    statusText: P.statusText,
-                    config: e,
-                    request: k
-                })
-            }
-            )
-        } catch (t) {
-            if (A && A(),
-            O && O.aborted && O.reason instanceof z) {
-                let n = O.reason;
-                throw n.config = e,
-                k && (n.request = k),
-                t !== n && Object.defineProperty(n, "cause", {
-                    __proto__: null,
-                    value: t,
-                    writable: !0,
-                    enumerable: !1,
-                    configurable: !0
-                }),
-                n
-            }
-            if (M)
-                throw k && !M.request && (M.request = k),
-                M;
-            if (t instanceof z)
-                throw k && !t.request && (t.request = k),
-                t;
-            if (t && t.name === `TypeError` && /Load failed|fetch/i.test(t.message)) {
-                let n = new z(`Network Error`,z.ERR_NETWORK,e,k,t && t.response);
-                throw Object.defineProperty(n, "cause", {
-                    __proto__: null,
-                    value: t.cause || t,
-                    writable: !0,
-                    enumerable: !1,
-                    configurable: !0
-                }),
-                n
-            }
-            throw z.from(t, t && t.code, e, k, t && t.response)
-        }
-    }
 }
-  , On = new Map
-  , kn = e => {
-    let t = e && e.env || {}, {fetch: n, Request: r, Response: i} = t, a = [r, i, n], o = a.length, s, c, l = On;
-    for (; o--; )
-        s = a[o],
-        c = l.get(s),
-        c === void 0 && l.set(s, c = o ? new Map : Dn(t)),
-        l = c;
-    return c
+
+/**
+ * 평문을 RSA-OAEP 공개키로 암호화하여 Base64 문자열로 반환한다.
+ *
+ * @param {string} plaintext - 암호화할 평문 (비밀번호)
+ * @param {string} publicKeyBase64 - Base64 인코딩된 SPKI/DER 공개키
+ * @returns {Promise<string>} Base64 인코딩된 RSA 암호문
+ */
+export async function rsaEncrypt(plaintext, publicKeyBase64) {
+    if (!publicKeyBase64) {
+        throw new Error('RSA 공개키가 설정되지 않았습니다.')
+    }
+
+    const publicKey = await importPublicKey(publicKeyBase64)
+    const encoder = new TextEncoder()
+    const encrypted = await crypto.subtle.encrypt(
+        { name: 'RSA-OAEP' },
+        publicKey,
+        encoder.encode(plaintext),
+    )
+
+    // ArrayBuffer → Base64
+    const bytes = new Uint8Array(encrypted)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i])
+    }
+    return btoa(binary)
 }
-;
-kn();
-var An = {
-    http: null,
-    xhr: dn,
