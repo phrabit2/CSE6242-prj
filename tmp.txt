@@ -1,29 +1,5 @@
-PS C:\Users\shlee2.id\glwcs-wcs-be> java "-Djasypt.encryptor.password=wcs_jasypt_secret" "-Dspring.profiles.active=dev" -jar .\target\wcs-release-0.0.1-SNAPSHOT.jar
-16:02:51,913 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [ASYNC_CONSOLE] not referenced. Skipping further processing.
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::               (v3.5.14)
-
-2026-08-05 16:03:27.329 ERROR 13808 [           main] o.s.b.web.embedded.tomcat.TomcatStarter  onStartup       [60  ] : Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'passwordDecryptFilter' defined in URL [jar:nested:/C:/Users/shlee2.id/glwcs-wcs-be/target/wcs-release-0.0.1-SNAPSHOT.jar/!BOOT-INF/classes/!/com/slp/boot/interceptor/PasswordDecryptFilter.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'redisRsaKeyProvider' defined in class path resource [com/slp/boot/conf/RedisConfig.class]: Unsatisfied dependency expressed through method 'redisRsaKeyProvider' parameter 0: Error creating bean with name 'redisTemplate' defined in class path resource [com/slp/boot/conf/RedisConfig.class]: Unsatisfied dependency expressed through method 'redisTemplate' parameter 0: No qualifying bean of type 'org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
-2026-08-05 16:03:29.979 ERROR 13808 [           main] o.s.b.d.LoggingFailureAnalysisReporter   report          [40  ] : 
-
-***************************
-APPLICATION FAILED TO START
-***************************
-
-Description:
-
-Parameter 0 of method redisTemplate in com.slp.boot.conf.RedisConfig required a bean of type 'org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory' that could not be found.
+jar tf .\target\wcs-release-0.0.1-SNAPSHOT.jar | Select-String "micrometer-registry-prometheus"
 
 
-Action:
-
-Consider defining a bean of type 'org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory' in your configuration.
-
-16:03:30,053 |-WARN in ch.qos.logback.classic.AsyncAppender[ASYNC_FILE] - Max queue flush timeout (1 ms) exceeded. Approximately 0 queued events were possibly discarded.
+jar xf .\target\wcs-release-0.0.1-SNAPSHOT.jar BOOT-INF/classes/application-dev.yml
+Get-Content .\BOOT-INF\classes\application-dev.yml
