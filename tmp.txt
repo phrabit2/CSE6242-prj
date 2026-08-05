@@ -1,72 +1,19 @@
-Non-resolvable parent POM for com.slp:wcs-release:0.0.1-SNAPSHOT: The following artifacts could not be resolved: org.springframework.boot:spring-boot-starter-parent:pom:3.5.14 (absent): org.springframework.boot:spring-boot-starter-parent:pom:3.5.14 failed to transfer from https://repo.maven.apache.org/maven2 during a previous attempt. This failure was cached in the local repository and resolution is not reattempted until the update interval of central has elapsed or updates are forced. Original error: Could not transfer artifact org.springframework.boot:spring-boot-starter-parent:pom:3.5.14 from/to central (https://repo.maven.apache.org/maven2): Connection reset and 'parent.relativePath' points at no local POM
-
-======
-
-<?xml version="1.0" encoding="UTF-8"?>
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-          https://maven.apache.org/xsd/settings-1.0.0.xsd">
-    <offline>false</offline>
-
-    <proxies>
-        <proxy>
-            <id>proxy-http</id>
-            <active>true</active>
-            <protocol>http</protocol>
-            <host>168.219.61.252</host>
-            <port>8080</port>
-            <nonProxyHosts>*.samsung.net|localhost|127.0.0.1</nonProxyHosts>
-        </proxy>
-        <proxy>
-            <id>proxy-https</id>
-            <active>true</active>
-            <protocol>https</protocol>
-            <host>168.219.61.252</host>
-            <port>8080</port>
-            <nonProxyHosts>*.samsung.net|localhost|127.0.0.1</nonProxyHosts>
-        </proxy>
-    </proxies>
-
-    <mirrors>
-    </mirrors>
-
-    <profiles>
-        <profile>
-            <id>sdl</id>
-            <repositories>
-                <repository>
-                    <id>central</id>
-                    <name>central</name>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                </repository>
-                <repository>
-                    <id>sdl-release</id>
-                    <name>sdl-release</name>
-                    <url>https://nexus.devops.sec.samsung.net/repository/sdl-releases/</url>
-                </repository>
-                <repository>
-                    <id>sdl-snapshot</id>
-                    <name>sdl-snapshot</name>
-                    <url>https://nexus.devops.sec.samsung.net/repository/sdl-snapshot/</url>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>central</id>
-                    <name>central</name>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                </pluginRepository>
-                <pluginRepository>
-                    <id>sdl-release</id>
-                    <name>sdl-release</name>
-                    <url>https://nexus.devops.sec.samsung.net/repository/sdl-releases/</url>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
-    </profiles>
-
-    <activeProfiles>
-        <activeProfile>sdl</activeProfile>
-    </activeProfiles>
-</settings>
+[ERROR] Tests run: 123, Failures: 11, Errors: 18, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  03:49 min
+[INFO] Finished at: 2026-08-05T10:42:05+09:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.5:test (default-test) on project wcs-release: There are test failures.
+[ERROR] 
+[ERROR] See C:\glwcs-wcs-be-main (1)\glwcs-wcs-be-main\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
