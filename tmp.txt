@@ -1,28 +1,3 @@
-wcsadmin@scp-wcsdchb1:/data/prom_graf/monitoring$ sudo docker ps -a | grep 'prometheus|grafana|node-exporter'
-[+] up 0/3cp-wcsdchb1:/data/prom_graf/monitoring$ docker compose ps
-[+] up 0/3rafana/grafana:13.1.0    Pulling                                                                                                                                                               26.5s
-[+] up 3/3rafana/grafana:13.1.0    Pulling                                                                                                                                                               26.7s
- ! Image grafana/grafana:13.1.0    Interrupted                                                                                                                                                           30.0s
- ! Image prom/prometheus:v3.12.0   Interrupted                                                                                                                                                           30.0s
- ✘ Image prom/node-exporter:v1.9.1 Error failed to resolve reference "docker.io/prom/node-exporter:v1.9.1": failed to do request: Head "https://registry-1.docker.io/v2/prom/node-exporter/mani...       30.0s
-Error response from daemon: failed to resolve reference "docker.io/prom/node-exporter:v1.9.1": failed to do request: Head "https://registry-1.docker.io/v2/prom/node-exporter/manifests/v1.9.1": dial tcp 44.215.246.172:443: i/o timeout
-wcsadmin@scp-wcsdchb1:/data/prom_graf/monitoring$ dk
-dk: command not found
-wcsadmin@scp-wcsdchb1:/data/prom_graf/monitoring$
-wcsadmin@scp-wcsdchb1:/data/prom_graf/monitoring$ sudo docker ps -a
-CONTAINER ID   IMAGE                                             COMMAND                  CREATED       STATUS       PORTS                                                                                                    NAMES
-37ed261d77c5   nextcloud                                         "/entrypoint.sh apac…"   5 weeks ago   Up 2 weeks   0.0.0.0:9970->80/tcp                                                                                     nextcloud
-3737162a2b74   collabora/code                                    "/start-collabora-on…"   5 weeks ago   Up 2 weeks   0.0.0.0:9980->9980/tcp                                                                                   collabora_online
-616c4ec75c5c   telegraf:1.25.0                                   "sh -c ' cp /schemas…"   5 weeks ago   Up 5 weeks   8092/udp, 8125/udp, 8094/tcp                                                                             pinpoint-docker_telegraf_1
-b6b73a205bd4   pinpointdocker/pinpoint-web:latest-metric         "java -cp @/app/jib-…"   5 weeks ago   Up 5 weeks   0.0.0.0:8080->8080/tcp, 0.0.0.0:9997->9997/tcp                                                           pinpoint-web
-01c3627ec7dc   pinpointdocker/pinpoint-collector:latest-metric   "java -cp @/app/jib-…"   5 weeks ago   Up 5 weeks   0.0.0.0:9991-9996->9991-9996/tcp, 0.0.0.0:9995-9996->9995-9996/udp, 15200/tcp                            pinpoint-collector
-d96ad851f242   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   5 weeks ago   Up 5 weeks   8096-8099/tcp, 9000/tcp                                                                                  pinpoint-docker_pinot-server-0_1
-b80b5b831226   pinpointdocker/pinpoint-flink:latest              "/docker-bin/docker-…"   5 weeks ago   Up 5 weeks   6123/tcp, 0.0.0.0:6121-6122->6121-6122/tcp, 0.0.0.0:19994->19994/tcp, 8081/tcp                           pinpoint-flink-taskmanager
-f9cebcb8d9b0   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   5 weeks ago   Up 5 weeks   8096-8099/tcp, 9000/tcp                                                                                  pinpoint-docker_pinot-broker-0_1
-c91e64d6188f   pinpointdocker/pinpoint-flink:latest              "/docker-bin/docker-…"   5 weeks ago   Up 5 weeks   6123/tcp, 0.0.0.0:8081->8081/tcp                                                                         pinpoint-flink-jobmanager
-7b81efac0730   pinpointdocker/pinpoint-hbase:latest              "/bin/sh -c '/usr/lo…"   5 weeks ago   Up 5 weeks   0.0.0.0:16010->16010/tcp, 0.0.0.0:16030->16030/tcp, 0.0.0.0:60000->60000/tcp, 0.0.0.0:60020->60020/tcp   pinpoint-hbase
-de689047901b   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   5 weeks ago   Up 5 weeks   8096-8099/tcp, 0.0.0.0:9000->9000/tcp                                                                    pinpoint-docker_pinot-controller_1
-93302e563ab8   redis:7.0.14                                      "docker-entrypoint.s…"   5 weeks ago   Up 5 weeks   0.0.0.0:6380->6379/tcp                                                                                   pinpoint-docker_redis_1
-dd5883668275   zookeeper:3.4.13                                  "/docker-entrypoint.…"   5 weeks ago   Up 5 weeks   2888/tcp, 3888/tcp, 0.0.0.0:32775->2181/tcp                                                              pinpoint-docker_zoo2_1
-4495ab536200   zookeeper:3.4.13                                  "/docker-entrypoint.…"   5 weeks ago   Up 5 weeks   2888/tcp, 3888/tcp, 0.0.0.0:32776->2181/tcp                                                              pinpoint-docker_zoo1_1
-de4c28cebae2   zookeeper:3.4.13                                  "/docker-entrypoint.…"   5 weeks ago   Up 5 weeks   2888/tcp, 3888/tcp, 0.0.0.0:32774->2181/tcp                                                              pinpoint-docker_zoo3_1
+PS C:\Users\shlee2.id\glwcs-wcs-be> java -Djasypt.encryptor.password=wcs_jasypt_secret -Dspring.profiles.active=dev -jar .\target\wcs-release-0.0.1-SNAPSHOT.jar
+Error: Could not find or load main class .encryptor.password=wcs_jasypt_secret
+Caused by: java.lang.ClassNotFoundException: /encryptor/password=wcs_jasypt_secret
