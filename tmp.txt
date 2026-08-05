@@ -1,19 +1,552 @@
-[ERROR] Tests run: 123, Failures: 11, Errors: 18, Skipped: 0
-[INFO] 
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  03:49 min
-[INFO] Finished at: 2026-08-05T10:42:05+09:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.5:test (default-test) on project wcs-release: There are test failures.
-[ERROR] 
-[ERROR] See C:\glwcs-wcs-be-main (1)\glwcs-wcs-be-main\target\surefire-reports for the individual test results.
-[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+@Library(['cicdpaas@adpaas', 'moffice-library@master', 'fccm-library@main', 'dx-jenkins-pipeline-library@main']) _
+
+pipeline {
+    agent {
+        label  'DEFAULT'
+    }
+
+    tools {
+        jdk 'openJDK21'
+        maven 'maven'
+    }
+
+    environment {
+        PROJECT_ID = 'glwcs'
+
+        // Git Credential
+        GIT_CREDENTIAL_ID = 'dx_26s0032_glwcs'
+        GIT_REPO_URL = 'https://github.devops.sec.samsung.net/dx-26s0032-glwcs/glwcs-wcs-be.git'
+
+        // Build Output
+        BACKEND_ARTIFACT = 'wcs-release-0.0.1-SNAPSHOT.jar'
+
+        // App / Service Name
+        APP_NAME = 'wcs'
+        SERVICE_NAME = 'wcs'
+
+        // Maven
+        MAVEN_POM = 'pom_jar.xml'
+
+        // Remote Server List (배포 대상 서버 목록)
+        SSH_HOSTS = '10.194.178.71 10.194.178.72'
+
+        // Remote Server Paths
+        REMOTE_BASE = '/app/wcs'
+        REMOTE_DEPLOY_DIR = "${REMOTE_BASE}/deploy/backend"
+        REMOTE_HOME_DIR = "${REMOTE_BASE}/backend"
+
+        // App별 배포 이력 로그 (같은 서버에 여러 app이 존재할 수 있음)
+        HISTORY_LOG = "${REMOTE_DEPLOY_DIR}/history_${APP_NAME}.log"
+
+        // 심볼릭 링크명
+        SYMLINK_NAME = "current_${APP_NAME}.jar"
+
+        // 메일 수신자
+        MAIL_TO = 'lee.gwangjae@partner.sec.co.kr'
+    }
+
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Git 브랜치')
+        choice(name: 'BUILD_ENV', choices: ['prod'], description: '빌드 환경')
+        booleanParam(name: 'DEPLOY', defaultValue: true, description: '빌드 후 배포 수행')
+        booleanParam(name: 'TEST_CONNECTIVITY', defaultValue: false, description: '방화벽/네트워크 연결 테스트만 실행 (SSH Port 22)')
+    }
+
+    stages {
+
+        // ============================================
+        // Network Connectivity Test
+        // ============================================
+        stage('Connectivity Test') {
+            when {
+                expression { params.TEST_CONNECTIVITY == true }
+            }
+            steps {
+                sh '''
+                    echo "============================================"
+                    echo "Network Connectivity Test"
+                    echo "============================================"
+
+                    ALL_OK=true
+
+                    for SSH_HOST in ${SSH_HOSTS}; do
+                        echo ""
+                        echo "--------------------------------------------"
+                        echo "Target: ${SSH_HOST}:22"
+                        echo "--------------------------------------------"
+
+                        # Test TCP connection to SSH port
+                        echo "Testing SSH (port 22) connection to ${SSH_HOST}..."
+                        if timeout 10 bash -c "echo > /dev/tcp/${SSH_HOST}/22" 2>/dev/null; then
+                            echo "SUCCESS: Port 22 is OPEN on ${SSH_HOST}"
+                        else
+                            echo "FAILED: Port 22 is NOT reachable on ${SSH_HOST}"
+                            echo ""
+                            echo "Possible causes:"
+                            echo "  1. Firewall blocking port 22 from Jenkins Agent"
+                            echo "  2. SSH service not running on target server"
+                            echo "  3. Network route not available"
+                            echo ""
+                            echo "Diagnostic info:"
+                            echo "  - Jenkins Agent hostname: $(hostname)"
+                            echo "  - Target: ${SSH_HOST}:22"
+
+                            # Try ping
+                            echo ""
+                            echo "Ping test to ${SSH_HOST}..."
+                            ping -c 3 -W 5 ${SSH_HOST} 2>&1 || echo "Ping failed"
+
+                            # Try traceroute
+                            echo ""
+                            echo "Traceroute to ${SSH_HOST}..."
+                            traceroute -m 10 -w 2 ${SSH_HOST} 2>&1 || echo "Traceroute not available or failed"
+
+                            ALL_OK=false
+                        fi
+                    done
+
+                    echo ""
+                    echo "============================================"
+                    if [ "${ALL_OK}" = "true" ]; then
+                        echo "Connectivity test PASSED for all hosts!"
+                    else
+                        echo "Connectivity test FAILED for one or more hosts!"
+                        exit 1
+                    fi
+                    echo "============================================"
+                '''
+            }
+        }
+
+        // ============================================
+        // 1. Git Checkout
+        // ============================================
+        stage('Checkout') {
+            steps {
+                git branch: "${params.BRANCH}",
+                    credentialsId: "${GIT_CREDENTIAL_ID}",
+                    url: "${GIT_REPO_URL}"
+                script {
+                    env.GIT_SHORT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                }
+                sh '''
+                    echo "============================================"
+                    echo "Checkout Info"
+                    echo "============================================"
+                    git log -1 --pretty=format:"Commit: %h - %an, %ar : %s"
+                    echo ""
+                    echo "Git Short SHA: ${GIT_SHORT_SHA}"
+                    echo "Build Number:  ${BUILD_NUMBER}"
+                    echo "============================================"
+                '''
+            }
+        }
+
+        // ============================================
+        // 1-1. Version Check (symlink vs history.log 비교 → 불일치 시 알림)
+        // ============================================
+        stage('Version Check') {
+            when {
+                expression { params.DEPLOY == true }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'wcs_ssh_key', usernameVariable: 'SSH_USER_NAME', passwordVariable: 'SSH_KEY_CONTENT')]) {
+                    script {
+                        // SSH 키 파일 생성
+                        sh '''
+                            { set +x; } 2>/dev/null
+                            printf '%s\n' "${SSH_KEY_CONTENT}" | tr -d '\r' > /tmp/deploy_ssh_key
+                            chmod 600 /tmp/deploy_ssh_key
+                            set -x
+                        '''
+
+                        def firstHost = env.SSH_HOSTS.split(' ')[0]
+
+                        // current symlink 가 가리키는 실제 버전
+                        // \\\$(readlink ...) : Groovy \\\$ → shell \$ → 원격 서버에서 $(readlink) 실행
+                        env.LIVE_VERSION = sh(
+                            script: """
+                                SSH_OPTS="-o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 -i /tmp/deploy_ssh_key"
+                                ssh \${SSH_OPTS} ${SSH_USER_NAME}@${firstHost} \\
+                                    "basename \\\$(readlink -f ${REMOTE_HOME_DIR}/${SYMLINK_NAME} 2>/dev/null) 2>/dev/null | sed 's/^app_${APP_NAME}_//;s/\\.jar\$//' || echo 'UNKNOWN'"
+                            """,
+                            returnStdout: true
+                        ).trim()
+
+                        // history.log 마지막 라인
+                        env.HISTORY_VERSION = sh(
+                            script: """
+                                SSH_OPTS="-o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 -i /tmp/deploy_ssh_key"
+                                ssh \${SSH_OPTS} ${SSH_USER_NAME}@${firstHost} \\
+                                    "tail -1 ${HISTORY_LOG} 2>/dev/null || echo 'NO_HISTORY'"
+                            """,
+                            returnStdout: true
+                        ).trim()
+
+                        sh 'rm -f /tmp/deploy_ssh_key'
+
+                        echo "============================================"
+                        echo "Version Check (symlink vs history.log)"
+                        echo "============================================"
+                        echo "  Live version (symlink):   ${env.LIVE_VERSION ?: 'UNKNOWN'}"
+                        echo "  History last version:     ${env.HISTORY_VERSION ?: 'NONE'}"
+                        echo "  Build git_short_sha:      ${env.GIT_SHORT_SHA}"
+                        echo "============================================"
+
+                        if (env.LIVE_VERSION != 'UNKNOWN' && env.HISTORY_VERSION != 'NO_HISTORY'
+                            && env.LIVE_VERSION != env.HISTORY_VERSION) {
+                            echo """
+WARNING: symlink and history.log mismatch!
+  This may indicate a rollback or manual change was made.
+  Live version (symlink):     ${env.LIVE_VERSION}
+  History last version:       ${env.HISTORY_VERSION}
+  Deploying now may override the rolled-back version.
+  Please verify that the source (git) has been properly updated.
+"""
+                            input(
+                                message: "symlink과 history.log가 불일치합니다 (롤백 또는 수동 변경 가능성). [${env.GIT_SHORT_SHA}]로 배포를 강행하시겠습니까?",
+                                ok: 'Proceed'
+                            )
+                        } else {
+                            echo "OK: symlink and history.log are consistent. Proceeding with deployment."
+                        }
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // Clean
+        // ============================================
+        stage('Clean') {
+            steps {
+                sh '''
+                    echo "============================================"
+                    echo "Cleaning build artifacts..."
+                    echo "============================================"
+                    rm -rf target
+                    echo "Clean completed."
+                '''
+            }
+        }
+
+        // ============================================
+        // 2. Backend Build (Maven → JAR)
+        // ============================================
+        stage('Build Backend') {
+            steps {
+                sh '''
+                    echo "============================================"
+                    echo "Building Backend (JAR)..."
+                    echo "Build Env: ${BUILD_ENV}"
+                    echo "============================================"
+                    mvn clean package -f ${MAVEN_POM} -DskipTests
+
+                    if [ ! -f target/${BACKEND_ARTIFACT} ]; then
+                        echo "ERROR: Build failed - target/${BACKEND_ARTIFACT} not found!"
+                        exit 1
+                    fi
+
+                    echo "============================================"
+                    echo "Backend build completed: target/${BACKEND_ARTIFACT}"
+                    echo "============================================"
+                '''
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: "target/${BACKEND_ARTIFACT}", allowEmptyArchive: false
+                }
+            }
+        }
+
+        // ============================================
+        // 3~10. Deploy Backend (헬스체크 + 자동 원복)
+        //   3. 배포 전 이전 버전(symlink 대상) 저장
+        //   4. scp 전송 (deploy/backend/app_{app}_{ver}.jar)
+        //   5. 아티팩트 복사 (backend/app_{app}_{ver}.jar)
+        //   6. 심볼릭 링크 변경 (backend/current_{app}.jar → app_{app}_{ver}.jar)
+        //   7. 서비스 데몬 재시작
+        //   8. 헬스체크 (systemctl is-active, 최대 60초 폴링)
+        //   9. 헬스체크 실패 시 전체 서버 자동 원복 (symlink → 이전 버전, 재시작)
+        //  10. 헬스체크 통과 시 배포 이력 기록 (deploy/backend/history_{app_name}.log)
+        // ============================================
+        stage('Deploy Backend') {
+            when {
+                expression { params.DEPLOY == true }
+            }
+            steps {
+                // 빌드 없이 배포만 하는 경우, 이전 빌드의 artifact 복원
+                script {
+                    if (!fileExists("target/${BACKEND_ARTIFACT}")) {
+                        copyArtifacts projectName: env.JOB_NAME,
+                            selector: specific(env.BUILD_NUMBER),
+                            filter: "target/${BACKEND_ARTIFACT}",
+                            optional: true
+                        // 현재 빌드에 artifact가 없으면 마지막 성공 빌드에서 가져옴
+                        if (!fileExists("target/${BACKEND_ARTIFACT}")) {
+                            copyArtifacts projectName: env.JOB_NAME,
+                                selector: lastSuccessful(),
+                                filter: "target/${BACKEND_ARTIFACT}",
+                                optional: true
+                        }
+                    }
+                }
+                withCredentials([usernamePassword(credentialsId: 'wcs_ssh_key', usernameVariable: 'SSH_USER_NAME', passwordVariable: 'SSH_KEY_CONTENT')]) {
+                    sh '''
+                        echo "============================================"
+                        echo "Deploying Backend to ${SSH_HOSTS}"
+                        echo "============================================"
+
+                        if [ ! -f target/${BACKEND_ARTIFACT} ]; then
+                            echo "ERROR: target/${BACKEND_ARTIFACT} not found! Run build first."
+                            exit 1
+                        fi
+
+                        # 배포 버전 태그: {YYYYMMDD_HHMMSS}_b{BUILD_NUMBER}_{git_short_sha}
+                        DEPLOY_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                        VERSION_TAG="${DEPLOY_TIMESTAMP}_b${BUILD_NUMBER}_${GIT_SHORT_SHA}"
+
+                        # 아티팩트 파일명: app_{app_name}_{YYYYMMDD_HHMMSS}_b{BUILD_NUMBER}_{git_short_sha}.jar
+                        JAR_DEPLOY_NAME="app_${APP_NAME}_${VERSION_TAG}.jar"
+                        SYMLINK_NAME="current_${APP_NAME}.jar"
+
+                        echo "Deploy version:  ${VERSION_TAG}"
+                        echo "Artifact name:   ${JAR_DEPLOY_NAME}"
+                        echo "Symlink:         ${REMOTE_HOME_DIR}/${SYMLINK_NAME} -> ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME}"
+                        echo "============================================"
+
+                        # Write SSH private key to temp file (hide from log)
+                        { set +x; } 2>/dev/null
+                        # printf 사용: echo와 달리 백슬래시 해석 안 함
+                        # tr -d '\r': Windows CRLF → Unix LF 변환
+                        printf '%s\n' "${SSH_KEY_CONTENT}" | tr -d '\r' > /tmp/deploy_ssh_key
+                        chmod 600 /tmp/deploy_ssh_key
+                        set -x
+
+                        # 키 파일 진단 (내용 노출 없이)
+                        echo "Key file lines: $(wc -l < /tmp/deploy_ssh_key)"
+                        echo "Key file size: $(wc -c < /tmp/deploy_ssh_key) bytes"
+                        HEAD_LINE=$(head -1 /tmp/deploy_ssh_key)
+                        case "$HEAD_LINE" in
+                            *BEGIN*) echo "Key format: OK ($HEAD_LINE)" ;;
+                            *)
+                                echo "ERROR: SSH key format is invalid. First line: ${HEAD_LINE:0:20}..."
+                                rm -f /tmp/deploy_ssh_key
+                                exit 1
+                                ;;
+                        esac
+
+                        SSH_OPTS="-o StrictHostKeyChecking=no -i /tmp/deploy_ssh_key"
+
+                        TOTAL_HOSTS=$(echo ${SSH_HOSTS} | wc -w)
+
+                        # ============================================
+                        # Phase 1: 전체 서버에 배포 (scp, copy, symlink, restart)
+                        #          - history 기록은 헬스체크 통과 후 수행
+                        # ============================================
+                        echo ""
+                        echo "============================================"
+                        echo "Phase 1: Deploying to all servers"
+                        echo "============================================"
+
+                        DEPLOY_FAILED=false
+                        HOST_INDEX=0
+
+                        for SSH_HOST in ${SSH_HOSTS}; do
+                            HOST_INDEX=$((HOST_INDEX + 1))
+                            echo ""
+                            echo "--------------------------------------------"
+                            echo "[$HOST_INDEX/$TOTAL_HOSTS] Deploying to ${SSH_HOST}"
+                            echo "--------------------------------------------"
+
+                            # SSH 연결 진단 (verbose)
+                            echo "[0/4] Testing SSH connection to ${SSH_HOST}..."
+                            ssh -v ${SSH_OPTS} -o BatchMode=yes -o ConnectTimeout=10 ${SSH_USER_NAME}@${SSH_HOST} "echo SSH_OK" 2>&1 | grep -E "Offering|Authentications|Permission|identity|publickey|SSH_OK" || true
+
+                            # scp 전송
+                            echo "[1/4] Uploading ${JAR_DEPLOY_NAME} to ${SSH_HOST}..."
+                            if ! scp ${SSH_OPTS} target/${BACKEND_ARTIFACT} ${SSH_USER_NAME}@${SSH_HOST}:${REMOTE_DEPLOY_DIR}/${JAR_DEPLOY_NAME}; then
+                                echo "[1/4] Upload FAILED on ${SSH_HOST}"
+                                DEPLOY_FAILED=true
+                                continue
+                            fi
+
+                            # 아티팩트 복사 + 심볼릭 링크 변경 + 서비스 재시작
+                            echo "[2/4] Copying artifact + updating symlink + restarting ${SERVICE_NAME} on ${SSH_HOST}..."
+                            if ! ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                "cp ${REMOTE_DEPLOY_DIR}/${JAR_DEPLOY_NAME} ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME} && \\
+                                 ln -sfn ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME} ${REMOTE_HOME_DIR}/${SYMLINK_NAME} && \\
+                                 sudo systemctl restart ${SERVICE_NAME}"; then
+                                echo "[2/4] Deploy (copy/symlink/restart) FAILED on ${SSH_HOST}"
+                                DEPLOY_FAILED=true
+                                continue
+                            fi
+
+                            echo "[3/4] Deploy step completed on ${SSH_HOST}"
+                        done
+
+                        # ============================================
+                        # Phase 2: 헬스체크 (모든 서버)
+                        #          systemctl is-active 로 폴링 (최대 60초)
+                        # ============================================
+                        echo ""
+                        echo "============================================"
+                        echo "Phase 2: Health check (all servers)"
+                        echo "============================================"
+
+                        HEALTH_FAILED=false
+
+                        if [ "${DEPLOY_FAILED}" = "false" ]; then
+                            HOST_INDEX=0
+                            for SSH_HOST in ${SSH_HOSTS}; do
+                                HOST_INDEX=$((HOST_INDEX + 1))
+                                echo ""
+                                echo "--------------------------------------------"
+                                echo "[$HOST_INDEX/$TOTAL_HOSTS] Health check on ${SSH_HOST}"
+                                echo "--------------------------------------------"
+
+                                echo "[4/4] Checking ${SERVICE_NAME} service status (max 60s)..."
+                                HEALTH_OK=false
+                                for i in $(seq 1 12); do
+                                    sleep 5
+                                    RESULT=$(ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                        "systemctl is-active ${SERVICE_NAME} 2>/dev/null" | tr -d '\\r' || echo "failed")
+                                    if [ "${RESULT}" = "active" ]; then
+                                        echo "  Health check OK (${i}/12) - service is active"
+                                        HEALTH_OK=true
+                                        break
+                                    fi
+                                    echo "  waiting... (${i}/12) - status: ${RESULT}"
+                                done
+
+                                if [ "${HEALTH_OK}" = "false" ]; then
+                                    echo "  [FAIL] Health check FAILED on ${SSH_HOST}"
+                                    echo "  === systemctl status ==="
+                                    ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                        "systemctl status ${SERVICE_NAME}" || true
+                                    HEALTH_FAILED=true
+                                fi
+                            done
+                        else
+                            echo "Skipping health check (deploy phase had failures)"
+                            HEALTH_FAILED=true
+                        fi
+
+                        # ============================================
+                        # Phase 3: 헬스체크 실패 시 전체 서버 자동 원복
+                        #          history.log 마지막 라인(tail -1)에서 이전 버전 조회
+                        # ============================================
+                        if [ "${HEALTH_FAILED}" = "true" ]; then
+                            echo ""
+                            echo "============================================"
+                            echo "[FAIL] Health check FAILED! Starting auto-rollback (ALL servers)..."
+                            echo "============================================"
+
+                            HOST_INDEX=0
+                            for SSH_HOST in ${SSH_HOSTS}; do
+                                HOST_INDEX=$((HOST_INDEX + 1))
+
+                                # history.log 마지막 라인에서 이전 배포 버전 조회
+                                PREV_VERSION=$(ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                    "tail -1 ${HISTORY_LOG} 2>/dev/null || echo 'NONE'")
+                                PREV_JAR="app_${APP_NAME}_${PREV_VERSION}.jar"
+
+                                echo ""
+                                echo "--------------------------------------------"
+                                echo "[$HOST_INDEX/$TOTAL_HOSTS] Rolling back on ${SSH_HOST}"
+                                echo "  Previous version: ${PREV_VERSION}"
+                                echo "  Previous JAR:     ${REMOTE_HOME_DIR}/${PREV_JAR}"
+                                echo "--------------------------------------------"
+
+                                if [ "${PREV_VERSION}" = "NONE" ] || [ -z "${PREV_VERSION}" ]; then
+                                    echo "  No previous version in history. Stopping service."
+                                    ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                        "sudo systemctl stop ${SERVICE_NAME}" || true
+                                    continue
+                                fi
+
+                                # 이전 버전 JAR 파일 존재 여부 확인
+                                FILE_EXISTS=$(ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                    "if [ -f '${REMOTE_HOME_DIR}/${PREV_JAR}' ]; then echo 'YES'; else echo 'NO'; fi")
+                                if [ "${FILE_EXISTS}" != "YES" ]; then
+                                    echo "  [WARN] Previous JAR not found: ${REMOTE_HOME_DIR}/${PREV_JAR}"
+                                    echo "         Skipping rollback on this server."
+                                    continue
+                                fi
+
+                                # symlink를 이전 버전으로 되돌림 + 서비스 재시작
+                                echo "  Restoring symlink -> ${REMOTE_HOME_DIR}/${PREV_JAR}"
+                                ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                    "ln -sfn ${REMOTE_HOME_DIR}/${PREV_JAR} ${REMOTE_HOME_DIR}/${SYMLINK_NAME} && \\
+                                     sudo systemctl restart ${SERVICE_NAME}" || true
+
+                                # 원복 후 헬스체크 (10초 대기 후 1회 확인)
+                                sleep 10
+                                RESULT=$(ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                    "systemctl is-active ${SERVICE_NAME} 2>/dev/null" | tr -d '\\r' || echo "failed")
+                                if [ "${RESULT}" = "active" ]; then
+                                    echo "  [OK] Rollback successful on ${SSH_HOST} (service is active)"
+                                else
+                                    echo "  [WARN] Rollback completed but service is NOT active on ${SSH_HOST}"
+                                    ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                        "systemctl status ${SERVICE_NAME}" || true
+                                fi
+                            done
+
+                            rm -f /tmp/deploy_ssh_key
+                            echo ""
+                            echo "============================================"
+                            echo "[FAIL] Deployment FAILED and rolled back to previous version."
+                            echo "   Deploy version (failed): ${VERSION_TAG}"
+                            echo "   All servers rolled back."
+                            echo "============================================"
+                            exit 1
+                        fi
+
+                        # ============================================
+                        # Phase 4: 헬스체크 통과 → 배포 이력 기록
+                        # ============================================
+                        echo ""
+                        echo "============================================"
+                        echo "Phase 4: Recording deployment history (all servers)"
+                        echo "============================================"
+
+                        HOST_INDEX=0
+                        for SSH_HOST in ${SSH_HOSTS}; do
+                            HOST_INDEX=$((HOST_INDEX + 1))
+                            echo "[$HOST_INDEX/$TOTAL_HOSTS] Recording history on ${SSH_HOST}..."
+                            ssh ${SSH_OPTS} ${SSH_USER_NAME}@${SSH_HOST} \\
+                                "echo '${VERSION_TAG}' >> ${HISTORY_LOG}"
+                        done
+
+                        rm -f /tmp/deploy_ssh_key
+                        echo ""
+                        echo "============================================"
+                        echo "[OK] All servers deployed successfully!"
+                        echo "Deploy version:  ${VERSION_TAG}"
+                        echo "Artifact:        ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME}"
+                        echo "Symlink:         ${REMOTE_HOME_DIR}/${SYMLINK_NAME} -> ${REMOTE_HOME_DIR}/${JAR_DEPLOY_NAME}"
+                        echo "History log:     ${HISTORY_LOG}"
+                        echo "Service:         ${SERVICE_NAME} (restarted on all hosts)"
+                        echo "Target hosts:    ${SSH_HOSTS}"
+                        echo "============================================"
+                    '''
+                }
+            }
+        }
+
+    } // end stages
+
+    post {
+        success {
+            devopsMail (
+                to: "${MAIL_TO}"
+            )
+        }
+        failure {
+            devopsMail (
+                to: "${MAIL_TO}"
+            )
+        }
+    }
+}
