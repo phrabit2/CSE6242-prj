@@ -1,5 +1,181 @@
-jar tf .\target\wcs-release-0.0.1-SNAPSHOT.jar | Select-String "micrometer-registry-prometheus"
+PS C:\Users\shlee2.id\glwcs-wcs-be> jar tf .\target\wcs-release-0.0.1-SNAPSHOT.jar | Select-String "micrometer-registry-prometheus"
+BOOT-INF/lib/micrometer-registry-prometheus-1.15.11.jar
 
+PS C:\Users\shlee2.id\glwcs-wcs-be> jar xf .\target\wcs-release-0.0.1-SNAPSHOT.jar BOOT-INF/classes/application-dev.yml
+PS C:\Users\shlee2.id\glwcs-wcs-be> 
+PS C:\Users\shlee2.id\glwcs-wcs-be> Get-Content .\BOOT-INF\classes\application-dev.yml
+server:
+  port: 8080
 
-jar xf .\target\wcs-release-0.0.1-SNAPSHOT.jar BOOT-INF/classes/application-dev.yml
-Get-Content .\BOOT-INF\classes\application-dev.yml
+# ?ㅽ뻾 紐⑤뱶 ?ㅼ젙
+# batch: true ???ㅼ?以꾨윭(ScheduleService) ?쒖꽦??
+# api: true ????而⑦듃濡ㅻ윭 ?쒖꽦??
+# ??紐⑤뱶 紐⑤몢 true硫??듯빀 ?몄뒪?댁뒪濡??숈옉
+mode:
+  batch: true
+  api: true
+
+# 諛곗튂 遺꾩궛 ???ㅼ젙 (HA ?댁쨷??
+# TTL: 諛곗튂 理쒕? ?ㅽ뻾 ?쒓컙蹂대떎 湲멸쾶 ?ㅼ젙, ?쒕쾭 ?μ븷 ?????먮룞 留뚮즺 ?쒓컙
+# ?? 媛 ??湲?諛곗튂媛  20遺꾩씠硫?TTL?  30遺??댁긽?쇰줈 ?ㅼ젙
+batch:
+  distributed-lock:
+    ttl-minutes: 30
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://10.194.179.102:2866/GLWCSD?stringtype=unspecified&currentSchema=wcs
+    username: wcsadmin_app
+    password: ENC(u6utPoK0YAgTmg5OpvTd1IcLaBV4dpAC)
+  data:
+    redis:
+      host: 10.194.179.81
+      port: 6379
+      password: ENC(1jVwhH1OfHG/v698cwNBbrC5csnr7QeP)
+  cache:
+    redis:
+      time-to-live: 30m
+  output:
+    ansi:
+      enabled: always
+  mail:
+    host: 123.456.789.123
+    port: 587
+    protocol: smtp
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp.starttls.enable: true
+        auth: true
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    driver-class-name: ${datasource.postgresql-driver-class-name}
+    url: jdbc:postgresql://10.194.179.102:2866/GLWCSD?stringtype=unspecified&currentSchema=wcs
+    username: wcsadmin_app
+    password: ENC(u6utPoK0YAgTmg5OpvTd1IcLaBV4dpAC)
+    #?대? DB ???뚯씠釉??깆씠 ?덈뒗 ?곹깭?먯꽌 flyway ?곸슜??
+    baseline-on-migrate: true
+    baseline-version: 0
+
+datasource:
+  #oracle, mysql, mssql, postgresql
+  db-name: postgresql
+  use-string-split-fn : false
+  use-mapper-reloader: true
+  default:
+    driver-class-name: ${datasource.postgresql-driver-class-name}
+    jdbc-url: jdbc:postgresql://10.194.179.102:2866/GLWCSD?stringtype=unspecified&currentSchema=wcs
+    username: wcsadmin_app
+    password: ENC(u6utPoK0YAgTmg5OpvTd1IcLaBV4dpAC)
+    maximum-pool-size: 60
+    minimum-idle: 10
+    connection-timeout: 60000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+  intfc:
+    driver-class-name: ${datasource.postgresql-driver-class-name}
+    jdbc-url: jdbc:postgresql://10.194.179.102:2866/GLWCSD?stringtype=unspecified&currentSchema=wcs
+    username: wcsadmin_app
+    password: ENC(u6utPoK0YAgTmg5OpvTd1IcLaBV4dpAC)
+    maximum-pool-size: 60
+    minimum-idle: 10
+    connection-timeout: 60000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+
+#spring actuator
+management:
+  endpoints:
+    web.exposure.include: "health,info,metrics"
+
+logging:
+  file:
+    path: /app/wcs/backend/logs
+  #logback-spring.xml ???덈뒗 濡쒓렇?덈꺼 ?ㅼ젙????뼱?대떎.
+  level:
+    root: info
+    com.slp: DEBUG
+    com.zaxxer.hikari: ERROR
+    com.atomikos: ERROR
+    org.springframework.web: ERROR
+    org.springframework.web.servlet.mvc: ERROR
+    org.springframework.web.servlet.mvc.method.annotation: ERROR
+    jdbc.audit: OFF
+    jdbc.connection: OFF
+    jdbc.resultset: OFF
+    jdbc.resultsettable: OFF
+    jdbc.sqlonly: OFF
+    jdbc.sqltiming: DEBUG
+    common: DEBUG
+
+mvc:
+  dev-mode : true
+  webclient-baseurls:
+    default: 'http://localhost:8080'
+    server1: 'http://localhost:8081'
+    server2: 'http://localhost:8082'
+
+# ?≪떊 API URL or IP
+api:
+  auth-check: false
+  secret:
+    key: ENC(LF216LU1Ga6k7PLKoVcqNoZKWiejfjP0dWoqSLqnWPQxNTmaxVWmkMIM3HAWSzkPveN2e9OEpRSyK4KwKX0pxA==)
+  dns:
+    inner:
+      wcs:
+        batch: http://localhost:8081
+      com: http://10.194.179.13:8282
+      dt: http://localhost:8080
+      ai: http://localhost:8080
+    outer:
+      wcs: http://localhost:8080
+      com: http://localhost:8080
+      dt: http://localhost:8080
+      ai: http://localhost:8080
+
+# SSO ?ㅼ젙 (Dev)
+sso:
+  auto-create-user: true  # SSO ?몄쬆 ???ъ슜???먮룞 ?앹꽦
+  default-warehouse-id: ""  # 湲곕낯 李쎄퀬 ID
+  default-owner-id: ""  # 湲곕낯 ?붿＜ ID
+  oidc:
+    enabled: true  # OIDC SSO ?ъ슜 ?щ? (Local?  湲곕낯?곸쑝濡?鍮꾪솢?깊솕)
+    # AD-SSO ?쒕쾭 ?ㅼ젙
+    issuer-uri: https://sts.secsso.net/adfs
+    authorization-uri: https://sts.secsso.net/adfs/oauth2/authorize/
+    token-uri: https://sts.secsso.net/adfs/oauth2/token
+    userinfo-uri: https://sts.secsso.net/adfs/userinfo
+    jwk-set-uri: https://sts.secsso.net/adfs/discovery/keys
+    logout-uri: https://sts.secsso.net/adfs/oauth2/logout
+
+    # ?대씪?댁뼵???ㅼ젙 (Public ?대씪?댁뼵??- client_secret 遺덊븘??
+    client-id: ENC(tNhPhk/fqJeAtU46ae6sGY/HDzsbon8EHQcu2hmQPnWTOY1YjnEsV73iPDnO9aI1)
+    client-secret: ENC(cVFMxgMnn0aODvW9zo/OcVR3obuI4l0mlrAi7KXKi0nn5kVDISRSUEqfeQtxawthgbQprbDK+qE=)
+
+    # ?ㅼ퐫??(curl 寃 利? openid留뚯쑝濡?JWT??紐⑤뱺 ?대젅???ы븿)
+    scope: openid
+
+    # RestTemplate timeout (OidcAuthService)
+    connect-timeout: 5s
+    read-timeout: 10s
+  # SAML SSO ?ㅼ젙 (?듯빀?몄쬆 媛쒕컻 諛??곕룞媛 ?대뱶 湲곕컲)
+  saml:
+    enabled: false  # SAML SSO ?쒖꽦???щ? (Local?  鍮꾪솢?깊솕)
+    # ?꾨줎?몄뿏??踰좎씠??URL (SAML ACS 泥섎━ ??由щ떎?대젆??? ??
+    frontend-base-url: https://glwcs.dev.sec.samsung.net
+    # IdP ?ㅼ젙 (媛 ?대뱶: 7.?듯빀?몄쬆_媛쒕컻 諛??곕룞媛 ?대뱶.pptx)
+    idp-entity-id: http://sts.secsso.net/adfs/services/trust
+    idp-sso-url: https://sts.secsso.net/adfs/ls/
+    idp-slo-url: https://sts.secsso.net/adfs/ls/?wa=wsignoutcleanup1.0
+    idp-metadata-url: https://sts.secsso.net/federationmetadata/2007-06/federationmetadata.xml
+
+    # Token Signing ?몄쬆??(媛 ?대뱶?먯꽌 ?쒓났, ?섍꼍蹂??곸씠)
+    idp-signing-cert: MIIC4DCCAcigAwIBAgIQG40DR9OSaolO+JHldUbqdzANBgkqhkiG9w0BAQsFADAsMSowKAYDVQQDEyFBREZTIFNpZ25pbmcgLSBzdHMtZGV2LnNlY3Nzby5uZXQwHhcNMTgwNzMwMDA0MDUyWhcNMzgwNzI1MDA0MDUyWjAsMSowKAYDVQQDEyFBREZTIFNpZ25pbmcgLSBzdHMtZGV2LnNlY3Nzby5uZXQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDCAjlN1aipmUwA++3KpSgNDDe3JEwzUyc9qjZ22js5Tu/4L40x56H9lsWmwITq157RNTYa/cad67AnMII/Azo+6QArTsYNl1Cr6UWPxZFSOv8do5Hi3ymsdH2n9oNymvAL0mv0c0GHLu8OvB9lMzv2XL71d68Ql0gp+OlxOzwzfoM4Si98OEdbm9eZRLWq+SbadfpfOkKt5ncNOX3Y7Q2fnItTnpOJuw89Kac9jCf3zMT/6qjb4nX8M3glkOXDsISRG4BXegJXfBHk3wUyIGPOjuzKYWPo3NtbuyPak5xtcL21vNzRkztOsIEJmBEqrc7TMtfP75QYOoeJbHVCfRfxAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAApqobdLJLXHnJy0EcLgdlJLAXpGOy8IM+RssaVJCdE9JWn/59BvFTsBMzuj8nGPERJFrsjsygyjpeE46XXJx21crcdOQEsWtnOfeFdhZSZyRLn4yF1xuX0CKltdRBfl+cgDGrEpiRR3ZzfJCKuUvxS8lrquvMJ9yXsnwiJsny+UGQ+QLMTvBR7kY7X4fJhoo/paB1vPBBD92HUPdni2tEpmQ0ID0IeBXFmOky/xmSjU2itS+HjNIWhtlE/ZBhLtmryeiXgt3SElOp3buYs/A0Vz2ycXx4nwldWSt5IQcpVFdBV4tkJxuPPm7dKMmBrQtp5hFEkjw6q6JUJHkT+lTnE=
