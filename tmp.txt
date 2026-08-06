@@ -22,3 +22,43 @@ Traceback (most recent call last):
     container = Container.from_id(self.client, event['id'])
                                                ~~~~~^^^^^^
 KeyError: 'id'
+grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.414810536Z level=info msg="Skipping API quotas.grafana.app/v0alpha1 because it has no resources."
+grafana          | t=2026-08-06T07:20:52.414897916Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.414894288Z msg="Installed APIs for app" app=quotas
+grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.415780991Z level=info msg="Adding GroupVersion shorturl.grafana.app v1beta1 to ResourceManager"
+grafana          | t=2026-08-06T07:20:52.415838951Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.41583436Z msg="Installed APIs for app" app=shorturl
+grafana          | t=2026-08-06T07:20:52.415949199Z level=warn caller=logger.go:224 time=2026-08-06T07:20:52.415945305Z msg="skipped registering status sub-resource that does not support dual writing" resource=recordingrules.rules.alerting.grafana.app version=v0alpha1 storagePath=recordingrules/status
+grafana          | t=2026-08-06T07:20:52.415971454Z level=warn caller=logger.go:224 time=2026-08-06T07:20:52.415967425Z msg="skipped registering status sub-resource that does not support dual writing" resource=alertrules.rules.alerting.grafana.app version=v0alpha1 storagePath=alertrules/status
+grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.417566593Z level=info msg="Adding GroupVersion rules.alerting.grafana.app v0alpha1 to ResourceManager"
+grafana          | t=2026-08-06T07:20:52.417631128Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.417625889Z msg="Installed APIs for app" app=alerting
+grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.419724676Z level=info msg="Adding GroupVersion notifications.alerting.grafana.app v1beta1 to ResourceManager"
+grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.421255656Z level=info msg="Adding GroupVersion notifications.alerting.grafana.app v0alpha1 to ResourceManager"
+grafana          | t=2026-08-06T07:20:52.421394865Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.421389184Z msg="Installed APIs for app" app=alerting-notifications
+grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.422571914Z level=info msg="Adding GroupVersion advisor.grafana.app v0alpha1 to ResourceManager"
+grafana          | t=2026-08-06T07:20:52.422676262Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.422670595Z msg="Installed APIs for app" app=advisor
+grafana          | t=2026-08-06T07:20:52.87125242Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871237296Z msg="App initialized" app=playlist
+grafana          | t=2026-08-06T07:20:52.871305903Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871288815Z msg="App initialized" app=plugins
+grafana          | t=2026-08-06T07:20:52.871312668Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871303569Z msg="App initialized" app=quotas
+grafana          | t=2026-08-06T07:20:52.871398949Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871390627Z msg="App initialized" app=shorturl
+grafana          | t=2026-08-06T07:20:52.871414605Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.87139946Z msg="App initialized" app=alerting-notifications
+grafana          | t=2026-08-06T07:20:52.871439623Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871412177Z msg="App initialized" app=example
+grafana          | t=2026-08-06T07:20:52.871562362Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871556375Z msg="App initialized" app=advisor
+grafana          | t=2026-08-06T07:20:52.871613111Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871597878Z msg="starting job cleanup controller" logger=job-cleanup-controller cleanup_interval=1m30s expiry=30s
+grafana          | t=2026-08-06T07:20:52.871658615Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871643237Z msg="Starting RepositoryController" logger=provisioning-repository-controller
+grafana          | t=2026-08-06T07:20:52.87160438Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871567145Z msg="start concurrent job driver" logger=concurrent-job-driver num_drivers=3 num_drivers=3
+grafana          | t=2026-08-06T07:20:52.871790847Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871778145Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=0
+grafana          | t=2026-08-06T07:20:52.871806151Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871793058Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=1
+grafana          | t=2026-08-06T07:20:52.871818123Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871796753Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=2
+grafana          | t=2026-08-06T07:20:52.877369489Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.877359916Z msg="App initialized" app=alerting
+grafana          | logger=backgroundsvcs.managerAdapter t=2026-08-06T07:20:52.877443618Z level=info msg=starting module=plugins.store
+grafana          | logger=backgroundsvcs.managerAdapter t=2026-08-06T07:20:52.877505058Z level=info msg=starting module=plugin.backgroundinstaller
+grafana          | logger=plugin.backgroundinstaller t=2026-08-06T07:20:52.877531962Z level=info msg="Plugins installed" plugins=[]
+grafana          | logger=plugin.backgroundinstaller t=2026-08-06T07:20:52.877551692Z level=info msg="Installing plugins" plugins="[{ID:grafana-lokiexplore-app Version: URL:} {ID:grafana-pyroscope-app Version: URL:} {ID:grafana-exploretraces-app Version: URL:} {ID:grafana-metricsdrilldown-app Version: URL:} {ID:elasticsearch Version: URL:} {ID:zipkin Version: URL:}]"
+grafana          | logger=backgroundsvcs.managerAdapter t=2026-08-06T07:20:52.877593347Z level=info msg=starting module=provisioning
+grafana          | logger=plugin.backgroundinstaller t=2026-08-06T07:20:52.87760021Z level=info msg="Installing plugin" pluginId=grafana-lokiexplore-app version=
+grafana          | logger=provisioning t=2026-08-06T07:20:52.877723188Z level=error msg="Failed to provision data sources" error="Datasource provisioning error: yaml: control characters are not allowed"
+grafana          | logger=provisioning t=2026-08-06T07:20:52.877740268Z level=error msg="Failed to provision data sources" error="Datasource provisioning error: yaml: control characters are not allowed"
+grafana          | t=2026-08-06T07:20:52.972590114Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972565849Z msg="Starting workers" logger=provisioning-repository-controller count=1
+grafana          | t=2026-08-06T07:20:52.972650351Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972639075Z msg="Started workers" logger=provisioning-repository-controller
+grafana          | t=2026-08-06T07:20:52.972645257Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972613817Z msg="Starting ConnectionController" logger=provisioning-connection-controller
+grafana          | t=2026-08-06T07:20:52.972687721Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972681385Z msg="Starting workers" logger=provisioning-connection-controller count=1
+grafana          | t=2026-08-06T07:20:52.972706541Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972701051Z msg="Started workers" logger=provisioning-connection-controller
