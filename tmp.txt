@@ -1,64 +1,194 @@
-wcsadmin@scp-wcspmq2:/data/monitoring/prometheus$ sudo docker-compose logs grafana | tail -40
+wcsadmin@scp-wcspweb1:/app/nginx/conf$ cat nginx.conf
+
+#user  nobody;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
 
 
+events {
+    worker_connections  1024;
+}
 
 
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    # multipart/form-data 파일 업로드 시 nginx가 request body를 임시 파일로 버퍼링할 디렉토리
+    # 권한 문제(Permission denied) 방지를 위해 명시적으로 지정
+    client_body_temp_path /app/nginx/client_body_temp;
+
+    # 파일 업로드 최대 크기 (Excel 업로드 등 multipart 요청 대응)
+    client_max_body_size 50m;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    server {
+        listen       80;
+        server_name  10.194.179.12;
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+
+        location / {
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            add_header Expires "0";
+            root  /app/wcs/frontend/dist;
+            index  index.html index.htm;
+        }
+
+        # /wcs -> WCS Frontend
+        location /wcs/ {
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            add_header Expires "0";
+            alias  /app/wcs/frontend/dist/;
+            index  index.html index.htm;
+            try_files  $uri $uri/ /wcs/index.html;
+        }
+
+        # /wcs/api ->  WCS Backend API
+        location /wcs/api/ {
+                #proxy_pass  http://10.194.178.71:8080;
+            proxy_pass  http://10.194.178.26:8080;
+            proxy_set_header  Host              $host;
+            proxy_set_header  X-Real-IP          $remote_addr;
+            proxy_set_header  X-Forwarded-For    $proxy_add_x_forwarded_for;
+            proxy_set_header  X-Forwarded-Proto   $scheme;
+
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            proxy_buffer_size 128k;
+            proxy_buffers 4 256k;
+            proxy_busy_buffers_size 256k;
+        }
+
+        # /com ->  COM Frontend
+        location = /com {
+            return 301 /com/;
+        }
+
+        location /com/ {
+            alias  /app/com/frontend/dist/;
+            index  index.html index.htm;
+            try_files  $uri $uri/ /com/index.html;
+        }
+
+        # /com/api -> COM Backend API
+        location /com/api/ext/ {
+            proxy_pass http://10.194.178.26:8081/;   # 끝 슬래시 = /com/api/ext strip → be는 /admin/meta/logs 받음
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /com/api/ {
+            proxy_pass http://10.194.178.82/;        # 슬래시 없음 = strip 안 함 → PP가 /com/api/... 그대로 받음(dev와 동일)
+            proxy_ssl_verify off;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location = /com/ws {
+            proxy_pass http://10.194.178.82:8000/websocket;   # L7#3 8080 → 브로커 /websocket
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_read_timeout 3600s;
+            proxy_send_timeout 3600s;
+        }
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+        #
+        #location ~ \.php$ {
+        #    proxy_pass   http://127.0.0.1;
+        #}
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        #location ~ \.php$ {
+        #    root           html;
+        #    fastcgi_pass   127.0.0.1:9000;
+        #    fastcgi_index  index.php;
+        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+        #    include        fastcgi_params;
+        #}
+
+        # deny access to .htaccess files, if Apache's document root
+        # concurs with nginx's one
+        #
+        #location ~ /\.ht {
+        #    deny  all;
+        #}
+    }
 
 
+    # another virtual host using mix of IP-, name-, and port-based configuration
+    #
+    #server {
+    #    listen       8000;
+    #    listen       somename:8080;
+    #    server_name  somename  alias  another.alias;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
 
 
-Exception in thread Thread-2 (watch_events):
-Traceback (most recent call last):
-  File "/usr/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
-    self.run()
-  File "/usr/lib/python3.12/threading.py", line 1010, in run
-    self._target(*self._args, **self._kwargs)
-  File "/usr/lib/python3/dist-packages/compose/cli/log_printer.py", line 202, in watch_events
-    for event in event_stream:
-  File "/usr/lib/python3/dist-packages/compose/project.py", line 626, in yield_loop
-    yield build_container_event(event)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/project.py", line 594, in build_container_event
-    container = Container.from_id(self.client, event['id'])
-                                               ~~~~~^^^^^^
-KeyError: 'id'
-grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.414810536Z level=info msg="Skipping API quotas.grafana.app/v0alpha1 because it has no resources."
-grafana          | t=2026-08-06T07:20:52.414897916Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.414894288Z msg="Installed APIs for app" app=quotas
-grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.415780991Z level=info msg="Adding GroupVersion shorturl.grafana.app v1beta1 to ResourceManager"
-grafana          | t=2026-08-06T07:20:52.415838951Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.41583436Z msg="Installed APIs for app" app=shorturl
-grafana          | t=2026-08-06T07:20:52.415949199Z level=warn caller=logger.go:224 time=2026-08-06T07:20:52.415945305Z msg="skipped registering status sub-resource that does not support dual writing" resource=recordingrules.rules.alerting.grafana.app version=v0alpha1 storagePath=recordingrules/status
-grafana          | t=2026-08-06T07:20:52.415971454Z level=warn caller=logger.go:224 time=2026-08-06T07:20:52.415967425Z msg="skipped registering status sub-resource that does not support dual writing" resource=alertrules.rules.alerting.grafana.app version=v0alpha1 storagePath=alertrules/status
-grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.417566593Z level=info msg="Adding GroupVersion rules.alerting.grafana.app v0alpha1 to ResourceManager"
-grafana          | t=2026-08-06T07:20:52.417631128Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.417625889Z msg="Installed APIs for app" app=alerting
-grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.419724676Z level=info msg="Adding GroupVersion notifications.alerting.grafana.app v1beta1 to ResourceManager"
-grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.421255656Z level=info msg="Adding GroupVersion notifications.alerting.grafana.app v0alpha1 to ResourceManager"
-grafana          | t=2026-08-06T07:20:52.421394865Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.421389184Z msg="Installed APIs for app" app=alerting-notifications
-grafana          | logger=grafana-apiserver t=2026-08-06T07:20:52.422571914Z level=info msg="Adding GroupVersion advisor.grafana.app v0alpha1 to ResourceManager"
-grafana          | t=2026-08-06T07:20:52.422676262Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.422670595Z msg="Installed APIs for app" app=advisor
-grafana          | t=2026-08-06T07:20:52.87125242Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871237296Z msg="App initialized" app=playlist
-grafana          | t=2026-08-06T07:20:52.871305903Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871288815Z msg="App initialized" app=plugins
-grafana          | t=2026-08-06T07:20:52.871312668Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871303569Z msg="App initialized" app=quotas
-grafana          | t=2026-08-06T07:20:52.871398949Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871390627Z msg="App initialized" app=shorturl
-grafana          | t=2026-08-06T07:20:52.871414605Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.87139946Z msg="App initialized" app=alerting-notifications
-grafana          | t=2026-08-06T07:20:52.871439623Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871412177Z msg="App initialized" app=example
-grafana          | t=2026-08-06T07:20:52.871562362Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871556375Z msg="App initialized" app=advisor
-grafana          | t=2026-08-06T07:20:52.871613111Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871597878Z msg="starting job cleanup controller" logger=job-cleanup-controller cleanup_interval=1m30s expiry=30s
-grafana          | t=2026-08-06T07:20:52.871658615Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871643237Z msg="Starting RepositoryController" logger=provisioning-repository-controller
-grafana          | t=2026-08-06T07:20:52.87160438Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871567145Z msg="start concurrent job driver" logger=concurrent-job-driver num_drivers=3 num_drivers=3
-grafana          | t=2026-08-06T07:20:52.871790847Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871778145Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=0
-grafana          | t=2026-08-06T07:20:52.871806151Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871793058Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=1
-grafana          | t=2026-08-06T07:20:52.871818123Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.871796753Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=2
-grafana          | t=2026-08-06T07:20:52.877369489Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.877359916Z msg="App initialized" app=alerting
-grafana          | logger=backgroundsvcs.managerAdapter t=2026-08-06T07:20:52.877443618Z level=info msg=starting module=plugins.store
-grafana          | logger=backgroundsvcs.managerAdapter t=2026-08-06T07:20:52.877505058Z level=info msg=starting module=plugin.backgroundinstaller
-grafana          | logger=plugin.backgroundinstaller t=2026-08-06T07:20:52.877531962Z level=info msg="Plugins installed" plugins=[]
-grafana          | logger=plugin.backgroundinstaller t=2026-08-06T07:20:52.877551692Z level=info msg="Installing plugins" plugins="[{ID:grafana-lokiexplore-app Version: URL:} {ID:grafana-pyroscope-app Version: URL:} {ID:grafana-exploretraces-app Version: URL:} {ID:grafana-metricsdrilldown-app Version: URL:} {ID:elasticsearch Version: URL:} {ID:zipkin Version: URL:}]"
-grafana          | logger=backgroundsvcs.managerAdapter t=2026-08-06T07:20:52.877593347Z level=info msg=starting module=provisioning
-grafana          | logger=plugin.backgroundinstaller t=2026-08-06T07:20:52.87760021Z level=info msg="Installing plugin" pluginId=grafana-lokiexplore-app version=
-grafana          | logger=provisioning t=2026-08-06T07:20:52.877723188Z level=error msg="Failed to provision data sources" error="Datasource provisioning error: yaml: control characters are not allowed"
-grafana          | logger=provisioning t=2026-08-06T07:20:52.877740268Z level=error msg="Failed to provision data sources" error="Datasource provisioning error: yaml: control characters are not allowed"
-grafana          | t=2026-08-06T07:20:52.972590114Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972565849Z msg="Starting workers" logger=provisioning-repository-controller count=1
-grafana          | t=2026-08-06T07:20:52.972650351Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972639075Z msg="Started workers" logger=provisioning-repository-controller
-grafana          | t=2026-08-06T07:20:52.972645257Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972613817Z msg="Starting ConnectionController" logger=provisioning-connection-controller
-grafana          | t=2026-08-06T07:20:52.972687721Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972681385Z msg="Starting workers" logger=provisioning-connection-controller count=1
-grafana          | t=2026-08-06T07:20:52.972706541Z level=info caller=logger.go:214 time=2026-08-06T07:20:52.972701051Z msg="Started workers" logger=provisioning-connection-controller
+    # HTTPS server
+    #
+    #server {
+    #    listen       443 ssl;
+    #    server_name  localhost;
+
+    #    ssl_certificate      cert.pem;
+    #    ssl_certificate_key  cert.key;
+
+    #    ssl_session_cache    shared:SSL:1m;
+    #    ssl_session_timeout  5m;
+
+    #    ssl_ciphers  HIGH:!aNULL:!MD5;
+    #    ssl_prefer_server_ciphers  on;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+}
