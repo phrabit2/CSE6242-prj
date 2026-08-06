@@ -1,18 +1,43 @@
-sudo tee /etc/systemd/system/node_exporter.service > /dev/null << 'EOF'
-[Unit]
-Description=Node Exporter
-After=network.target
+1. 재고 > 재고조회
 
-[Service]
-User=node_exporter
-Group=node_exporter
-Type=simple
-ExecStart=/usr/local/bin/node_exporter
+  1.1 url: https://glwcs.dev.sec.samsung.net/wcs/api/invnListService/searchInvn
 
-[Install]
-WantedBy=multi-user.target
-EOF
+   1.2 payload: 
 
-sudo systemctl daemon-reload
-sudo systemctl enable --now node_exporter
-sudo systemctl status node_exporter    # active (running) 확인
+{"MENU_ID":"WCS210100","SES_USER_ID":"peter","SES_WH_ID":"1340","SES_LANG_CD":"KO","CURRENT_PAGE":1,"PAGE_SIZE":10000}
+
+
+
+
+
+
+2. 작업관리 > 작업관리
+
+  2.1 url: https://glwcs.dev.sec.samsung.net/wcs/api/outbEquipService/searchTaskStatus
+
+  2.2 payload: 
+
+{"MENU_ID":"WCS450100","SES_USER_ID":"peter","SES_WH_ID":"1340","SES_LANG_CD":"KO","OCCURRED_ATFrom":"2026-07-30","OCCURRED_ATTo":"2026-08-06","OCCURRED_ATPreset":"1w","OCCURRED_ATColumn":"OCCURRED_AT","CURRENT_PAGE":1,"PAGE_SIZE":10000}
+
+
+
+
+3. 작업관리 > 입고현황
+
+  3.1 url: https://glwcs.dev.sec.samsung.net/wcs/api/inbEquipService/searchInbCondition
+
+  3.2 payload: 
+
+{"MENU_ID":"WCS310300","SES_USER_ID":"peter","SES_WH_ID":"1340","SES_LANG_CD":"KO","DATEPreset":"1w","DATEColumn":"INB_DATE","DATEFrom":"2026-07-30","DATETo":"2026-08-06","DS_SEARCHCONDITION":[{"val0":"ms.invn_cre_datetime","val1":"DATE_from","val2":">=","val3":"2026-07-30","val4":"YMD","ROW_STATUS":"normal"},{"val0":"ms.invn_cre_datetime","val1":"DATE_to","val2":"<=","val3":"2026-08-06","val4":"YMD","ROW_STATUS":"normal"}],"CURRENT_PAGE":1,"PAGE_SIZE":10000}
+
+
+
+
+4. 작업관리 > 출고현황
+
+  4.1 url: https://glwcs.dev.sec.samsung.net/wcs/api/outbEquipService/searchCondition
+
+  4.2 payload: 
+
+{"MENU_ID":"WCS410100","SES_USER_ID":"peter","SES_WH_ID":"1340","SES_LANG_CD":"KO","DATEPreset":"1w","DATEColumn":"OUTB_ECT_DATE","DATEFrom":"2026-07-30","DATETo":"2026-08-06","DS_SEARCHCONDITION":[{"val0":"oh.outb_ect_date","val1":"DATE_from","val2":">=","val3":"2026-07-30","val4":"YMD","ROW_STATUS":"normal"},{"val0":"oh.outb_ect_date","val1":"DATE_to","val2":"<=","val3":"2026-08-06","val4":"YMD","ROW_STATUS":"normal"}],"CURRENT_PAGE":1,"PAGE_SIZE":10000}
+
