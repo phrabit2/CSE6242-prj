@@ -1,47 +1,95 @@
-이 에러는 URI Stat 화면에서 나는 거야 (앞서 얘기한 그 URI 통계 탭). 핵심 원인은 쿼리 맨 앞에 있어:
-
-sql
-SET useMultiStageEngine = true;
-
-이 트랜잭션 조회가 Pinot의 **Multi-Stage Query Engine(V2 엔진)**을 요구하는데, 너희 Pinot에 그게 비활성화돼 있어서 쿼리가 실패하는 거야. sum(sum(...)) OVER (PARTITION BY ...) 같은 윈도우 함수는 multi-stage 엔진에서만 도는데, 그게 꺼져 있으니 통째로 깨진 거지.
-
-이게 왜 이제야 터졌냐면 — URI Stat은 우리가 올린 **Pinot 스택(metric)**에 의존하거든. HBase 기반인 서버맵·콜스택은 잘 되는데, Pinot 기반인 URI Stat만 이 엔진 설정 때문에 안 되는 거야.
-
-원인 확정 — Pinot broker 설정 확인
-
-88번에서 Pinot broker가 multi-stage 엔진을 켰는지 봐:
-
-bash
-cd /data/pinpoint/pinpoint-docker
-# broker 컨테이너명 확인
-sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml ps | grep broker
-
-# broker 설정에서 multistage 관련 확인
-sudo docker exec pinpoint-pinot-broker-0 sh -c 'cat /opt/pinot/conf/*broker* 2>/dev/null' | grep -i 'multistage\|multi.stage\|v2'
-
-(컨테이너명이 pinpoint-pinot-broker-0 형태가 아니면 위 ps 결과의 실제 이름으로)
-
-해결 — broker에 multi-stage 엔진 활성화
-
-Pinot broker 설정에 이 옵션이 있어야 해:
-
-pinot.multistage.engine.enabled=true
-pinot.server.instance.currentDataTableVersion=4
-
-이건 docker-compose-metric.yml의 broker 서비스 환경변수/설정에서 켜야 해. 어떻게 주입하는지가 compose 구성마다 달라서, 먼저 broker가 설정을 어디서 읽는지 봐야 정확히 짚어줄 수 있어:
-
-bash
-# broker 서비스 정의 확인 — 환경변수/JAVA_OPTS/설정파일 중 뭘로 뜨는지
-sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml config | grep -A40 'pinot-broker'
-
-여기서 broker가 -Dpinot.multistage... 같은 JVM 옵션이나 환경변수를 받는 구조인지, 설정 파일을 마운트하는지가 보여. 그거에 맞춰 multistage 옵션을 넣는 방법을 정할 거야.
-
-⚠️ 운영 관점 — 이건 낮은 리스크야
-
-다행히 이 수정은 71/72 운영 앱과 무관해. 88번의 Pinot broker만 재시작하면 되고, 그동안 영향받는 건 URI Stat 조회뿐이야 (서버맵·콜스택·Inspector는 계속 정상). agent 재기동도 필요 없어. 88번 안에서 끝나는 작업이라 부담이 적어.
-
-수정 방식은 대략:
-
-docker-compose-metric.yml의 broker 정의에 multistage 옵션 추가
-broker만 재생성: docker compose ... up -d --force-recreate pinpoint-pinot-broker-0
-URI Stat 화면 다시 조회
+wcsadmin@scp-wcspmq1:~$ cd /data/pinpoint/pinpoint-docker
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml ps | grep broker
+[sudo] password for wcsadmin:
+WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+pinpoint-docker-pinot-broker-0-1                  apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   pinot-broker-0        3 weeks ago   Up 3 weeks      8096-8099/tcp, 9000/tcp
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec pinpoint-pinot-broker-0 sh -c 'cat /opt/pinot/conf/*broker* 2>/dev/null' | grep -i 'multistage\|multi.stage\|v2'
+Error response from daemon: No such container: pinpoint-pinot-broker-0
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec pinot-broker-0 sh -c 'cat /opt/pinot/conf/*broker* 2>/dev/null' | grep -i 'multistage\|multi.stage\|v2'
+Error response from daemon: No such container: pinot-broker-0
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec pinpoint-docker-pinot-broker-0-1 sh -c 'cat /opt/pinot/conf/*broker* 2>/dev/null' | grep -i 'multistage\|multi.stage\|v2'
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml config | grep -A40 'pinot-broker'
+WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+  pinot-broker-0:
+    command:
+      - StartBroker
+      - -zkAddress
+      - pinot-zoo
+    depends_on:
+      pinot-controller:
+        condition: service_started
+        required: true
+    expose:
+      - "8099"
+    image: apachepinot/pinot:1.0.0-11-amazoncorretto
+    networks:
+      pinpoint: null
+    restart: unless-stopped
+  pinot-controller:
+    command:
+      - StartController
+      - -zkAddress
+      - pinot-zoo
+    depends_on:
+      pinot-zoo:
+        condition: service_started
+        required: true
+    expose:
+      - "9000"
+    image: apachepinot/pinot:1.0.0-11-amazoncorretto
+    networks:
+      pinpoint: null
+    ports:
+      - mode: ingress
+        target: 9000
+        published: "9000"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: pinot-controller-volume
+        target: /tmp/data/controller
+        volume: {}
+  pinot-init:
+--
+      pinot-broker-0:
+        condition: service_started
+        required: true
+    expose:
+      - "8098"
+    image: apachepinot/pinot:1.0.0-11-amazoncorretto
+    networks:
+      pinpoint: null
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: pinot-server-volume
+        target: /tmp/data/server
+        volume: {}
+  pinot-zoo:
+    expose:
+      - "2181"
+    image: zookeeper:3.8.0-temurin
+    networks:
+      pinpoint: null
+    restart: always
+    volumes:
+      - type: volume
+        source: pinot-zoo-data
+        target: /data
+        volume: {}
+      - type: volume
+        source: pinot-zoo-datalog
+        target: /datalog
+        volume: {}
+  pinpoint-agent:
+    container_name: pinpoint-agent
+    depends_on:
+      pinpoint-collector:
+        condition: service_started
+        required: true
+    environment:
+      COLLECTOR_IP: pinpoint-collector
+      DEBUG_LEVEL: INFO
+      PROFILER_SAMPLING_CONTINUE_THROUGHPUT: "0"
+      PROFILER_SAMPLING_COUNTING_SAMPLING_RATE: "1"
