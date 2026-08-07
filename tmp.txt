@@ -1,51 +1,114 @@
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sudo docker logs grafana --tail 50
-logger=grafana-apiserver t=2026-08-07T01:33:31.286337496Z level=info msg="Adding GroupVersion plugins.grafana.app v0alpha1 to ResourceManager"
-t=2026-08-07T01:33:31.286448171Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.286435241Z msg="Installed APIs for app" app=plugins
-logger=grafana-apiserver t=2026-08-07T01:33:31.288666361Z level=info msg="Adding GroupVersion example.grafana.app v1alpha1 to ResourceManager"
-logger=grafana-apiserver t=2026-08-07T01:33:31.289170006Z level=info msg="Adding GroupVersion example.grafana.app v0alpha1 to ResourceManager"
-t=2026-08-07T01:33:31.289271513Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.289263496Z msg="Installed APIs for app" app=example
-logger=grafana-apiserver t=2026-08-07T01:33:31.289317267Z level=info msg="Skipping API quotas.grafana.app/v0alpha1 because it has no resources."
-t=2026-08-07T01:33:31.289404921Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.289400187Z msg="Installed APIs for app" app=quotas
-logger=grafana-apiserver t=2026-08-07T01:33:31.290333047Z level=info msg="Adding GroupVersion shorturl.grafana.app v1beta1 to ResourceManager"
-t=2026-08-07T01:33:31.29039835Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.290392236Z msg="Installed APIs for app" app=shorturl
-t=2026-08-07T01:33:31.290532698Z level=warn caller=logger.go:224 time=2026-08-07T01:33:31.290528054Z msg="skipped registering status sub-resource that does not support dual writing" resource=alertrules.rules.alerting.grafana.app version=v0alpha1 storagePath=alertrules/status
-t=2026-08-07T01:33:31.290553533Z level=warn caller=logger.go:224 time=2026-08-07T01:33:31.290550099Z msg="skipped registering status sub-resource that does not support dual writing" resource=recordingrules.rules.alerting.grafana.app version=v0alpha1 storagePath=recordingrules/status
-logger=grafana-apiserver t=2026-08-07T01:33:31.292325767Z level=info msg="Adding GroupVersion rules.alerting.grafana.app v0alpha1 to ResourceManager"
-t=2026-08-07T01:33:31.292397584Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.292391855Z msg="Installed APIs for app" app=alerting
-logger=grafana-apiserver t=2026-08-07T01:33:31.294541509Z level=info msg="Adding GroupVersion notifications.alerting.grafana.app v1beta1 to ResourceManager"
-logger=grafana-apiserver t=2026-08-07T01:33:31.296220129Z level=info msg="Adding GroupVersion notifications.alerting.grafana.app v0alpha1 to ResourceManager"
-t=2026-08-07T01:33:31.296345381Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.29633889Z msg="Installed APIs for app" app=alerting-notifications
-logger=grafana-apiserver t=2026-08-07T01:33:31.297574639Z level=info msg="Adding GroupVersion advisor.grafana.app v0alpha1 to ResourceManager"
-t=2026-08-07T01:33:31.297673295Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.297667135Z msg="Installed APIs for app" app=advisor
-t=2026-08-07T01:33:31.741750971Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.741735395Z msg="App initialized" app=quotas
-t=2026-08-07T01:33:31.741768411Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.741740645Z msg="App initialized" app=example
-t=2026-08-07T01:33:31.741824366Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.741811557Z msg="App initialized" app=shorturl
-t=2026-08-07T01:33:31.741839762Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.741827917Z msg="App initialized" app=plugins
-t=2026-08-07T01:33:31.741853372Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.741840507Z msg="App initialized" app=advisor
-t=2026-08-07T01:33:31.74183064Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.741821063Z msg="App initialized" app=alerting-notifications
-t=2026-08-07T01:33:31.741837326Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.741821017Z msg="App initialized" app=playlist
-t=2026-08-07T01:33:31.74206267Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.742049816Z msg="start concurrent job driver" logger=concurrent-job-driver num_drivers=3 num_drivers=3
-t=2026-08-07T01:33:31.74210351Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.742093806Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=0
-t=2026-08-07T01:33:31.742113925Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.7420999Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=1
-t=2026-08-07T01:33:31.74211546Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.742102709Z msg="starting job cleanup controller" logger=job-cleanup-controller cleanup_interval=1m30s expiry=30s
-t=2026-08-07T01:33:31.742143728Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.742120714Z msg="start job driver" logger=concurrent-job-driver num_drivers=3 driver_id=2
-t=2026-08-07T01:33:31.742350468Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.742323009Z msg="Starting RepositoryController" logger=provisioning-repository-controller
-t=2026-08-07T01:33:31.747783571Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.747774511Z msg="App initialized" app=alerting
-logger=backgroundsvcs.managerAdapter t=2026-08-07T01:33:31.747969336Z level=info msg=starting module=plugins.store
-logger=backgroundsvcs.managerAdapter t=2026-08-07T01:33:31.748008897Z level=info msg=starting module=plugin.backgroundinstaller
-logger=plugin.backgroundinstaller t=2026-08-07T01:33:31.748018515Z level=info msg="Plugins installed" plugins=[]
-logger=plugin.backgroundinstaller t=2026-08-07T01:33:31.748043478Z level=info msg="Installing plugins" plugins="[{ID:grafana-lokiexplore-app Version: URL:} {ID:grafana-pyroscope-app Version: URL:} {ID:grafana-exploretraces-app Version: URL:} {ID:grafana-metricsdrilldown-app Version: URL:} {ID:elasticsearch Version: URL:} {ID:zipkin Version: URL:}]"
-logger=plugin.backgroundinstaller t=2026-08-07T01:33:31.748084733Z level=info msg="Installing plugin" pluginId=grafana-lokiexplore-app version=
-logger=backgroundsvcs.managerAdapter t=2026-08-07T01:33:31.748113597Z level=info msg=starting module=provisioning
-logger=provisioning t=2026-08-07T01:33:31.748257957Z level=error msg="Failed to provision data sources" error="Datasource provisioning error: yaml: control characters are not allowed"
-logger=provisioning t=2026-08-07T01:33:31.748271044Z level=error msg="Failed to provision data sources" error="Datasource provisioning error: yaml: control characters are not allowed"
-t=2026-08-07T01:33:31.843145116Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.843112699Z msg="Starting ConnectionController" logger=provisioning-connection-controller
-t=2026-08-07T01:33:31.843175295Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.84315854Z msg="Starting workers" logger=provisioning-repository-controller count=1
-t=2026-08-07T01:33:31.843198135Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.843189316Z msg="Starting workers" logger=provisioning-connection-controller count=1
-t=2026-08-07T01:33:31.843218021Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.843213179Z msg="Started workers" logger=provisioning-repository-controller
-t=2026-08-07T01:33:31.843239059Z level=info caller=logger.go:214 time=2026-08-07T01:33:31.843229485Z msg="Started workers" logger=provisioning-connection-controller
-logger=plugin.backgroundinstaller t=2026-08-07T01:33:41.74844145Z level=error msg="Failed to install plugin" pluginId=grafana-lokiexplore-app version= error="Get \"https://grafana.com/api/plugins/grafana-lokiexplore-app/versions\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
-logger=plugins.store t=2026-08-07T01:33:41.748531346Z level=error msg="Failed to get plugin" error="context canceled"
-logger=plugin.backgroundinstaller t=2026-08-07T01:33:41.748539112Z level=info msg="Installing plugin" pluginId=grafana-pyroscope-app version=
-logger=plugin.backgroundinstaller t=2026-08-07T01:33:51.748720781Z level=error msg="Failed to install plugin" pluginId=grafana-pyroscope-app version= error="Get \"https://grafana.com/api/plugins/grafana-pyroscope-app/versions\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
-logger=plugin.backgroundinstaller t=2026-08-07T01:33:51.748788194Z level=info msg="Installing plugin" pluginId=grafana-exploretraces-app version=
+
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker-compose up -d --force-recreate grafana
+Recreating prometheus ...
+
+ERROR: for prometheus  'ContainerConfig'
+
+ERROR: for prometheus  'ContainerConfig'
+Traceback (most recent call last):
+  File "/usr/bin/docker-compose", line 33, in <module>
+    sys.exit(load_entry_point('docker-compose==1.29.2', 'console_scripts', 'docker-compose')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 81, in main
+    command_func()
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 203, in perform_command
+    handler(command, command_options)
+  File "/usr/lib/python3/dist-packages/compose/metrics/decorator.py", line 18, in wrapper
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1186, in up
+    to_attach = up(False)
+                ^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1166, in up
+    return self.project.up(
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/project.py", line 697, in up
+    results, errors = parallel.parallel_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
+    raise error_to_reraise
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
+    result = func(obj)
+             ^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/project.py", line 679, in do
+    return service.execute_convergence_plan(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 579, in execute_convergence_plan
+    return self._execute_convergence_recreate(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 499, in _execute_convergence_recreate
+    containers, errors = parallel_execute(
+                         ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
+    raise error_to_reraise
+  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
+    result = func(obj)
+             ^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 494, in recreate
+    return self.recreate_container(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 612, in recreate_container
+    new_container = self.create_container(
+                    ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 330, in create_container
+    container_options = self._get_container_create_options(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 921, in _get_container_create_options
+    container_options, override_options = self._build_container_volume_options(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 960, in _build_container_volume_options
+    binds, affinity = merge_volume_bindings(
+                      ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 1548, in merge_volume_bindings
+    old_volumes, old_mounts = get_container_data_volumes(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 1579, in get_container_data_volumes
+    container.image_config['ContainerConfig'].get('Volumes') or {}
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+KeyError: 'ContainerConfig'
+wcsadmin@scp-wcspmq2:/data/monitoring$ cat docker-compose.yml
+services:
+  prometheus:
+    image: prom/prometheus:v3.12.0
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - '/:/host:ro,rslave'
+
+  grafana:
+    image: grafana/grafana:13.1.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=changeme
+      - GF_INSTALL_PLUGINS=
+      - GF_PLUGINS_PREINSTALL_DISABLED=true
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:
