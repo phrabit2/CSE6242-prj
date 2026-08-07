@@ -1,64 +1,29 @@
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ ls
-VERSION  build.info  log4j2-agent.xml   logs                          pinpoint-bootstrap.jar  plugin    tools
-boot     lib         log4j2-agent.yaml  pinpoint-bootstrap-3.1.0.jar  pinpoint-root.config    profiles
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ sudo vi pinpoint-root.config
-[sudo] password for wcsadmin:
-sudo: a password is required
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ sudo vi pinpoint-root.config
-[sudo] password for wcsadmin:
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ grep -rn 'springmvc\|uri.template\|entrypoint\|uri.stat' /app/p  inpoint-agent-wcs/pinpoint-root.config
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ grep -niE 'tracerequestparam|record|param|argument' /app/pinpoi  nt-agent-wcs/pinpoint-root.config
-294:# record HTTP request headers case-sensitive
-295:# set to HEADERS-ALL to record all of the request headers including cookie.
-296:# e.g. profiler.http.record.request.headers=X-AccessKey,X-Device-UUID
-297:#profiler.http.record.request.headers=
-299:# record HTTP request cookies(case-sensitive) in Cookie header
-300:# e.g. profiler.http.record.request.cookies=userid,device-id,uuid
-301:#profiler.http.record.request.cookies=
-303:# record HTTP response headers case-sensitive
-304:# set to HEADERS-ALL to record all of the headers.
-305:# e.g. profiler.http.record.response.headers=Set-Cookie
-306:#profiler.http.record.response.headers=
-336:# Trace request param.
-337:profiler.server.tracerequestparam=true
-341:# optional parameter, If the header value is ${profiler.server.realipemptyvalue}, Ignore header value.
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ grep -rn 'profiles.active\|profiler.profiles' /app/pinpoint-agent-wcs/pinpoint-root.config
-5:#  - -Dpinpoint.profiler.profiles.active=release or local
-6:#  - Modify `pinpoint.profiler.profiles.active=release` in $PINPOINT_AGENT_DIR/pinpoint-root.config
-10:#  - 2. -Dpinpoint.profiler.profiles.active=MyProfile
-13:pinpoint.profiler.profiles.active=release
-18:# e.g. pinpoint.profiler.profiles.aliases.<profile>=<alias1>,<alias2>
-19:pinpoint.profiler.profiles.aliases.release=
-20:pinpoint.profiler.profiles.aliases.local=
-350:pinpoint.banner.configs=pinpoint.profiler.profiles.active,\
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ grep -o 'profiles.active=[^ ]*' <(systemctl cat wcs.service)
-/usr/bin/restrict_shield.sh: 74: [[: not found
-/usr/bin/restrict_shield.sh: 92: [: =: unexpected operator
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ ls -R /app/pinpoint-agent-wcs/profiles/ 2>/dev/null
-/app/pinpoint-agent-wcs/profiles/:
-local  release
+운영에서 할 일
 
-/app/pinpoint-agent-wcs/profiles/local:
-pinpoint.config
+1. 71번에서 현재 값 확인:
 
-/app/pinpoint-agent-wcs/profiles/release:
-pinpoint.config
-wcsadmin@scp-wcspwas1:/app/pinpoint-agent-wcs$ grep -rn 'tracerequestparam' /app/pinpoint-agent-wcs/profiles/
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:300:profiler.tomcat.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:328:profiler.jetty.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:369:profiler.jboss.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:388:profiler.weblogic.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:414:profiler.websphere.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:451:profiler.vertx.http.server.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:493:profiler.undertow.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:530:profiler.reactor-netty.server.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/local/pinpoint.config:569:profiler.ktor.server.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:299:profiler.tomcat.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:325:profiler.jetty.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:366:profiler.jboss.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:384:profiler.weblogic.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:410:profiler.websphere.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:447:profiler.vertx.http.server.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:490:profiler.undertow.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:526:profiler.reactor-netty.server.tracerequestparam=true
-/app/pinpoint-agent-wcs/profiles/release/pinpoint.config:565:profiler.ktor.server.tracerequestparam=true
+bash
+grep -rn 'span.collected.uri.type' /app/pinpoint-agent-wcs/pinpoint-root.config /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
+
+AUTO이거나 아예 없으면 그게 원인이야. 어느 파일에 있는지도 확인 — 운영은 release 프로파일로 도니까(pinpoint.profiler.profiles.active=release), profiles/release/pinpoint.config에 있는 값이 실제 적용돼. root config만 고치면 profile 값에 덮여서 안 먹을 수 있어.
+
+2. RAW로 변경 (실제 적용되는 release profile 파일을):
+
+bash
+sudo sed -i 's/^profiler.span.collected.uri.type=.*/profiler.span.collected.uri.type=RAW/' \
+  /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
+
+# 확인
+grep -n 'span.collected.uri.type' /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
+
+옵션이 주석 처리(#)돼 있거나 아예 없으면 sed가 안 먹으니, 그 경우 vi로 직접 추가하거나 append:
+
+bash
+echo 'profiler.span.collected.uri.type=RAW' | sudo tee -a /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
+
+(단 중복 라인이 생기면 마지막 값이 이기니, 기존 라인이 있으면 sed로 고치는 게 깔끔해)
+
+3. ⚠️ 앱 재기동 필요 (운영) — config는 JVM 기동 시 읽히니 wcs 재시작해야 적용돼. prd라 협의 시점에:
+
+bash
+sudo systemctl restart wcs
