@@ -1,95 +1,55 @@
-wcsadmin@scp-wcspmq1:~$ cd /data/pinpoint/pinpoint-docker
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml ps | grep broker
-[sudo] password for wcsadmin:
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
-pinpoint-docker-pinot-broker-0-1                  apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   pinot-broker-0        3 weeks ago   Up 3 weeks      8096-8099/tcp, 9000/tcp
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec pinpoint-pinot-broker-0 sh -c 'cat /opt/pinot/conf/*broker* 2>/dev/null' | grep -i 'multistage\|multi.stage\|v2'
-Error response from daemon: No such container: pinpoint-pinot-broker-0
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec pinot-broker-0 sh -c 'cat /opt/pinot/conf/*broker* 2>/dev/null' | grep -i 'multistage\|multi.stage\|v2'
-Error response from daemon: No such container: pinot-broker-0
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec pinpoint-docker-pinot-broker-0-1 sh -c 'cat /opt/pinot/conf/*broker* 2>/dev/null' | grep -i 'multistage\|multi.stage\|v2'
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml config | grep -A40 'pinot-broker'
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
-  pinot-broker-0:
-    command:
-      - StartBroker
-      - -zkAddress
-      - pinot-zoo
-    depends_on:
-      pinot-controller:
-        condition: service_started
-        required: true
-    expose:
-      - "8099"
-    image: apachepinot/pinot:1.0.0-11-amazoncorretto
-    networks:
-      pinpoint: null
-    restart: unless-stopped
-  pinot-controller:
-    command:
-      - StartController
-      - -zkAddress
-      - pinot-zoo
-    depends_on:
-      pinot-zoo:
-        condition: service_started
-        required: true
-    expose:
-      - "9000"
-    image: apachepinot/pinot:1.0.0-11-amazoncorretto
-    networks:
-      pinpoint: null
-    ports:
-      - mode: ingress
-        target: 9000
-        published: "9000"
-        protocol: tcp
-    restart: unless-stopped
-    volumes:
-      - type: volume
-        source: pinot-controller-volume
-        target: /tmp/data/controller
-        volume: {}
-  pinot-init:
---
-      pinot-broker-0:
-        condition: service_started
-        required: true
-    expose:
-      - "8098"
-    image: apachepinot/pinot:1.0.0-11-amazoncorretto
-    networks:
-      pinpoint: null
-    restart: unless-stopped
-    volumes:
-      - type: volume
-        source: pinot-server-volume
-        target: /tmp/data/server
-        volume: {}
-  pinot-zoo:
-    expose:
-      - "2181"
-    image: zookeeper:3.8.0-temurin
-    networks:
-      pinpoint: null
-    restart: always
-    volumes:
-      - type: volume
-        source: pinot-zoo-data
-        target: /data
-        volume: {}
-      - type: volume
-        source: pinot-zoo-datalog
-        target: /datalog
-        volume: {}
-  pinpoint-agent:
-    container_name: pinpoint-agent
-    depends_on:
-      pinpoint-collector:
-        condition: service_started
-        required: true
-    environment:
-      COLLECTOR_IP: pinpoint-collector
-      DEBUG_LEVEL: INFO
-      PROFILER_SAMPLING_CONTINUE_THROUGHPUT: "0"
-      PROFILER_SAMPLING_COUNTING_SAMPLING_RATE: "1"
+해결 — broker에 multi-stage 엔진 인자 추가
+
+Pinot 1.0에서 multi-stage 엔진은 broker의 pinot.multistage.engine.enabled=true로 켜져. 커맨드라인으로 넘기려면 -configFileName 대신 -Dpinot... 시스템 프로퍼티나 -config 인자를 써야 하는데, 가장 확실한 건 config 파일을 마운트해서 넘기는 방식이야.
+
+다만 그 전에 정확한 프로퍼티명과 방식을 확인해야 해. Pinot 1.0.0 기준으로 검색해볼게.
+
+Searched the web
+Searched the web
+
+검색으로 정확한 방법이 확인됐어. 핵심은 이거야 — multi-stage 엔진을 켜려면 cluster config에 pinot.multistage.engine.enabled: true와 pinot.server.instance.currentDataTableVersion: 4를 추가해야 하고, 이미 클러스터가 떠 있으면 controller/broker/server 컴포넌트를 모두 재시작해서 새 설정을 반영해야 해. 
+GitHub
+
+그리고 중요한 발견 — 이 cluster config는 controller의 REST API(Swagger의 Cluster 섹션)로 편집할 수 있어. 즉 compose 파일을 안 고치고 API로 설정을 넣을 수 있다는 거야. 이게 너희 상황(broker가 커맨드라인 인자로만 뜨는 구조)에 딱 맞아.
+
+방법 A — Cluster Config API로 주입 (권장)
+
+compose를 안 건드리고 controller에 설정을 밀어넣는 방식이야. controller가 9000 포트로 열려 있으니 88번에서:
+
+bash
+# 1. 현재 cluster config 확인
+curl -s http://localhost:9000/cluster/configs
+
+# 2. multi-stage 엔진 활성화 설정 주입
+curl -X POST http://localhost:9000/cluster/configs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pinot.multistage.engine.enabled": "true",
+    "pinot.server.instance.currentDataTableVersion": "4"
+  }'
+
+# 3. 반영 확인
+curl -s http://localhost:9000/cluster/configs | grep -i multistage
+
+⚠️ 검색 결과에 나온 pinot.query.server.port, pinot.query.runner.port는 넣지 마. 문서에도 나오듯 모든 Pinot 컴포넌트가 각자 독립된 네트워크 환경에서 뜰 때만 추가하는 옵션이고, 아니면 포트 충돌이 나. 너흰 같은 도커 네트워크라 이 두 줄은 빼야 해. 
+GitHub
+
+컴포넌트 재시작 (설정 반영)
+
+cluster config는 컴포넌트가 기동 시점에 읽어. 그래서 pinot 3종을 재시작해야 해:
+
+bash
+cd /data/pinpoint/pinpoint-docker
+sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml restart \
+  pinot-controller pinot-broker-0 pinot-server-0
+
+# 30초쯤 뒤 상태 확인
+sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml ps | grep pinot
+검증
+bash
+# broker가 multistage 쿼리를 받는지 직접 테스트
+curl -s -X POST http://localhost:9000/sql \
+  -H "Content-Type: application/json" \
+  -d '{"sql":"SELECT count(*) FROM uriStat","queryOptions":"useMultistageEngine=true"}'
+
+에러 없이 결과(row count)가 나오면 성공이야. 그다음 Pinpoint Web의 URI Stat 화면을 다시 열면 아까 그 에러가 사라져야 해.
