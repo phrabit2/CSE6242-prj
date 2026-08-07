@@ -1,49 +1,37 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ curl -s -X POST http://localhost:9000/sql \
-  -H "Content-Type: application/json" \
-  -d '{"sql":"SELECT count(*) FROM inspectorAgent"}'
-{"requestId":"2033727410000000000","brokerId":"Broker_172.24.0.14_8099","exceptions":[{"errorCode":190,"message":"TableDoesNotExistError"}],"numServersQueried":0,"numServersResponded":0,"numSegmentsQueried":0,"numSegmentsProcessed":0,"numSegmentsMatched":0,"numConsumingSegmentsQueried":0,"numConsumingSegmentsProcessed":0,"numConsumingSegmentsMatched":0,"numDocsScanned":0,"numEntriesScannedInFilter":0,"numEntriesScannedPostFilter":0,"numGroupsLimitReached":false,"totalDocs":0,"timeUsedMs":0,"offlineThreadCpuTimeNs":0,"realtimeThreadCpuTimeNs":0,"offlineSystemActivitiesCpuTimeNs":0,"realtimeSystemActivitiesCpuTimeNs":0,"offlineResponseSerializationCpuTimeNs":0,"realtimeResponseSerializationCpuTimeNs":0,"offlineTotalCpuTimeNs":0,"realtimeTotalCpuTimeNs":0,"brokerReduceTimeMs":0,"segmentStatistics":[],"traceInfo":{},"numSegmentsPrunedByBroker":0,"minConsumingFreshnessTimeMs":0,"numSegmentsPrunedByServer":0,"numSegmentsPrunedInvalid":0,"numSegmentsPrunedByLimit":0,"numSegmentsPrunedByValue":0,"explainPlanNumEmptyFilterSegments":0,"explainPlanNumMatchAllFilterSegments":0,"numRowsResultSet"wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ curl -s -X POST http://localhost:9000/sql \l \
-  -H "Content-Type: application/json" \
-  -d '{"sql":"SELECT count(*) FROM uriStat"}'
-{"resultTable":{"dataSchema":{"columnNames":["count(*)"],"columnDataTypes":["LONG"]},"rows":[[96]]},"requestId":"2033727410000000001","brokerId":"Broker_172.24.0.14_8099","exceptions":[],"numServersQueried":1,"numServersResponded":1,"numSegmentsQueried":64,"numSegmentsProcessed":2,"numSegmentsMatched":2,"numConsumingSegmentsQueried":64,"numConsumingSegmentsProcessed":0,"numConsumingSegmentsMatched":0,"numDocsScanned":96,"numEntriesScannedInFilter":0,"numEntriesScannedPostFilter":0,"numGroupsLimitReached":false,"totalDocs":96,"timeUsedMs":251,"offlineThreadCpuTimeNs":0,"realtimeThreadCpuTimeNs":0,"offlineSystemActivitiesCpuTimeNs":0,"realtimeSystemActivitiesCpuTimeNs":0,"offlineResponseSerializationCpuTimeNs":0,"realtimeResponseSerializationCpuTimeNs":0,"offlineTotalCpuTimeNs":0,"realtimeTotalCpuTimeNs":0,"brokerReduceTimeMs":17,"segmentStatistics":[],"traceInfo":{},"numSegmentsPrunedByBroker":0,"minConsumingFreshnessTimeMs":1786078983125,"numSegmentsPrunedByServer":62,"numSegmentsPrunedInvalid":0,"numSegmentsPrunedByLimit":0,"numSegmentsPrunedByValue":0,"explainPlanNumEmptyFilterSegments":0,"explainPlanNumMatchAllFilterSegments":0,"numRowsResultSet":1}wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ cd /data/pinpoint/pinpoint-docker       cd /data/pinpoint/pinpoint-docker
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml restart pinot-broker-0
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
-[+] restart 0/1
- ⠼ Container pinpoint-docker-pinot-broker-0-1 Restarting                                                 10.4s
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sleep 20
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml restart pinpoint-web
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
-[+] restart 0/1
- ⠼ Container pinpoint-web Restarting                                                                      2.4s
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker ps | grep kafka
-1044ed5aedd0   ubuntu/kafka:3.1-22.04_beta                       "entrypoint.sh /etc/…"   16 minutes ago   Up 16 minutes       9092/tcp                                                                                                 pinpoint-docker-pinpoint-kafka-1
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker logs pinpoint-docker-pinpoint-kafka-init-1 --tail 20
-Error while executing topic command : Topic 'url-stat' already exists.
-[2026-07-14 09:17:34,635] ERROR org.apache.kafka.common.errors.TopicExistsException: Topic 'url-stat' already exists.
- (kafka.admin.TopicCommand$)
-Error while executing topic command : Topic 'url-stat' already exists.
-[2026-07-15 05:42:41,074] ERROR org.apache.kafka.common.errors.TopicExistsException: Topic 'url-stat' already exists.
- (kafka.admin.TopicCommand$)
-[2026-08-07 04:49:28,260] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:28,376] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:28,478] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:28,680] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:32,031] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:32,236] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:32,538] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:36,064] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:36,165] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:36,467] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-[2026-08-07 04:49:36,870] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (pinpoint-kafka/172.24.0.15:9092) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
-Error while executing topic command : Topic 'url-stat' already exists.
-[2026-08-07 04:49:38,056] ERROR org.apache.kafka.common.errors.TopicExistsException: Topic 'url-stat' already exists.
- (kafka.admin.TopicCommand$)
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker logs pinpoint-collector --tail 50 | grep -iE 'kafka|error|metric'
-08-07 05:06:32.964 [ad | producer-1] DEBUG c.n.p.u.c.d.PinotUriStatDao             : 18 -- Kafka(UriStat) onSuccess:SendResult [producerRecord=ProducerRecord(topic=url-stat, partition=null, headers=RecordHeaders(headers = [RecordHeader(key = __TypeId__, value = [99, 111, 109, 46, 110, 97, 118, 101, 114, 99, 111, 114, 112, 46, 112, 105, 110, 112, 111, 105, 110, 116, 46, 117, 114, 105, 115, 116, 97, 116, 46, 99, 111, 108, 108, 101, 99, 116, 111, 114, 46, 109, 111, 100, 101, 108, 46, 85, 114, 105, 83, 116, 97, 116])], isReadOnly = true), key=wcs-backend, value=UriStat{serviceName='DEFAULT', applicationName='wcs-backend', agentId='wcs-backend-72', timestamp=1786079160000, uri=/wcs/api/{serviceBeanName}/{methodName}, apdexRaw= 1.0, count=1, failCount=0, maxLatencyMs=14, totalTimeMs=14, totalHistogram=[1, 0, 0, 0, 0, 0, 0, 0], failureHistogram=[0, 0, 0, 0, 0, 0, 0, 0]}, timestamp=null), recordMetadata=url-stat-63@87]
-08-07 05:06:32.964 [ad | producer-1] DEBUG c.n.p.u.c.d.PinotUriStatDao             : 18 -- Kafka(UriStat) onSuccess:SendResult [producerRecord=ProducerRecord(topic=url-stat, partition=null, headers=RecordHeaders(headers = [RecordHeader(key = __TypeId__, value = [99, 111, 109, 46, 110, 97, 118, 101, 114, 99, 111, 114, 112, 46, 112, 105, 110, 112, 111, 105, 110, 116, 46, 117, 114, 105, 115, 116, 97, 116, 46, 99, 111, 108, 108, 101, 99, 116, 111, 114, 46, 109, 111, 100, 101, 108, 46, 85, 114, 105, 83, 116, 97, 116])], isReadOnly = true), key=wcs-backend, value=UriStat{serviceName='DEFAULT', applicationName='wcs-backend', agentId='wcs-backend-72', timestamp=1786079160000, uri=/actuator/prometheus, apdexRaw= 2.0, count=2, failCount=0, maxLatencyMs=5, totalTimeMs=10, totalHistogram=[2, 0, 0, 0, 0, 0, 0, 0], failureHistogram=[0, 0, 0, 0, 0, 0, 0, 0]}, timestamp=null), recordMetadata=url-stat-63@88]
-08-07 05:06:33.123 [orkerExecutor13] DEBUG c.n.p.c.a.AvailabilityHandlerAop        : 41 -- [AOP] Check availability execution(AgentMetricBatchHandler.handleSimple(..))
-08-07 05:06:33.125 [ad | producer-1] DEBUG c.n.p.u.c.d.PinotUriStatDao             : 18 -- Kafka(UriStat) onSuccess:SendResult [producerRecord=ProducerRecord(topic=url-stat, partition=null, headers=RecordHeaders(headers = [RecordHeader(key = __TypeId__, value = [99, 111, 109, 46, 110, 97, 118, 101, 114, 99, 111, 114, 112, 46, 112, 105, 110, 112, 111, 105, 110, 116, 46, 117, 114, 105, 115, 116, 97, 116, 46, 99, 111, 108, 108, 101, 99, 116, 111, 114, 46, 109, 111, 100, 101, 108, 46, 85, 114, 105, 83, 116, 97, 116])], isReadOnly = true), key=wcs-backend, value=UriStat{serviceName='DEFAULT', applicationName='wcs-backend', agentId='wcs-backend-71', timestamp=1786079160000, uri=/actuator/prometheus, apdexRaw= 2.0, count=2, failCount=0, maxLatencyMs=31, totalTimeMs=36, totalHistogram=[2, 0, 0, 0, 0, 0, 0, 0], failureHistogram=[0, 0, 0, 0, 0, 0, 0, 0]}, timestamp=null), recordMetadata=url-stat-63@89]
-08-07 05:06:33.914 [ad | producer-1] DEBUG c.n.p.u.c.d.PinotUriStatDao             : 18 -- Kafka(UriStat) onSuccess:SendResult [producerRecord=ProducerRecord(topic=url-stat, partition=null, headers=RecordHeaders(headers = [RecordHeader(key = __TypeId__, value = [99, 111, 109, 46, 110, 97, 118, 101, 114, 99, 111, 114, 112, 46, 112, 105, 110, 112, 111, 105, 110, 116, 46, 117, 114, 105, 115, 116, 97, 116, 46, 99, 111, 108, 108, 101, 99, 116, 111, 114, 46, 109, 111, 100, 101, 108, 46, 85, 114, 105, 83, 116, 97, 116])], isReadOnly = true), key=com-backend, value=UriStat{serviceName='DEFAULT', applicationName='com-backend', agentId='com-backend-72', timestamp=1786079160000, uri=/user/me, apdexRaw= 1.0, count=1, failCount=0, maxLatencyMs=3, totalTimeMs=3, totalHistogram=[1, 0, 0, 0, 0, 0, 0, 0], failureHistogram=[0, 0, 0, 0, 0, 0, 0, 0]}, timestamp=null), recordMetadata=url-stat-31@29]
-08-07 05:06:33.914 [ad | producer-1] DEBUG c.n.p.u.c.d.PinotUriStatDao             : 18 -- Kafka(UriStat) onSuccess:SendResult [producerRecord=ProducerRecord(topic=url-stat, partition=null, headers=RecordHeaders(headers = [RecordHeader(key = __TypeId__, value = [99, 111, 109, 46, 110, 97, 118, 101, 114, 99, 111, 114, 112, 46, 112, 105, 110, 112, 111, 105, 110, 116, 46, 117, 114, 105, 115, 116, 97, 116, 46, 99, 111, 108, 108, 101, 99, 116, 111, 114, 46, 109, 111, 100, 101, 108, 46, 85, 114, 105, 83, 116, 97, 116])], isReadOnly = true), key=com-backend, value=UriStat{serviceName='DEFAULT', applicationName='com-backend', agentId='com-backend-72', timestamp=1786079160000, uri=/admin/meta/logs, apdexRaw= 4.0, count=4, failCount=0, maxLatencyMs=20, totalTimeMs=73, totalHistogram=[4, 0, 0, 0, 0, 0, 0, 0], failureHistogram=[0, 0, 0, 0, 0, 0, 0, 0]}, timestamp=null), recordMetadata=url-stat-31@30]
-08-07 05:06:34.010 [ad | producer-1] DEBUG c.n.p.u.c.d.PinotUriStatDao             : 18 -- Kafka(UriStat) onSuccess:SendResult [producerRecord=ProducerRecord(topic=url-stat, partition=null, headers=RecordHeaders(headers = [RecordHeader(key = __TypeId__, value = [99, 111, 109, 46, 110, 97, 118, 101, 114, 99, 111, 114, 112, 46, 112, 105, 110, 112, 111, 105, 110, 116, 46, 117, 114, 105, 115, 116, 97, 116, 46, 99, 111, 108, 108, 101, 99, 116, 111, 114, 46, 109, 111, 100, 101, 108, 46, 85, 114, 105, 83, 116, 97, 116])], isReadOnly = true), key=com-backend, value=UriStat{serviceName='DEFAULT', applicationName='com-backend', agentId='com-backend-71', timestamp=1786079160000, uri=/user/me, apdexRaw= 1.0, count=1, failCount=0, maxLatencyMs=4, totalTimeMs=4, totalHistogram=[1, 0, 0, 0, 0, 0, 0, 0], failureHistogram=[0, 0, 0, 0, 0, 0, 0, 0]}, timestamp=null), recordMetadata=url-stat-31@31]
-08-07 05:06:34.010 [ad | producer-1] DEBUG c.n.p.u.c.d.PinotUriStatDao             : 18 -- Kafka(UriStat) onSuccess:SendResult [producerRecord=ProducerRecord(topic=url-stat, partition=null, headers=RecordHeaders(headers = [RecordHeader(key = __TypeId__, value = [99, 111, 109, 46, 110, 97, 118, 101, 114, 99, 111, 114, 112, 46, 112, 105, 110, 112, 111, 105, 110, 116, 46, 117, 114, 105, 115, 116, 97, 116, 46, 99, 111, 108, 108, 101, 99, 116, 111, 114, 46, 109, 111, 100, 101, 108, 46, 85, 114, 105, 83, 116, 97, 116])], isReadOnly = true), key=com-backend, value=UriStat{serviceName='DEFAULT', applicationName='com-backend', agentId='com-backend-71', timestamp=1786079160000, uri=/admin/meta/logs, apdexRaw= 3.0, count=3, failCount=0, maxLatencyMs=21, totalTimeMs=58, totalHistogram=[3, 0, 0, 0, 0, 0, 0, 0], failureHistogram=[0, 0, 0, 0, 0, 0, 0, 0]}, timestamp=null), recordMetadata=url-stat-31@32]
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$
+Inspector — 이게 진짜 남은 문제
+
+inspectorAgent가 **TableDoesNotExistError**로 나왔어. 방금 7개 만들었다고 했는데, 실제로는 inspectorAgent 테이블이 안 만들어진 거야.
+
+이유를 되짚어보면 — 아까 replica를 2로 낮춰 재실행했을 때, 로그 마지막에 inspectorAgent, inspectorApplication은 확인을 못 했잖아(로그가 uriStat~exceptionTrace까지만 보였음). 그리고 이 테이블들은 이름이 특이해 — 앞서 에러에서 봤듯 실제 Pinot 테이블명이 inspectorStatAgent00, inspectorStatApp 같은 형태라, 스키마 파일명(inspectorAgent)과 다를 수 있어. 그래서 replica sed가 이 파일들엔 안 먹었거나 여전히 3으로 남아 생성 실패했을 가능성이 커.
+
+확인:
+
+bash
+curl -s http://localhost:9000/tables
+
+여기 목록에 inspectorStatAgent나 inspectorAgent 계열이 있는지 봐. 없으면 그 두 개만 다시 만들어야 해.
+
+inspector 스키마의 실제 replica 값과 테이블명 확인:
+
+bash
+grep -h 'replicasPerPartition\|replication\|tableName' /data/pinpoint/pinot-schemas/inspectorAgentTable.json
+
+여기서 replica가 아직 3이면 그게 원인이야. 그럼 inspector 2개만 replica 낮춰서 재생성:
+
+bash
+sudo docker cp /data/pinpoint/pinot-schemas pinpoint-docker-pinot-server-0-1:/tmp/schemas2
+sudo docker exec pinpoint-docker-pinot-server-0-1 bash -c '
+cd /tmp/schemas2
+sed -i "s/localhost:19092/pinpoint-kafka:9092/g" inspector*.json
+sed -i "s/\"replicasPerPartition\": *\"3\"/\"replicasPerPartition\": \"2\"/g" inspector*.json
+sed -i "s/\"replication\": *\"3\"/\"replication\": \"2\"/g" inspector*.json
+for t in inspectorAgent inspectorApplication; do
+  echo "=== $t ===";
+  /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile ${t}Schema.json -tableConfigFile ${t}Table.json -controllerHost pinot-controller -controllerPort 9000 -exec 2>&1 | grep -E "successfully|error|Exception";
+done'
+
+successfully added가 나오면 재확인:
+
+bash
+curl -s http://localhost:9000/tables
+curl -s -X POST http://localhost:9000/sql -H "Content-Type: application/json" -d '{"sql":"SELECT count(*) FROM inspectorAgent"}'
