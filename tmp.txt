@@ -1,158 +1,24 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker run --rm \
-  --network pinpoint-docker_pinpoint \
-  --entrypoint bash \
-  -v /data/pinpoint/pinot-schemas:/schemas:ro \
-  apachepinot/pinot:1.0.0-11-amazoncorretto \
-  -c 'cd /tmp && cp /schemas/*.json . && sed -i "s/localhost:19092/pinpoint-kafka:9092/g" *.json &&
-  for t in uriStat tag double dataType exceptionTrace inspectorAgent inspectorApplication; do
-    echo "=== AddTable: $t ===";
-    /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile ${t}Schema.json -tableConfigFile ${t}Table.json -controllerHost pinot-controller -controllerPort 9000 -exec || true;
-  done'
-=== AddTable: uriStat ===
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
-WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
-WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-2026/08/07 04:54:48.859 INFO [AddTableCommand] [main] Executing command: AddTable -tableConfigFile uriStatTable.json -offlineTableConfigFile null -realtimeTableConfigFile null -schemaFile uriStatSchema.json -controllerProtocol http -controllerHost pinot-controller -controllerPort 9000 -user null -password [hidden] -exec
-2026/08/07 04:54:50.466 INFO [AddTableCommand] [main] {"code":500,"error":"There are less instances: 2 in instance partitions: uriStat_CONSUMING than the table replication: 3"}
-=== AddTable: tag ===
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
-WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
-WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-2026/08/07 04:54:51.856 INFO [AddTableCommand] [main] Executing command: AddTable -tableConfigFile tagTable.json -offlineTableConfigFile null -realtimeTableConfigFile null -schemaFile tagSchema.json -controllerProtocol http -controllerHost pinot-controller -controllerPort 9000 -user null -password [hidden] -exec
-2026/08/07 04:54:52.310 INFO [AddTableCommand] [main] {"code":500,"error":"There are less instances: 2 in instance partitions: systemMetricTag_CONSUMING than the table replication: 3"}
-=== AddTable: double ===
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
-WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
-WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-2026/08/07 04:54:53.721 INFO [AddTableCommand] [main] Executing command: AddTable -tableConfigFile doubleTable.json -offlineTableConfigFile null -realtimeTableConfigFile null -schemaFile doubleSchema.json -controllerProtocol http -controllerHost pinot-controller -controllerPort 9000 -user null -password [hidden] -exec
-2026/08/07 04:54:54.123 INFO [AddTableCommand] [main] {"code":500,"error":"There are less instances: 2 in instance partitions: systemMetricDouble_CONSUMING than the table replication: 3"}
-=== AddTable: dataType ===
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
-WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
-WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-2026/08/07 04:54:55.367 INFO [AddTableCommand] [main] Executing command: AddTable -tableConfigFile dataTypeTable.json -offlineTableConfigFile null -realtimeTableConfigFile null -schemaFile dataTypeSchema.json -controllerProtocol http -controllerHost pinot-controller -controllerPort 9000 -user null -password [hidden] -exec
-2026/08/07 04:54:55.726 INFO [AddTableCommand] [main] {"code":500,"error":"There are less instances: 2 in instance partitions: systemMetricDataType_CONSUMING than the table replication: 3"}
-=== AddTable: exceptionTrace ===
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
-WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
-WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-2026/08/07 04:54:57.033 INFO [AddTableCommand] [main] Executing command: AddTable -tableConfigFile exceptionTraceTable.json -offlineTableConfigFile null -realtimeTableConfigFile null -schemaFile exceptionTraceSchema.json -controllerProtocol http -controllerHost pinot-controller -controllerPort 9000 -user null -password [hidden] -exec
-2026/08/07 04:54:57.359 INFO [AddTableCommand] [main] {"unrecognizedProperties":{},"status":"TableConfigs exceptionTrace successfully added"}
-=== AddTable: inspectorAgent ===
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
-WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
-WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-2026/08/07 04:54:58.626 INFO [AddTableCommand] [main] Executing command: AddTable -tableConfigFile inspectorAgentTable.json -offlineTableConfigFile null -realtimeTableConfigFile null -schemaFile inspectorAgentSchema.json -controllerProtocol http -controllerHost pinot-controller -controllerPort 9000 -user null -password [hidden] -exec
-2026/08/07 04:54:59.196 INFO [AddTableCommand] [main] {"code":500,"error":"There are less instances: 2 in instance partitions: inspectorStatAgent00_CONSUMING than the table replication: 3"}
-=== AddTable: inspectorApplication ===
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
-WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
-WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-2026/08/07 04:55:00.542 INFO [AddTableCommand] [main] Executing command: AddTable -tableConfigFile inspectorApplicationTable.json -offlineTableConfigFile null -realtimeTableConfigFile null -schemaFile inspectorApplicationSchema.json -controllerProtocol http -controllerHost pinot-controller -controllerPort 9000 -user null -password [hidden] -exec
-2026/08/07 04:55:01.340 INFO [AddTableCommand] [main] {"code":500,"error":"There are less instances: 2 in instance partitions: inspectorStatApp_CONSUMING than the table replication: 3"}
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$
+cat > /tmp/addtables.sh <<'EOF'
+#!/bin/bash
+cd /tmp/schemas
+sed -i 's/localhost:19092/pinpoint-kafka:9092/g' *.json
+sed -i 's/"replicasPerPartition": *"3"/"replicasPerPartition": "2"/g' *.json
+sed -i 's/"replication": *"3"/"replication": "2"/g' *.json
+for t in uriStat tag double dataType inspectorAgent inspectorApplication; do
+  echo "=== AddTable: $t ===";
+  /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile ${t}Schema.json -tableConfigFile ${t}Table.json -controllerHost pinot-controller -controllerPort 9000 -exec 2>&1 | grep -E "successfully|error|Exception";
+done
+EOF
+
+# 스키마 + 스크립트를 컨테이너에 복사
+sudo docker cp /data/pinpoint/pinot-schemas pinpoint-docker-pinot-server-0-1:/tmp/schemas
+sudo docker cp /tmp/addtables.sh pinpoint-docker-pinot-server-0-1:/tmp/addtables.sh
+
+# 컨테이너 안에서 실행
+sudo docker exec pinpoint-docker-pinot-server-0-1 bash /tmp/addtables.sh
+
+이게 붙여넣기 실수(전각 문자, 줄바꿈 깨짐) 없이 깔끔해서 더 안전해.
+
+확인
+bash
+curl -s http://localhost:9000/tables
