@@ -1,64 +1,61 @@
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker exec pinpoint-docker-pinot-controller-1 curl  http://localhost:9000/health
-Error response from daemon: No such container: pinpoint-docker-pinot-controller-1
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker ps -a
-CONTAINER ID   IMAGE                                             COMMAND                  CREATED         STAT                     PORTS                                                                                                  NAMES
-53f3472b7024   apachepinot/pinot:1.0.0-11-amazoncorretto         "bash -c ' cd /tmp &…"   3 minutes ago   Exit (0) 3 minutes ago                                                                                                          pinpoint-docker-pinot-init-1
-9ebee6a43d03   pinpointdocker/pinpoint-collector:latest-metric   "java -cp @/app/jib-…"   3 weeks ago     Up 3eeks                 0.0.0.0:9991-9996->9991-9996/tcp, 0.0.0.0:9995-9996->9995-9996/udp, 15200/tcp                          pinpoint-collector
-6b9005120b7e   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   3 weeks ago     Up 9inutes               8096-8099/tcp, 9000/tcp                                                                                pinpoint-docker-pinot-server-0-1
-aafbce56b059   pinpointdocker/pinpoint-quickstart                "catalina.sh run"        3 weeks ago     Up 3eeks                 0.0.0.0:8085->8080/tcp                                                                                 pinpoint-quickstart
-cad1bb93408b   pinpointdocker/pinpoint-flink:latest              "/docker-bin/docker-…"   3 weeks ago     Up 3eeks                 6123/tcp, 0.0.0.0:6121-6122->6121-6122/tcp, 0.0.0.0:19994->19994/tcp, 8081/tcp                         pinpoint-flink-taskmanager
-f72098a8e136   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   3 weeks ago     Up 9inutes               8096-8099/tcp, 9000/tcp                                                                                pinpoint-docker-pinot-broker-0-1
-640d2f19fbe0   pinpointdocker/pinpoint-agent:latest              "/usr/local/bin/conf…"   3 weeks ago     Up 3eeks                                                                                                                        pinpoint-agent
-f6752d5079f2   telegraf:1.25.0                                   "sh -c ' curl https:…"   3 weeks ago     Exit (28) 3 weeks ago                                                                                                           pinpoint-docker-telegraf-1
-086b24aac68f   pinpointdocker/pinpoint-flink:latest              "/docker-bin/docker-…"   3 weeks ago     Up 3eeks                 6123/tcp, 0.0.0.0:8081->8081/tcp                                                                       pinpoint-flink-jobmanager
-2e304d950794   pinpointdocker/pinpoint-web:latest-metric         "java -cp @/app/jib-…"   3 weeks ago     Up 3eeks                 0.0.0.0:8080->8080/tcp, 0.0.0.0:9997->9997/tcp                                                         pinpoint-web
-6008666a578e   ubuntu/kafka:3.1-22.04_beta                       "sh -c '/opt/kafka/b…"   3 weeks ago     Exit (1) 3 weeks ago                                                                                                            pinpoint-docker-pinpoint-kafka-init-1
-c6a20f48044c   pinpointdocker/pinpoint-batch:latest              "java -cp @/app/jib-…"   3 weeks ago     Up 1seconds                                                                                                                     pinpoint-batch
-8fac889f86ec   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   3 weeks ago     Up 9inutes               8096-8099/tcp, 0.0.0.0:9000->9000/tcp                                                                  b6014b1f0498_pinpoint-docker-pinot-controller-1
-7f6dd5a573f4   pinpointdocker/pinpoint-hbase:latest              "/bin/sh -c '/usr/lo…"   3 weeks ago     Up 3eeks                 0.0.0.0:16010->16010/tcp, 0.0.0.0:16030->16030/tcp, 0.0.0.0:60000->60000/tcp, 0.0.0.0:600->60020/tcp   pinpoint-hbase
-395a26105123   ubuntu/kafka:3.1-22.04_beta                       "entrypoint.sh /etc/…"   3 weeks ago     Up 3eeks                 9092/tcp                                                                                               b5bdc5f9b840_pinpoint-docker-pinpoint-kafka-1
-eb46b6c2af9a   zookeeper:3.4.13                                  "/docker-entrypoint.…"   3 weeks ago     Up 3eeks                 2888/tcp, 3888/tcp, 0.0.0.0:32782->2181/tcp                                                            pinpoint-docker-zoo3-1
-f0fac5e53176   zookeeper:3.8.0-temurin                           "/docker-entrypoint.…"   3 weeks ago     Up 3eeks                 2181/tcp, 2888/tcp, 3888/tcp, 8080/tcp                                                                 pinpoint-docker-pinot-zoo-1
-239839ac6091   zookeeper:3.4.13                                  "/docker-entrypoint.…"   3 weeks ago     Up 3eeks                 2888/tcp, 3888/tcp, 0.0.0.0:32780->2181/tcp                                                            pinpoint-docker-zoo2-1
-f8af8e387890   zookeeper:3.4.13                                  "/docker-entrypoint.…"   3 weeks ago     Up 3eeks                 2888/tcp, 3888/tcp, 0.0.0.0:32781->2181/tcp                                                            pinpoint-docker-zoo1-1
-ce3b5a385eb2   mysql:8.0                                         "sh -c ' curl -SL ht…"   3 weeks ago     Exit (28) 3 weeks ago                                                                                                           pinpoint-mysql
-685089d3afa7   redis:7.0.14                                      "docker-entrypoint.s…"   3 weeks ago     Up 3eeks                 0.0.0.0:6379->6379/tcp                                                                                 pinpoint-docker-redis-1
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d --force-recreate --no-deps pinot-init
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
-[+] up 1/1
- ✔ Container pinpoint-docker-pinot-init-1 Started                                                         0.3s
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sleep 5
 
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker logs pinpoint-docker-pinot-init-1 --tail 30
-java.net.UnknownHostException: pinot-controller
-        at java.base/java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:229)
-        at java.base/java.net.Socket.connect(Socket.java:609)
-        at java.base/java.net.Socket.connect(Socket.java:558)
-        at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:182)
-        at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:509)
-        at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:604)
-        at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:277)
-        at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:376)
-        at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:397)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1253)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1187)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1081)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1015)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.getOutputStream0(HttpURLConnection.java:1367)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.getOutputStream(HttpURLConnection.java:1342)
-        at org.apache.pinot.tools.admin.command.AbstractBaseAdminCommand.sendRequest(AbstractBaseAdminCommand.java:95)
-        at org.apache.pinot.tools.admin.command.AddTableCommand.sendTableCreationRequest(AddTableCommand.java:189)
-        at org.apache.pinot.tools.admin.command.AddTableCommand.execute(AddTableCommand.java:256)
-        at org.apache.pinot.tools.Command.call(Command.java:33)
-        at org.apache.pinot.tools.Command.call(Command.java:29)
-        at picocli.CommandLine.executeUserObject(CommandLine.java:1953)
-        at picocli.CommandLine.access$1300(CommandLine.java:145)
-        at picocli.CommandLine$RunLast.executeUserObjectOfLastSubcommandWithSameParent(CommandLine.java:2352)
-        at picocli.CommandLine$RunLast.handle(CommandLine.java:2346)
-        at picocli.CommandLine$RunLast.handle(CommandLine.java:2311)
-        at picocli.CommandLine$AbstractParseResultHandler.execute(CommandLine.java:2179)
-        at picocli.CommandLine.execute(CommandLine.java:2078)
-        at org.apache.pinot.tools.admin.PinotAdministrator.execute(PinotAdministrator.java:171)
-        at org.apache.pinot.tools.admin.PinotAdministrator.main(PinotAdministrator.java:202)
-wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$
+범인 정확히 나왔어. docker ps -a에서 controller의 실제 이름을 봐:
+
+8fac889f86ec  ...  b6014b1f0498_pinpoint-docker-pinot-controller-1
+
+controller 컨테이너 이름 앞에 b6014b1f0498_ 해시가 붙어있어. 이건 우리가 여러 번 겪은 그 좀비 흔적이야 — 예전에 v1/재생성 실패로 컨테이너가 임시 개명된 거지. 이게 왜 문제냐면:
+
+도커 DNS는 컨테이너의 "네트워크 별칭"으로 이름을 해석하는데, 이 controller가 좀비 상태라 pinot-controller라는 별칭이 제대로 안 붙어 있어. 그래서 pinot-init이 pinot-controller를 찾아도 DNS가 응답을 못 하는 거야. UnknownHostException의 진짜 원인이 이거야.
+
+b5bdc5f9b840_pinpoint-docker-pinpoint-kafka-1도 같은 좀비고. controller 재시작할 때 이 좀비가 정리 안 된 채 재시작만 돼서 별칭이 깨진 상태로 남은 거야.
+
+해결 — 좀비 controller를 제대로 재생성
+
+restart가 아니라 삭제 후 새로 생성해야 별칭이 제대로 붙어. 정상 이름으로 다시 만드는 거야.
+
+bash
+cd /data/pinpoint/pinpoint-docker
+
+# 1. 좀비 controller와 kafka 제거
+sudo docker rm -f b6014b1f0498_pinpoint-docker-pinot-controller-1
+sudo docker rm -f b5bdc5f9b840_pinpoint-docker-pinpoint-kafka-1
+
+# 2. compose로 재생성 (정상 이름 + 별칭으로 새로 뜸)
+sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d
+
+# 3. 이름이 정상화됐는지 확인 (해시 프리픽스 없어야 함)
+sudo docker ps --format '{{.Names}}' | grep -E 'pinot-controller|kafka'
+
+3번에서 pinpoint-docker-pinot-controller-1이 해시 없이 나오면 별칭이 제대로 붙은 거야.
+
+그다음 — DNS 해석 확인 후 pinot-init
+
+controller 이름이 정상화되면, 다른 컨테이너에서 pinot-controller가 해석되는지 먼저 확인:
+
+bash
+sudo docker exec pinpoint-collector getent hosts pinot-controller
+
+IP가 나오면 DNS 정상. 그때 pinot-init 재실행:
+
+bash
+sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d --force-recreate --no-deps pinot-init
+sleep 10
+sudo docker logs pinpoint-docker-pinot-init-1 --tail 40
+
+이번엔 UnknownHostException 없이 AddTable이 7개 성공해야 해. 그다음:
+
+bash
+curl -s http://localhost:9000/tables
+⚠️ 재생성 시 주의 — HBase 좀비
+
+up -d로 전체를 재수렴할 때 HBase도 건드려질 수 있어. 우리가 그렇게 고생한 HBase(/data/pinpoint/hbase bind, 22개 테이블)가 재생성되면서 또 Master 초기화 이슈가 날 수 있으니, 2번 up -d 후에 HBase 상태를 꼭 확인:
+
+bash
+sudo docker ps --format '{{.Names}}' | grep hbase       # 해시 프리픽스 없이 pinpoint-hbase 인지
+sudo docker exec pinpoint-hbase jps                      # HMaster 살아있는지
+
+HMaster가 사라지면 아까 그 ZK 초기화 대신, 이번엔 데이터가 살아있으니 그냥 재시작만으로 복구될 가능성이 높아 (테이블이 이미 /data에 있으니). 그건 상태 보고 판단하자.
+
+핵심은 — pinot-init의 네트워크 문제가 아니라, controller가 좀비라 pinot-controller 이름이 안 붙는 것이었어. 좀비 2개(b6014... controller, b5bdc... kafka)를 rm -f하고 up -d로 정상 재생성하면 이름이 붙고, 그러면 pinot-init이 붙을 수 있어.
+
+먼저 좀비 2개 제거 → up -d → controller 이름 정상화 확인까지 하고, 그 결과랑 HBase 상태(jps) 알려줘. 좀비만 걷어내면 나머지는 순조로울 거야.
