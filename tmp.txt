@@ -1,37 +1,16 @@
-Inspector — 이게 진짜 남은 문제
+3. ⚠️ 가장 유력 — 프로파일이 다르다
 
-inspectorAgent가 **TableDoesNotExistError**로 나왔어. 방금 7개 만들었다고 했는데, 실제로는 inspectorAgent 테이블이 안 만들어진 거야.
+이게 제일 의심스러워. Pinpoint agent는 profile 개념이 있어서, 실제로 읽는 config가 pinpoint-root.config가 아니라 **profiles/<active>/pinpoint.config**일 수 있어. 개발환경 대화에서도 이게 나왔었어 — 그때 profiles/release/pinpoint.config를 수정했었거든.
 
-이유를 되짚어보면 — 아까 replica를 2로 낮춰 재실행했을 때, 로그 마지막에 inspectorAgent, inspectorApplication은 확인을 못 했잖아(로그가 uriStat~exceptionTrace까지만 보였음). 그리고 이 테이블들은 이름이 특이해 — 앞서 에러에서 봤듯 실제 Pinot 테이블명이 inspectorStatAgent00, inspectorStatApp 같은 형태라, 스키마 파일명(inspectorAgent)과 다를 수 있어. 그래서 replica sed가 이 파일들엔 안 먹었거나 여전히 3으로 남아 생성 실패했을 가능성이 커.
-
-확인:
+즉 네가 지금 본 pinpoint-root.config의 tracerequestparam=true가 실제로 적용되는 파일이 아닐 수 있어. active profile의 파일을 봐야 해:
 
 bash
-curl -s http://localhost:9000/tables
+# 어떤 profile이 활성인지
+grep -rn 'profiles.active\|profiler.profiles' /app/pinpoint-agent-wcs/pinpoint-root.config
+grep -o 'profiles.active=[^ ]*' <(systemctl cat wcs.service)   # unit에 지정됐나
 
-여기 목록에 inspectorStatAgent나 inspectorAgent 계열이 있는지 봐. 없으면 그 두 개만 다시 만들어야 해.
+# profiles 디렉토리 구조
+ls -R /app/pinpoint-agent-wcs/profiles/ 2>/dev/null
 
-inspector 스키마의 실제 replica 값과 테이블명 확인:
-
-bash
-grep -h 'replicasPerPartition\|replication\|tableName' /data/pinpoint/pinot-schemas/inspectorAgentTable.json
-
-여기서 replica가 아직 3이면 그게 원인이야. 그럼 inspector 2개만 replica 낮춰서 재생성:
-
-bash
-sudo docker cp /data/pinpoint/pinot-schemas pinpoint-docker-pinot-server-0-1:/tmp/schemas2
-sudo docker exec pinpoint-docker-pinot-server-0-1 bash -c '
-cd /tmp/schemas2
-sed -i "s/localhost:19092/pinpoint-kafka:9092/g" inspector*.json
-sed -i "s/\"replicasPerPartition\": *\"3\"/\"replicasPerPartition\": \"2\"/g" inspector*.json
-sed -i "s/\"replication\": *\"3\"/\"replication\": \"2\"/g" inspector*.json
-for t in inspectorAgent inspectorApplication; do
-  echo "=== $t ===";
-  /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile ${t}Schema.json -tableConfigFile ${t}Table.json -controllerHost pinot-controller -controllerPort 9000 -exec 2>&1 | grep -E "successfully|error|Exception";
-done'
-
-successfully added가 나오면 재확인:
-
-bash
-curl -s http://localhost:9000/tables
-curl -s -X POST http://localhost:9000/sql -H "Content-Type: application/json" -d '{"sql":"SELECT count(*) FROM inspectorAgent"}'
+# active profile의 실제 config에서 tracerequestparam 확인
+grep -rn 'tracerequestparam' /app/pinpoint-agent-wcs/profiles/
