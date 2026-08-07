@@ -1,24 +1,65 @@
-cat > /tmp/addtables.sh <<'EOF'
-#!/bin/bash
-cd /tmp/schemas
-sed -i 's/localhost:19092/pinpoint-kafka:9092/g' *.json
-sed -i 's/"replicasPerPartition": *"3"/"replicasPerPartition": "2"/g' *.json
-sed -i 's/"replication": *"3"/"replication": "2"/g' *.json
-for t in uriStat tag double dataType inspectorAgent inspectorApplication; do
-  echo "=== AddTable: $t ===";
-  /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile ${t}Schema.json -tableConfigFile ${t}Table.json -controllerHost pinot-controller -controllerPort 9000 -exec 2>&1 | grep -E "successfully|error|Exception";
-done
-EOF
+이블은 만들어졌는데 조회가 안 되고 Inspector도 안 된다 — 이건 데이터가 아직 안 채워졌거나, 컴포넌트 연결이 안 끊긴 채 남아있어서야. 방금 pinot을 �one게 재시작하고 테이블을 새로 만들었으니, 몇 가지를 순서대로 확인하자.
 
-# 스키마 + 스크립트를 컨테이너에 복사
-sudo docker cp /data/pinpoint/pinot-schemas pinpoint-docker-pinot-server-0-1:/tmp/schemas
-sudo docker cp /tmp/addtables.sh pinpoint-docker-pinot-server-0-1:/tmp/addtables.sh
+1. 테이블에 데이터가 실제로 들어오는지
 
-# 컨테이너 안에서 실행
-sudo docker exec pinpoint-docker-pinot-server-0-1 bash /tmp/addtables.sh
+테이블이 "생성"된 것과 "데이터가 쌓이는" 건 별개야. Inspector 지표는 agent → collector → Kafka → Pinot 경로로 들어와. 테이블을 방금 만들었으니 그 시점 이후 데이터부터 쌓여 (과거 건 유실됨). 우선 데이터가 들어오는지 확인:
 
-이게 붙여넣기 실수(전각 문자, 줄바꿈 깨짐) 없이 깔끔해서 더 안전해.
-
-확인
 bash
-curl -s http://localhost:9000/tables
+curl -s -X POST http://localhost:9000/sql \
+  -H "Content-Type: application/json" \
+  -d '{"sql":"SELECT count(*) FROM inspectorAgent"}'
+count가 0보다 크면 → 데이터는 들어오는 중. 조회 안 되는 건 다른 문제(아래 2번)
+count가 0이면 → 데이터 유입이 안 됨. Kafka 경로 문제 (아래 3번)
+
+uriStat도 같이:
+
+bash
+curl -s -X POST http://localhost:9000/sql \
+  -H "Content-Type: application/json" \
+  -d '{"sql":"SELECT count(*) FROM uriStat"}'
+2. 조회 실패 에러가 뭔지 — Web/broker 재시작
+
+테이블을 새로 만든 걸 broker와 web이 아직 인식 못 했을 수 있어. 얘들은 기동 시점에 테이블 목록을 잡거든. 방금 controller/broker/server를 재시작했지만 테이블은 그 후에 만들었으니, broker가 새 테이블을 모를 수 있어.
+
+bash
+cd /data/pinpoint/pinpoint-docker
+sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml restart pinot-broker-0
+sleep 20
+
+그리고 Web도 재시작 (web이 pinot broker 연결을 다시 잡게):
+
+bash
+sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml restart pinpoint-web
+
+20~30초 뒤 Web 새로고침해서 URI Stat / Inspector 다시 봐.
+
+3. Kafka 경로 확인 (데이터 유입)
+
+Inspector 데이터는 collector가 Kafka로 보내고 Pinot이 그걸 consume해. 우리가 kafka 좀비(b5bdc...)를 지우고 재생성했으니, collector가 새 kafka에 제대로 붙었는지 확인이 필요해:
+
+bash
+# kafka 정상인지
+sudo docker ps | grep kafka
+sudo docker logs pinpoint-docker-pinpoint-kafka-init-1 --tail 20
+
+# collector가 kafka로 metric 보내는 데 에러 없는지
+sudo docker logs pinpoint-collector --tail 50 | grep -iE 'kafka|error|metric'
+
+pinpoint-docker-pinpoint-kafka-init-1이 아까 ps -a에서 Exit (1)이었던 게 걸려. 이게 kafka 토픽을 만드는 초기화 컨테이너인데 실패했으면 metric 토픽이 없어서 데이터가 안 흐를 수 있어. 로그 확인해줘.
+
+4. Inspector는 stat 채널도 필요
+
+Inspector(CPU/메모리)는 URI Stat과 또 다른 경로야 — agent가 **stat 데이터(9992 포트)**를 collector로 보내고, collector가 그걸 Kafka→Pinot으로 넣어. agent 쪽에서 stat이 실제로 가는지도 관련 있는데, 이건 71/72 agent가 정상이면 되고 있을 거야.
+
+우선순위는 이래:
+
+SELECT count(*) 두 개 (데이터가 있는지 없는지가 모든 걸 가름)
+broker + web 재시작 (테이블 인식)
+count가 0이면 kafka-init 로그 (유입 경로)
+
+1번 count 결과부터 알려줘. 그게 0이냐 아니냐에 따라:
+
+0보다 크다 → broker/web 재시작만 하면 조회됨 (2번)
+0이다 → Kafka 유입 문제라 3번을 파야 함
+
+이걸로 갈려. 참고로 테이블을 방금 만들었으니, 데이터가 있어도 의미 있는 그래프가 그려지려면 몇 분 걸려 — agent가 주기적으로 보내는 거라 쌓일 시간이 필요해. count가 작게라도 나오면 정상 궤도
