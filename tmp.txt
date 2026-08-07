@@ -1,22 +1,7 @@
-wcsadmin@scp-wcspmq2:/data/monitoring$ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/login
-000
-wcsadmin@scp-wcspmq2:/data/monitoring$ cd -
-/data/monitoring/grafana/provisioning/datasources
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ ls
-datasource.yml  datasource.yml.bak
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ cat datasource.yml
-apiVersion: 1
-datasources:
-  - name: Prometheus
-    type: prometheus
-    access: proxy
-    url: http://prometheus:9090
-    isDefault: true
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ cat -A datasource.yml
-apiVersion: 1$
-datasources:$
-  - name: Prometheus$
-    type: prometheus$
-    access: proxy$
-    url: http://prometheus:9090$
-    isDefault: true$
+wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sudo docker logs $(docker ps -a --format '{{.Names}}' | grep grafana) --tail 50
+permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
+docker: 'docker logs' requires 1 argument
+
+Usage:  docker logs [OPTIONS] CONTAINER
+
+Run 'docker logs --help' for more information
