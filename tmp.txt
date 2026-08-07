@@ -1,5 +1,21 @@
-sudo docker rm -f grafana
-sudo docker run -d --name grafana --restart unless-stopped \
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker compose up -d --force-recreate grafana
+unknown shorthand flag: 'd' in -d
+
+Usage:  docker [OPTIONS] COMMAND [ARG...]
+
+Run 'docker --help' for more information
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker compose version
+docker: unknown command: docker compose
+
+Run 'docker --help' for more information
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker-compose version
+docker-compose version 1.29.2, build unknown
+docker-py version: 5.0.3
+CPython version: 3.12.3
+OpenSSL version: OpenSSL 3.0.13 30 Jan 2024
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker rm -f grafana
+grafana
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker run -d --name grafana --restart unless-stopped \
   -p 3000:3000 \
   -v grafana_data:/var/lib/grafana \
   -v /data/monitoring/grafana/provisioning:/etc/grafana/provisioning \
@@ -8,3 +24,11 @@ sudo docker run -d --name grafana --restart unless-stopped \
   -e GF_INSTALL_PLUGINS= \
   -e GF_PLUGINS_PREINSTALL_DISABLED=true \
   grafana/grafana:13.1.0
+f43da5fab53616cf185740d6c3f3cf9b56963deb0126d68bc9440d6348017081
+wcsadmin@scp-wcspmq2:/data/monitoring$ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/login
+000
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker ps -a
+CONTAINER ID   IMAGE                       COMMAND                  CREATED          STATUS                          PORTS                    NAMES
+f43da5fab536   grafana/grafana:13.1.0      "/run.sh"                40 seconds ago   Restarting (1) 11 seconds ago                            grafana
+9de9073f3374   prom/prometheus:v3.12.0     "/bin/prometheus --c…"   3 weeks ago      Exited (0) 3 minutes ago                                 9de9073f3374_prometheus
+e97ac4fc0bae   prom/node-exporter:v1.9.1   "/bin/node_exporter …"   3 weeks ago      Up 3 weeks                      0.0.0.0:9100->9100/tcp   node-exporter
