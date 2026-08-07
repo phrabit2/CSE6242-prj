@@ -1,34 +1,59 @@
-wcsadmin@scp-wcspmq2:/data/monitoring$ cd /data/monitoring/grafana/provisioning/datasources/
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ ls
-datasource.yml  datasource.yml.bak
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sudo mkdir -p /tmp/ds_backup
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sudo mv *.yml *.yaml /tmp/ds_backup/ 2>/dev/null
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ ls
-datasource.yml.bak
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ cat datasource.yml.bak
-apiVersion: 1
-datasources:
-  - name: Prometheus
-    type: prometheus
-    access: proxy
-    url: http://prometheus:9090
-    isDefault: true
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sudo mv datasource.yml.bak datasource.yml
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ ls
-datasource.yml
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ cat -A datasource.yml
-apiVersion: 1$
-datasources:$
-  - name: Prometheus$
-    type: prometheus$
-    access: proxy$
-    url: http://prometheus:9090$
-    isDefault: true$
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sudo docker restart grafana
-grafana
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sleep 5
-suwcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ sudo docker logs grafana --tail 15 | grep iE 'provision|control characters|HTTP Server Listen'
-grep: provision|control characters|HTTP Server Listen: No such file or directory
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/login                                                                  000
-wcsadmin@scp-wcspmq2:/data/monitoring/grafana/provisioning/datasources$ ls
-datasource.yml
+두 가지가 얽혔습니다. 하나는 명령 오타, 하나는 grafana 상태 확인.
+
+먼저 그 grep은 -iE에서 하이픈이 빠져서(grep iE '...') iE를 파일명으로 해석한 오류입니다. 결과를 못 본 것뿐이에요. 그리고 datasource.yml은 이제 확실히 깨끗하고 디렉토리에 그거 하나만 있으니, provisioning 원인은 제거됐습니다.
+
+문제는 docker restart grafana로는 부족할 수 있다는 겁니다. grafana가 이미 재시작 루프(Failed 상태)에 빠져 있으면 restart가 깨끗하게 안 먹을 때가 있어요. 컨테이너를 아예 지우고 새로 만드는 게 확실합니다. 그 전에 현재 상태부터 정확히 봅니다.
+
+1) 지금 grafana 상태와 진짜 로그 확인 (오타 수정)
+bash
+sudo docker ps -a | grep grafana
+sudo docker logs grafana --tail 25 | grep -iE 'provision|control|Listen|error'
+
+STATUS가 아직 Restarting인지, 로그에 여전히 control characters가 있는지 봅니다.
+
+로그에 아직 control characters가 있으면 → 컨테이너가 옛 상태를 물고 있는 것 → 아래 2번(재생성)
+control characters는 사라졌는데 다른 에러면 → 그 에러가 새 원인
+2) 컨테이너 완전 재생성 (restart 말고)
+
+루프 상태를 확실히 털어내려면 지우고 새로 만듭니다:
+
+bash
+sudo docker rm -f grafana
+
+sudo docker run -d --name grafana --restart unless-stopped \
+  -p 3000:3000 \
+  -v grafana_data:/var/lib/grafana \
+  -v /data/monitoring/grafana/provisioning:/etc/grafana/provisioning \
+  -e GF_SECURITY_ADMIN_USER=admin \
+  -e GF_SECURITY_ADMIN_PASSWORD=changeme \
+  -e GF_INSTALL_PLUGINS= \
+  -e GF_PLUGINS_PREINSTALL_DISABLED=true \
+  grafana/grafana:13.1.0
+
+기동은 몇 초 걸리니 넉넉히 기다렸다 확인:
+
+bash
+sleep 15
+sudo docker ps -a | grep grafana
+sudo docker logs grafana --tail 25 | grep -iE 'provision|control|Listen|error'
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/login
+확인 포인트
+docker ps -a에서 grafana가 Up(Restarting 아님)
+로그에 control characters 없음, 대신 HTTP Server Listen(address=[::]:3000) 있음
+curl 302
+
+이 세 개가 맞으면 드디어 끝입니다.
+
+그래도 control characters가 또 뜨면
+
+그땐 grafana가 읽는 파일이 정말 이 파일인지 컨테이너 안에서 직접 확인합니다:
+
+bash
+sudo docker exec grafana cat -A /etc/grafana/provisioning/datasources/datasource.yml
+
+여기서 제어문자가 보이면 마운트가 딴 파일을 가리키는 것이고, 깨끗한데도 에러면 provisioning 디렉토리 다른 하위 폴더(dashboards 등)에 깨진 yml이 있는 거라 거기까지 확인해야 합니다:
+
+bash
+find /data/monitoring/grafana/provisioning -name "*.yml" -o -name "*.yaml" | xargs -I{} sh -c 'echo "=== {} ==="; cat -A "{}"'
+
+우선 2번(재생성) 후 docker ps -a | grep grafana와 curl 결과를 주세요. restart로는 루프가 안 풀렸을 가능성이 커서, 지우고 새로 띄우는 게 이번 핵심입니다. 재생성 후에도 000이면 위 "그래도" 명령으로 grafana가 실제 읽는 파일을 직접 까보겠습니다.
