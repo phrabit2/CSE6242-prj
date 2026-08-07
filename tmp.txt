@@ -1,34 +1,31 @@
-wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker compose up -d --force-recreate grafana
-unknown shorthand flag: 'd' in -d
-
-Usage:  docker [OPTIONS] COMMAND [ARG...]
-
-Run 'docker --help' for more information
-wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker compose version
-docker: unknown command: docker compose
-
-Run 'docker --help' for more information
-wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker-compose version
-docker-compose version 1.29.2, build unknown
-docker-py version: 5.0.3
-CPython version: 3.12.3
-OpenSSL version: OpenSSL 3.0.13 30 Jan 2024
-wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker rm -f grafana
-grafana
-wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker run -d --name grafana --restart unless-stopped \
-  -p 3000:3000 \
-  -v grafana_data:/var/lib/grafana \
-  -v /data/monitoring/grafana/provisioning:/etc/grafana/provisioning \
-  -e GF_SECURITY_ADMIN_USER=admin \
-  -e GF_SECURITY_ADMIN_PASSWORD=changeme \
-  -e GF_INSTALL_PLUGINS= \
-  -e GF_PLUGINS_PREINSTALL_DISABLED=true \
-  grafana/grafana:13.1.0
-f43da5fab53616cf185740d6c3f3cf9b56963deb0126d68bc9440d6348017081
-wcsadmin@scp-wcspmq2:/data/monitoring$ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/login
-000
-wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker ps -a
-CONTAINER ID   IMAGE                       COMMAND                  CREATED          STATUS                          PORTS                    NAMES
-f43da5fab536   grafana/grafana:13.1.0      "/run.sh"                40 seconds ago   Restarting (1) 11 seconds ago                            grafana
-9de9073f3374   prom/prometheus:v3.12.0     "/bin/prometheus --c…"   3 weeks ago      Exited (0) 3 minutes ago                                 9de9073f3374_prometheus
-e97ac4fc0bae   prom/node-exporter:v1.9.1   "/bin/node_exporter …"   3 weeks ago      Up 3 weeks                      0.0.0.0:9100->9100/tcp   node-exporter
+wcsadmin@scp-wcspmq2:/data/monitoring$ sudo docker logs grafana --tail 30
+t=2026-08-07T01:44:08.762043131Z level=info caller=logger.go:214 time=2026-08-07T01:44:08.762032119Z msg="job driver stopped" logger=concurrent-job-driver num_drivers=3 driver_id=1
+logger=grafana-apiserver t=2026-08-07T01:44:08.762073744Z level=error msg="Timeout or abort while handling" logger=UnhandledError method=GET URI= auditID=53f90b41-f684-4a83-bc70-fecef6e1dec5
+t=2026-08-07T01:44:08.762080159Z level=info caller=logger.go:214 time=2026-08-07T01:44:08.762069653Z msg="all job drivers gracefully stopped" logger=concurrent-job-driver num_drivers=3
+logger=grafana-apiserver t=2026-08-07T01:44:08.762095832Z level=error msg="Post-timeout activity" logger=UnhandledError timeElapsed=1.477µs method=GET path=/apis/advisor.grafana.app/v0alpha1/namespaces/default/checks result=<nil>
+logger=grafana-apiserver t=2026-08-07T01:44:08.762099593Z level=error msg="Unhandled Error" err="apiserver was unable to write a JSON response: http: Handler timeout" logger=UnhandledError
+logger=grafana-apiserver t=2026-08-07T01:44:08.76211698Z level=error msg="Timeout or abort while handling" logger=UnhandledError method=GET URI= auditID=77d30d25-7065-4d9a-9704-d67455c22131
+t=2026-08-07T01:44:08.76214914Z level=error caller=logger.go:234 time=2026-08-07T01:44:08.762128179Z msg="Error getting last check creation time" app=advisor.app runner=advisor.checkscheduler error="Get \"https://127.0.0.1:3000/apis/advisor.grafana.app/v0alpha1/namespaces/default/checks?limit=1000\": context canceled"
+logger=grafana-apiserver t=2026-08-07T01:44:08.762151741Z level=error msg="Post-timeout activity" logger=UnhandledError timeElapsed=2.986µs method=GET path=/apis/provisioning.grafana.app/v0alpha1/jobs result=<nil>
+logger=grafana-apiserver t=2026-08-07T01:44:08.762931093Z level=error msg="Unhandled Error" err="apiserver received an error that is not an metav1.Status: &errors.errorString{s:\"http: Handler timeout\"}: http: Handler timeout" logger=UnhandledError
+logger=grafana-apiserver t=2026-08-07T01:44:08.762997808Z level=error msg="Unhandled Error" err="apiserver received an error that is not an metav1.Status: &errors.errorString{s:\"http: Handler timeout\"}: http: Handler timeout" logger=UnhandledError
+logger=grafana-apiserver t=2026-08-07T01:44:08.763187213Z level=error msg="Unhandled Error" err="apiserver received an error that is not an metav1.Status: &errors.errorString{s:\"http: Handler timeout\"}: http: Handler timeout" logger=UnhandledError
+logger=grafana-apiserver t=2026-08-07T01:44:08.763201906Z level=error msg="Unhandled Error" err="apiserver was unable to write a fallback JSON response: http: Handler timeout" logger=UnhandledError
+logger=grafana-apiserver t=2026-08-07T01:44:08.764009498Z level=error msg="Unhandled Error" err="apiserver was unable to write a fallback JSON response: http: Handler timeout" logger=UnhandledError
+logger=grafana-apiserver t=2026-08-07T01:44:08.764059573Z level=error msg="Unhandled Error" err="apiserver was unable to write a fallback JSON response: http: Handler timeout" logger=UnhandledError
+logger=grafana-apiserver t=2026-08-07T01:44:08.764321083Z level=error msg="Post-timeout activity" logger=UnhandledError timeElapsed=2.353696ms method=GET path=/apis/provisioning.grafana.app/v0alpha1/jobs result=<nil>
+logger=grafana-apiserver t=2026-08-07T01:44:08.764351354Z level=error msg="Post-timeout activity" logger=UnhandledError timeElapsed=2.533826ms method=GET path=/apis/provisioning.grafana.app/v0alpha1/jobs result=<nil>
+logger=grafana-apiserver t=2026-08-07T01:44:08.765147431Z level=error msg="Post-timeout activity" logger=UnhandledError timeElapsed=3.034508ms method=GET path=/apis/advisor.grafana.app/v0alpha1/namespaces/default/checktypes/datasource result=<nil>
+logger=resource-server t=2026-08-07T01:44:08.766198679Z level=error msg="server error: server.read" group=advisor.grafana.app resource=checktypes namespace=default name=datasource code=500 error="transactional operation: resource_read.sql: Query with 4 input arguments and 8 output destination arguments: context canceled; query: SELECT \"guid\", \"namespace\", \"group\", \"resource\", \"name\", \"folder\", \"resource_version\", \"value\"\n    FROM \"resource\"\n    WHERE 1 = 1 AND \"namespace\" = ? AND \"group\" = ? AND \"resource\" = ? AND \"name\" = ?;; rollback: sql: transaction has already been committed or rolled back"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766567529Z level=info msg="module stopped" module=*sqlstore.SQLStore
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766612445Z level=error msg="Failed to stop all modules" err="invalid service state: Failed, expected: Terminated, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766624948Z level=error msg="Module failed" module=provisioning err="starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766634547Z level=error msg="Failed to stop all modules" err="invalid service state: Failed, expected: Terminated, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766641918Z level=error msg="Module failed" module=*api.HTTPServer err="failed to start *api.HTTPServer, because it depends on module provisioning, which has failed: invalid service state: Failed, expected: Running, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766652934Z level=error msg="Failed to stop all modules" err="invalid service state: Failed, expected: Terminated, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766658553Z level=error msg="Module failed" module=*statscollector.Service err="failed to start *statscollector.Service, because it depends on module provisioning, which has failed: invalid service state: Failed, expected: Running, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766668376Z level=error msg="Failed to stop all modules" err="invalid service state: Failed, expected: Terminated, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.76667349Z level=error msg="Module failed" module=*appregistry.Service err="failed to start *appregistry.Service, because it depends on module provisioning, which has failed: invalid service state: Failed, expected: Running, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+logger=backgroundsvcs.managerAdapter t=2026-08-07T01:44:08.766679244Z level=error msg="Failed to stop all modules" err="invalid service state: Failed, expected: Terminated, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed"
+Error: ✗ invalid service state: Failed, expected: Terminated, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed
+invalid service state: Failed, expected: Terminated, failure: starting module provisioning: invalid service state: Failed, expected: Running, failure: Datasource provisioning error: yaml: control characters are not allowed
