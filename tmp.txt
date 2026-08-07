@@ -1,29 +1,33 @@
-운영에서 할 일
 
-1. 71번에서 현재 값 확인:
+# 백업 먼저
+sudo cp /app/pinpoint-agent-wcs/pinpoint-root.config /home/wcsadmin/pinpoint-root.config.bak
 
-bash
-grep -rn 'span.collected.uri.type' /app/pinpoint-agent-wcs/pinpoint-root.config /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
-
-AUTO이거나 아예 없으면 그게 원인이야. 어느 파일에 있는지도 확인 — 운영은 release 프로파일로 도니까(pinpoint.profiler.profiles.active=release), profiles/release/pinpoint.config에 있는 값이 실제 적용돼. root config만 고치면 profile 값에 덮여서 안 먹을 수 있어.
-
-2. RAW로 변경 (실제 적용되는 release profile 파일을):
-
-bash
-sudo sed -i 's/^profiler.span.collected.uri.type=.*/profiler.span.collected.uri.type=RAW/' \
-  /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
+# 377번 줄 AUTO → RAW
+sudo sed -i 's/^profiler.span.collected.uri.type=AUTO/profiler.span.collected.uri.type=RAW/' \
+  /app/pinpoint-agent-wcs/pinpoint-root.config
 
 # 확인
-grep -n 'span.collected.uri.type' /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
+grep -rn 'span.collected.uri.type' /app/pinpoint-agent-wcs/pinpoint-root.config
 
-옵션이 주석 처리(#)돼 있거나 아예 없으면 sed가 안 먹으니, 그 경우 vi로 직접 추가하거나 append:
+RAW로 바뀌면 돼.
+
+BOTH 옵션 확인 (재기동 전에)
+
+바꾸기 전에 그 옵션 주석을 보고 BOTH 유효값이 있는지 확인해줘. 있으면 통계 안 깨지는 절충안이라 그게 더 나아:
 
 bash
-echo 'profiler.span.collected.uri.type=RAW' | sudo tee -a /app/pinpoint-agent-wcs/profiles/release/pinpoint.config
+grep -B5 'span.collected.uri.type' /app/pinpoint-agent-wcs/pinpoint-root.config
 
-(단 중복 라인이 생기면 마지막 값이 이기니, 기존 라인이 있으면 sed로 고치는 게 깔끔해)
+주석에 RAW / TEMPLATE / AUTO만 있으면 → RAW로.
+BOTH도 있으면 → RAW 대신 BOTH로 (span엔 실제 URL, URI Stat 통계는 template으로 묶임 = 트레이드오프 없음). 방금 Pinot URI Stat 살린 거 생각하면 BOTH가 있으면 그게 훨씬 나아.
 
-3. ⚠️ 앱 재기동 필요 (운영) — config는 JVM 기동 시 읽히니 wcs 재시작해야 적용돼. prd라 협의 시점에:
-
+재기동 ⚠️ 운영
 bash
 sudo systemctl restart wcs
+sudo systemctl status wcs
+
+롤백:
+
+bash
+sudo cp /home/wcsadmin/pinpoint-root.config.bak /app/pinpoint-agent-wcs/pinpoint-root.config
+sudo systemctl daemon-reload && sudo systemctl restart wcs
