@@ -1,16 +1,6 @@
-해결 — 네트워크를 명시해서 직접 실행
-
-pinot-init의 compose 정의에 의존하지 말고, collector가 붙어있는 그 네트워크에 직접 붙여서 테이블을 만들자. 이게 가장 확실해.
-
-먼저 그 네트워크 이름 확인:
-
-bash
-sudo docker inspect pinpoint-collector --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}'
-
-나온 네트워크명(아마 pinpoint-docker_pinpoint)으로, pinot-init이 하던 작업을 직접 실행:
-
-bash
-sudo docker run --rm \
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker inspect pinpoint-collector --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}'
+pinpoint-docker_pinpoint
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ sudo docker run --rm \
   --network pinpoint-docker_pinpoint \
   -v /data/pinpoint/pinot-schemas:/schemas:ro \
   apachepinot/pinot:1.0.0-11-amazoncorretto \
@@ -19,11 +9,36 @@ sudo docker run --rm \
     echo "=== AddTable: $t ===";
     /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile ${t}Schema.json -tableConfigFile ${t}Table.json -controllerHost pinot-controller -controllerPort 9000 -exec || true;
   done'
-
-⚠️ 위 --network 값은 첫 명령 결과로 정확히 바꿔줘. collector가 실제로 붙어있는 네트워크여야 pinot-controller 이름이 해석돼.
-
-실행하면 각 테이블마다 === AddTable: uriStat === 뒤에 성공/실패가 찍혀. 이번엔 같은 네트워크라 UnknownHostException 없이 붙을 거야.
-
-확인
-bash
-curl -s http://localhost:9000/tables
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-orc/pinot-orc-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-clp-log/pinot-clp-log-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-input-format/pinot-parquet/pinot-parquet-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-dropwizard/pinot-dropwizard-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-metrics/pinot-yammer/pinot-yammer-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-stream-ingestion/pinot-pulsar/pinot-pulsar-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-file-system/pinot-s3/pinot-s3-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/pinot/plugins/pinot-environment/pinot-azure/pinot-azure-1.0.0-shaded.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/opt/pinot/lib/pinot-all-1.0.0-jar-with-dependencies.jar) to method java.lang.Object.finalize()
+WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2026/08/07 04:53:08.564 ERROR [PinotAdministrator] [main] Exception caught:
+picocli.CommandLine$UnmatchedArgumentException: Unmatched arguments from index 0: 'bash', '-c', 'cd /tmp && cp /schemas/*.json . && sed -i "s/localhost:19092/pinpoint-kafka:9092/g" *.json &&
+  for t in uriStat tag double dataType exceptionTrace inspectorAgent inspectorApplication; do
+    echo "=== AddTable: $t ===";
+    /opt/pinot/bin/pinot-admin.sh AddTable -schemaFile ${t}Schema.json -tableConfigFile ${t}Table.json -controllerHost pinot-controller -controllerPort 9000 -exec || true;
+  done'
+        at picocli.CommandLine$Interpreter.validateConstraints(CommandLine.java:13143) ~[pinot-all-1.0.0-jar-with-dependencies.jar:1.0.0-b6bdf6c9686b286a149d2d1aea4a385ee98f3e79]
+        at picocli.CommandLine$Interpreter.parse(CommandLine.java:13095) ~[pinot-all-1.0.0-jar-with-dependencies.jar:1.0.0-b6bdf6c9686b286a149d2d1aea4a385ee98f3e79]
+        at picocli.CommandLine$Interpreter.parse(CommandLine.java:13041) ~[pinot-all-1.0.0-jar-with-dependencies.jar:1.0.0-b6bdf6c9686b286a149d2d1aea4a385ee98f3e79]
+        at picocli.CommandLine$Interpreter.parse(CommandLine.java:12942) ~[pinot-all-1.0.0-jar-with-dependencies.jar:1.0.0-b6bdf6c9686b286a149d2d1aea4a385ee98f3e79]
+        at picocli.CommandLine.parseArgs(CommandLine.java:1478) ~[pinot-all-1.0.0-jar-with-dependencies.jar:1.0.0-b6bdf6c9686b286a149d2d1aea4a385ee98f3e79]
+        at org.apache.pinot.tools.admin.PinotAdministrator.execute(PinotAdministrator.java:159) [pinot-all-1.0.0-jar-with-dependencies.jar:1.0.0-b6bdf6c9686b286a149d2d1aea4a385ee98f3e79]
+        at org.apache.pinot.tools.admin.PinotAdministrator.main(PinotAdministrator.java:202) [pinot-all-1.0.0-jar-with-dependencies.jar:1.0.0-b6bdf6c9686b286a149d2d1aea4a385ee98f3e79]
+wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$ curl -s http://localhost:9000/tables
+{"tables":[]}wcsadmin@scp-wcspmq1:/data/pinpoint/pinpoint-docker$
