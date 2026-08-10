@@ -1,33 +1,44 @@
-
-# 백업 먼저
-sudo cp /app/pinpoint-agent-wcs/pinpoint-root.config /home/wcsadmin/pinpoint-root.config.bak
-
-# 377번 줄 AUTO → RAW
-sudo sed -i 's/^profiler.span.collected.uri.type=AUTO/profiler.span.collected.uri.type=RAW/' \
-  /app/pinpoint-agent-wcs/pinpoint-root.config
-
-# 확인
-grep -rn 'span.collected.uri.type' /app/pinpoint-agent-wcs/pinpoint-root.config
-
-RAW로 바뀌면 돼.
-
-BOTH 옵션 확인 (재기동 전에)
-
-바꾸기 전에 그 옵션 주석을 보고 BOTH 유효값이 있는지 확인해줘. 있으면 통계 안 깨지는 절충안이라 그게 더 나아:
-
-bash
-grep -B5 'span.collected.uri.type' /app/pinpoint-agent-wcs/pinpoint-root.config
-
-주석에 RAW / TEMPLATE / AUTO만 있으면 → RAW로.
-BOTH도 있으면 → RAW 대신 BOTH로 (span엔 실제 URL, URI Stat 통계는 template으로 묶임 = 트레이드오프 없음). 방금 Pinot URI Stat 살린 거 생각하면 BOTH가 있으면 그게 훨씬 나아.
-
-재기동 ⚠️ 운영
-bash
-sudo systemctl restart wcs
-sudo systemctl status wcs
-
-롤백:
-
-bash
-sudo cp /home/wcsadmin/pinpoint-root.config.bak /app/pinpoint-agent-wcs/pinpoint-root.config
-sudo systemctl daemon-reload && sudo systemctl restart wcs
+curl -X POST "https://wave.sec.samsung.net/wcs/api/allocOrderService/allocDr" \
+  -H "Content-Type: application/json;charset=UTF-8" \
+  -H "Accept: application/json" \
+  -d '{
+  "MENU_ID" : "WCS440200",
+  "DS_SAVE" : [ {
+    "WH_ID" : "1340",
+    "OUTB_NO" : "0000000063",
+    "OUTB_DETL_NO" : 1,
+    "OUTB_TCD" : "010",
+    "OUTB_DETL_SCD" : "0",
+    "ALLOC_SCD" : "0",
+    "OWNER_ID" : "001",
+    "ITEM_ID" : "DV20CB8600BW",
+    "ITEM_NM" : "FCD,KOREA,KR,20",
+    "OUTB_ECT_QTY" : 8,
+    "ALLOC_QTY" : 0,
+    "PICK_QTY" : 0,
+    "OUTB_CMPT_QTY" : 0,
+    "OUTB_CANCL_QTY" : 0,
+    "SHIPTO_ID" : "NONE",
+    "SHIPTO_NM" : "",
+    "PRDT_LOT_NO" : "",
+    "PRDT_DATE" : "",
+    "VALID_DATE" : "",
+    "EXPIRY_DATE" : "",
+    "BEST_DATE" : "",
+    "MARK" : "",
+    "INB_NO" : "",
+    "INB_DATE" : "",
+    "LOT_ATTR_1" : "",
+    "LOT_ATTR_2" : "",
+    "LOT_ATTR_3" : "",
+    "LOT_ATTR_4" : "",
+    "LOT_ATTR_5" : "",
+    "SES_OWNER_ROLE" : "002,001",
+    "SES_WH_ID" : "1340",
+    "SES_USER_ID" : "changsub.sin",
+    "SES_WH_ROLE" : "1340,1750",
+    "SES_LANG" : "KO",
+    "SES_OWNER_ID" : null,
+    "SES_USERGROUP" : "ADM"
+  } ]
+}'
