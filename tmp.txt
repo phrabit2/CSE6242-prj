@@ -1,31 +1,14 @@
-wcsadmin@scp-wcsdchb1:/data/pinpoint$ sudo docker ps -a --format '{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}'
-583c00b81d4d    prometheus      prom/prometheus:v3.12.0 Up 4 days
-8352b5b12b0f    node-exporter   prom/node-exporter:v1.9.1       Up 5 days
-37ed261d77c5    nextcloud       nextcloud       Up 3 weeks
-3737162a2b74    collabora_online        collabora/code  Up 2 weeks
-616c4ec75c5c    pinpoint-docker_telegraf_1      telegraf:1.25.0 Up 6 weeks
-b6b73a205bd4    pinpoint-web    pinpointdocker/pinpoint-web:latest-metric       Up 6 weeks
-01c3627ec7dc    pinpoint-collector      pinpointdocker/pinpoint-collector:latest-metric Up 6 weeks
-d96ad851f242    pinpoint-docker_pinot-server-0_1        apachepinot/pinot:1.0.0-11-amazoncorretto       Up 6 weeks
-b80b5b831226    pinpoint-flink-taskmanager      pinpointdocker/pinpoint-flink:latest    Up 6 weeks
-f9cebcb8d9b0    pinpoint-docker_pinot-broker-0_1        apachepinot/pinot:1.0.0-11-amazoncorretto       Up 6 weeks
-c91e64d6188f    pinpoint-flink-jobmanager       pinpointdocker/pinpoint-flink:latest    Up 6 weeks
-7b81efac0730    pinpoint-hbase  pinpointdocker/pinpoint-hbase:latest    Up 6 weeks
-de689047901b    pinpoint-docker_pinot-controller_1      apachepinot/pinot:1.0.0-11-amazoncorretto       Up 6 weeks
-93302e563ab8    pinpoint-docker_redis_1 redis:7.0.14    Up 6 weeks
-dd5883668275    pinpoint-docker_zoo2_1  zookeeper:3.4.13        Up 6 weeks
-4495ab536200    pinpoint-docker_zoo1_1  zookeeper:3.4.13        Up 6 weeks
-de4c28cebae2    pinpoint-docker_zoo3_1  zookeeper:3.4.13        Up 6 weeks
-wcsadmin@scp-wcsdchb1:/data/pinpoint$ sudo docker logs pinpoint-collector --tail 30 2>&1
-^Cwcsadmin@scp-wcsdchb1:/data/pinpoint$ sudo docker logs pinpoint-collector --tail 30 2>&1 | grep -iE 'kafka|connection|broker|refused|unknown'
-^C
-wcsadmin@scp-wcsdchb1:/data/pinpoint$ df -h
-Filesystem      Size  Used Avail Use% Mounted on
-tmpfs           6.1G  2.6M  6.1G   1% /run
-/dev/vda1       100G   60G   40G  60% /
-tmpfs            31G     0   31G   0% /dev/shm
-tmpfs           5.0M     0  5.0M   0% /run/lock
-/dev/vda16      881M  170M  650M  21% /boot
-/dev/vda15      105M  6.2M   99M   6% /boot/efi
-tmpfs           6.1G   16K  6.1G   1% /run/user/1102
-/dev/vdb        590G  7.7G  552G   2% /data
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo vi /etc/docker/daemon.json
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo systemctl start docker
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ docker info | grep 'Docker Root Dir'
+ Docker Root Dir: /data/docker
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ cd /data/pinpoint/pinpoint-docker
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose up -d
+[+] up 6/6
+ ! Image p... failed to resolve reference "docker.io/pinpointdocker/pinpoint-quickstart:latest": failed to do request: Head "https://registry-1.docker.io/v2/pinpointdocker/pinpoint-quickstart/manifests/latest": dial tcp 3.212.101.7:443: i/o timeout 30.0sr/pinpoint-web:latest       Pulling                                                                                                                                                                          30.0s
+ ! Image p... Interrupted                                                                                                                                                                                                          30.0s
+ ! Image m... Interrupted                                                                                                                                                                                                          30.0s
+ ! Image p... Interrupted                                                                                                                                                                                                          30.0s
+ ✘ Image p... Error                                                                                                                                                                                                                30.0s
+ ! Image p... Interrupted                                                                                                                                                                                                          30.0s
+Error response from daemon: failed to resolve reference "docker.io/pinpointdocker/pinpoint-agent:latest": failed to do request: Head "https://registry-1.docker.io/v2/pinpointdocker/pinpoint-agent/manifests/latest": dial tcp 3.212.101.7:443: i/o timeout
