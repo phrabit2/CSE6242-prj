@@ -1,31 +1,9 @@
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose up -d --pull never --scale pinpoint-quickstart=0
-[+] Building 30.1s (3/3) FINISHED
- => [internal] load local bake definitions                                                                                                                                                                                         0.0s
- => => reading from stdin 619B                                                                                                                                                                                                     0.0s
- => [internal] load build definition from Dockerfile                                                                                                                                                                               0.0s
- => => transferring dockerfile: 406B                                                                                                                                                                                               0.0s
- => ERROR [internal] load metadata for docker.io/library/tomcat:8-jre8                                                                                                                                                            30.0s
-------
- > [internal] load metadata for docker.io/library/tomcat:8-jre8:
-------
-[+] up 0/1
- ⠙ Image pinpointdocker/pinpoint-quickstart Building                                                                                                                                                                               30.2s
-Dockerfile:1
+cd /data/pinpoint/pinpoint-docker
+sudo docker compose up -d --pull never \
+  pinpoint-hbase pinpoint-collector pinpoint-web \
+  pinot-controller pinot-broker-0 pinot-server-0 pinot-zoo \
+  zoo1 zoo2 zoo3 redis telegraf \
+  pinpoint-flink-jobmanager pinpoint-flink-taskmanager
 
---------------------
-
-   1 | >>> FROM tomcat:8-jre8
-
-   2 |
-
-   3 |     COPY /build/pinpoint-quickstart-testapp.war quickstart.war
-
---------------------
-
-failed to solve: DeadlineExceeded: tomcat:8-jre8: failed to resolve source metadata for docker.io/library/tomcat:8-jre8: failed to do request: Head "https://registry-1.docker.io/v2/library/tomcat/manifests/8-jre8": dial tcp 44.196.217.182:443: i/o timeout
-
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ grep -n 'quickstart' docker-compose.yml
-156:  pinpoint-quickstart:
-158:      context: ./pinpoint-quickstart/
-161:    container_name: "pinpoint-quickstart"
-162:    image: "pinpointdocker/pinpoint-quickstart"
+sudo docker compose ps
+sudo docker ps -a --format '{{.Names}}\t{{.Status}}'
