@@ -1,62 +1,6 @@
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compos
-> --scale pinpoint-quickstart=0
-WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it wil
-[+] Building 30.1s (3/3) FINISHED
- => [internal] load local bake definitions
- => => reading from stdin 619B
- => [internal] load build definition from Dockerfile
- => => transferring dockerfile: 406B
- => ERROR [internal] load metadata for docker.io/library/tomcat:8-jre8
-------
- > [internal] load metadata for docker.io/library/tomcat:8-jre8:
-------
-[+] up 0/1
- ⠙ Image pinpointdocker/pinpoint-quickstart Building
-Dockerfile:1
-
---------------------
-
-   1 | >>> FROM tomcat:8-jre8
-
-   2 |
-
-   3 |     COPY /build/pinpoint-quickstart-testapp.war quickstart.war
-
---------------------
-
-failed to solve: DeadlineExceeded: tomcat:8-jre8: failed to resolve source metadata for docker.io/library/tomcat22.112:443: i/o timeout
-
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ ls docker-compose*.yml
-docker-compose-metric.yml  docker-compose.yml
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ grep -nE '^  [a-zA-Z0-9_-]+:' docker-compose.yml
-2:  pinpoint-hbase:
-44:  pinpoint-mysql:
-71:  pinpoint-web:
-116:  pinpoint-collector:
-156:  pinpoint-quickstart:
-174:  pinpoint-batch:
-218:  pinpoint-agent:
-244:  zoo1:
-260:  zoo2:
-276:  zoo3:
-293:  jobmanager:
-309:  taskmanager:
-331:  redis:
-342:  mysql_data:
-345:  pinpoint:
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ grep -nE '^  [a-zA-Z0-9_-]+:' docker-compose-metric.yml 2>/dev/null
-4:  pinpoint-web:
-59:  pinpoint-collector:
-107:  pinpoint-kafka:
-123:  pinpoint-kafka-init:
-140:  pinot-controller:
-155:  pinot-broker-0:
-166:  pinot-server-0:
-179:  pinot-init:
-205:  pinot-zoo:
-216:  telegraf:
-231:  pinot-zoo-data:
-232:  pinot-zoo-datalog:
-233:  pinot-server-volume:
-234:  pinot-controller-volume:
-235:  pinot-kafka-volume:
+cd /data/pinpoint/pinpoint-docker
+sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d --pull never \
+  pinpoint-hbase pinpoint-mysql pinpoint-web pinpoint-collector pinpoint-batch \
+  zoo1 zoo2 zoo3 jobmanager taskmanager redis \
+  pinpoint-kafka pinpoint-kafka-init \
+  pinot-controller pinot-broker-0 pinot-server-0 pinot-init pinot-zoo telegraf
