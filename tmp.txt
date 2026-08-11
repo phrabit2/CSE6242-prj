@@ -1,4 +1,20 @@
-sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d --pull never \
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d --pull never \
   pinpoint-hbase pinpoint-web pinpoint-collector pinpoint-batch \
   zoo1 zoo2 zoo3 jobmanager taskmanager redis \
   pinpoint-kafka pinpoint-kafka-init
+WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+[+] up 2/3
+ ✘ Container pinpoint-docker-pinot-zoo-1 Error response from daemon: No such image: zookeeper:3.8.0-temurin 0.0s
+ ✘ Container pinpoint-mysql              Error response from daemon: No such image: mysql:8.0               0.0s
+ ⠋ Container pinpoint-flink-jobmanager   Creating                                                           0.0s
+Error response from daemon: No such image: mysql:8.0
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d --pull never \
+  pinpoint-hbase pinpoint-web pinpoint-collector pinpoint-batch \
+  zoo1 zoo2 zoo3 jobmanager taskmanager redis \
+  pinpoint-kafka pinpoint-kafka-init
+WARN[0000] /data/pinpoint/pinpoint-docker/docker-compose-metric.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+[+] up 1/3
+ ✘ Container pinpoint-docker-pinot-zoo-1 Error response from daemon: No such image: zookeeper:3.8.0-temurin 0.0s
+ ⠋ Container pinpoint-mysql              Creating                                                           0.0s
+ ⠋ Container pinpoint-flink-jobmanager   Creating                                                           0.0s
+Error response from daemon: No such image: zookeeper:3.8.0-temurin
