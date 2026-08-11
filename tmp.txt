@@ -1,27 +1,31 @@
-wcsadmin@scp-wcsdchb1:/var/lib$ df
-Filesystem     1K-blocks      Used Available Use% Mounted on
-tmpfs            6374904      2592   6372312   1% /run
-/dev/vda1      104539632 102774048   1749200  99% /
-tmpfs           31874516         0  31874516   0% /dev/shm
-tmpfs               5120         0      5120   0% /run/lock
-/dev/vda16        901520    173200    665192  21% /boot
-/dev/vda15        106832      6250    100582   6% /boot/efi
-tmpfs            6374900        16   6374884   1% /run/user/1102
-/dev/vdb       618149024   8047112 578628248   2% /data
-wcsadmin@scp-wcsdchb1:/var/lib$ sudo sh -c 'du -h /var/lib/docker/containers/*/*-json.log 2>/dev/null | sort -rh | head -20'
-[sudo] password for wcsadmin:
-41G     /var/lib/docker/containers/01c3627ec7dcc04625a52022b186a002ca15bf21dd1ad77ac4e11e9f1747f6cf/01c3627ec7dcc04625a52022b186a002ca15bf21dd1ad77ac4e11e9f1747f6cf-json.log
-6.2G    /var/lib/docker/containers/de689047901b2f576cd8568f7969599f905668eaad8a0f5ff901d1da88105ca6/de689047901b2f576cd8568f7969599f905668eaad8a0f5ff901d1da88105ca6-json.log
-4.2G    /var/lib/docker/containers/f9cebcb8d9b09e170d788ab91c9f7d5bfefd235f3eaf2b9d85cf1f1debd44f57/f9cebcb8d9b09e170d788ab91c9f7d5bfefd235f3eaf2b9d85cf1f1debd44f57-json.log
-2.2G    /var/lib/docker/containers/d96ad851f242e7ab3120361760b62441c96a28dcd8b6e785e02275ad6e4a7976/d96ad851f242e7ab3120361760b62441c96a28dcd8b6e785e02275ad6e4a7976-json.log
-419M    /var/lib/docker/containers/b6b73a205bd4e58f1e0e5a02fed4b5d8dedbc3a0fde43f426d3bd8f85442906d/b6b73a205bd4e58f1e0e5a02fed4b5d8dedbc3a0fde43f426d3bd8f85442906d-json.log
-223M    /var/lib/docker/containers/4495ab53620053ee3a372d04953d1a6ea31b7021195e111ce2b2163f42def37d/4495ab53620053ee3a372d04953d1a6ea31b7021195e111ce2b2163f42def37d-json.log
-135M    /var/lib/docker/containers/616c4ec75c5c9e3c9cf6d74a4acef3013547a3b8174a4a785878bacad37e1927/616c4ec75c5c9e3c9cf6d74a4acef3013547a3b8174a4a785878bacad37e1927-json.log
-91M     /var/lib/docker/containers/3737162a2b746b3b94586ac9041f9d1706cf7d2c1b42217b4867a8dca6c4c09a/3737162a2b746b3b94586ac9041f9d1706cf7d2c1b42217b4867a8dca6c4c09a-json.log
-52M     /var/lib/docker/containers/de4c28cebae299c356c5ecdc8505732ed61d9b4a102878e4177228dd2194d164/de4c28cebae299c356c5ecdc8505732ed61d9b4a102878e4177228dd2194d164-json.log
-33M     /var/lib/docker/containers/37ed261d77c50d2d74fd6f29af0d8d56920803c633ddc6b035db1576a6e943f5/37ed261d77c50d2d74fd6f29af0d8d56920803c633ddc6b035db1576a6e943f5-json.log
-7.2M    /var/lib/docker/containers/93302e563ab8140f43ac596c23716b3310710950221ec7ea7c25bed1576d8dc6/93302e563ab8140f43ac596c23716b3310710950221ec7ea7c25bed1576d8dc6-json.log
-236K    /var/lib/docker/containers/583c00b81d4d0d0fd4174527e8f7b03de83e6a4e20e4a4134dfb8246401fdcdb/583c00b81d4d0d0fd4174527e8f7b03de83e6a4e20e4a4134dfb8246401fdcdb-json.log
-68K     /var/lib/docker/containers/b80b5b8312268a28f35be85486ecdb0fd90d282ed47faaa2fafa22f6f30c489a/b80b5b8312268a28f35be85486ecdb0fd90d282ed47faaa2fafa22f6f30c489a-json.log
-56K     /var/lib/docker/containers/c91e64d6188f08f2315867169ac749087b38034052ca8358a8648d0d957c535c/c91e64d6188f08f2315867169ac749087b38034052ca8358a8648d0d957c535c-json.log
-20K     /var/lib/docker/containers/dd588366827513ec4ff77c46f4af36937a42ff93260881bb100702fc182c21c4/dd588366827513ec4ff77c46f4af36937a42ff93260881bb10
+wcsadmin@scp-wcsdchb1:/data/pinpoint$ sudo docker ps -a --format '{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}'
+583c00b81d4d    prometheus      prom/prometheus:v3.12.0 Up 4 days
+8352b5b12b0f    node-exporter   prom/node-exporter:v1.9.1       Up 5 days
+37ed261d77c5    nextcloud       nextcloud       Up 3 weeks
+3737162a2b74    collabora_online        collabora/code  Up 2 weeks
+616c4ec75c5c    pinpoint-docker_telegraf_1      telegraf:1.25.0 Up 6 weeks
+b6b73a205bd4    pinpoint-web    pinpointdocker/pinpoint-web:latest-metric       Up 6 weeks
+01c3627ec7dc    pinpoint-collector      pinpointdocker/pinpoint-collector:latest-metric Up 6 weeks
+d96ad851f242    pinpoint-docker_pinot-server-0_1        apachepinot/pinot:1.0.0-11-amazoncorretto       Up 6 weeks
+b80b5b831226    pinpoint-flink-taskmanager      pinpointdocker/pinpoint-flink:latest    Up 6 weeks
+f9cebcb8d9b0    pinpoint-docker_pinot-broker-0_1        apachepinot/pinot:1.0.0-11-amazoncorretto       Up 6 weeks
+c91e64d6188f    pinpoint-flink-jobmanager       pinpointdocker/pinpoint-flink:latest    Up 6 weeks
+7b81efac0730    pinpoint-hbase  pinpointdocker/pinpoint-hbase:latest    Up 6 weeks
+de689047901b    pinpoint-docker_pinot-controller_1      apachepinot/pinot:1.0.0-11-amazoncorretto       Up 6 weeks
+93302e563ab8    pinpoint-docker_redis_1 redis:7.0.14    Up 6 weeks
+dd5883668275    pinpoint-docker_zoo2_1  zookeeper:3.4.13        Up 6 weeks
+4495ab536200    pinpoint-docker_zoo1_1  zookeeper:3.4.13        Up 6 weeks
+de4c28cebae2    pinpoint-docker_zoo3_1  zookeeper:3.4.13        Up 6 weeks
+wcsadmin@scp-wcsdchb1:/data/pinpoint$ sudo docker logs pinpoint-collector --tail 30 2>&1
+^Cwcsadmin@scp-wcsdchb1:/data/pinpoint$ sudo docker logs pinpoint-collector --tail 30 2>&1 | grep -iE 'kafka|connection|broker|refused|unknown'
+^C
+wcsadmin@scp-wcsdchb1:/data/pinpoint$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           6.1G  2.6M  6.1G   1% /run
+/dev/vda1       100G   60G   40G  60% /
+tmpfs            31G     0   31G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda16      881M  170M  650M  21% /boot
+/dev/vda15      105M  6.2M   99M   6% /boot/efi
+tmpfs           6.1G   16K  6.1G   1% /run/user/1102
+/dev/vdb        590G  7.7G  552G   2% /data
