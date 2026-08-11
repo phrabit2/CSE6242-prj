@@ -1,7 +1,37 @@
-sudo docker compose -f docker-compose.yml -f docker-compose-metric.yml up -d --pull never --no-deps \
-  pinpoint-hbase pinpoint-web pinpoint-collector pinpoint-batch \
-  zoo1 zoo2 zoo3 jobmanager taskmanager redis \
-  pinpoint-kafka pinpoint-kafka-init
-
-sudo docker ps --format '{{.Names}}\t{{.Status}}'
-sudo docker logs pinpoint-collector --tail 20 2>&1 | grep -iE 'kafka|error|connection|broker'
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker ps -a
+CONTAINER ID   IMAGE                                             COMMAND                  CREATED          STATUS                        PORTS                                                                                                    NAMES
+88691c8e72af   pinpointdocker/pinpoint-flink:latest              "/docker-bin/docker-…"   8 seconds ago    Up 8 seconds                  6123/tcp, 0.0.0.0:6121-6122->6121-6122/tcp, 0.0.0.0:19994->19994/tcp, 8081/tcp                           pinpoint-flink-taskmanager
+e24782c0e4d2   pinpointdocker/pinpoint-web:latest-metric         "java -cp @/app/jib-…"   8 seconds ago    Up 8 seconds                  0.0.0.0:8080->8080/tcp, 0.0.0.0:9997->9997/tcp                                                           pinpoint-web
+ecdfa0fafa98   pinpointdocker/pinpoint-flink:latest              "/docker-bin/docker-…"   8 seconds ago    Up 8 seconds                  6123/tcp, 0.0.0.0:8081->8081/tcp                                                                         pinpoint-flink-jobmanager
+eba82e2b342c   pinpointdocker/pinpoint-collector:latest-metric   "java -cp @/app/jib-…"   8 seconds ago    Up 8 seconds                  0.0.0.0:9991-9996->9991-9996/tcp, 0.0.0.0:9995-9996->9995-9996/udp, 15200/tcp                            pinpoint-collector
+2d574397e8b4   pinpointdocker/pinpoint-hbase:latest              "/bin/sh -c '/usr/lo…"   16 minutes ago   Up 8 seconds                  0.0.0.0:16010->16010/tcp, 0.0.0.0:16030->16030/tcp, 0.0.0.0:60000->60000/tcp, 0.0.0.0:60020->60020/tcp   pinpoint-hbase
+99e11965f641   zookeeper:3.4.13                                  "/docker-entrypoint.…"   16 minutes ago   Up 8 seconds                  2888/tcp, 3888/tcp, 0.0.0.0:32769->2181/tcp                                                              pinpoint-docker-zoo2-1
+b20ce681fc72   redis:7.0.14                                      "docker-entrypoint.s…"   16 minutes ago   Up 8 seconds                  0.0.0.0:6380->6379/tcp                                                                                   pinpoint-docker-redis-1
+e225d082063d   zookeeper:3.4.13                                  "/docker-entrypoint.…"   16 minutes ago   Up 8 seconds                  2888/tcp, 3888/tcp, 0.0.0.0:32770->2181/tcp                                                              pinpoint-docker-zoo3-1
+19a1b189b6d6   zookeeper:3.4.13                                  "/docker-entrypoint.…"   16 minutes ago   Up 8 seconds                  2888/tcp, 3888/tcp, 0.0.0.0:32768->2181/tcp                                                              pinpoint-docker-zoo1-1
+583c00b81d4d   prom/prometheus:v3.12.0                           "/bin/prometheus --c…"   5 days ago       Up 29 minutes                 0.0.0.0:9090->9090/tcp                                                                                   prometheus
+8352b5b12b0f   prom/node-exporter:v1.9.1                         "/bin/node_exporter …"   5 days ago       Up 29 minutes                 0.0.0.0:9100->9100/tcp                                                                                   node-exporter
+37ed261d77c5   nextcloud                                         "/entrypoint.sh apac…"   6 weeks ago      Up 29 minutes                 0.0.0.0:9970->80/tcp                                                                                     nextcloud
+3737162a2b74   collabora/code                                    "/start-collabora-on…"   6 weeks ago      Up 29 minutes                 0.0.0.0:9980->9980/tcp                                                                                   collabora_online
+616c4ec75c5c   telegraf:1.25.0                                   "sh -c ' cp /schemas…"   6 weeks ago      Exited (137) 32 minutes ago                                                                                                            pinpoint-docker_telegraf_1
+d96ad851f242   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   6 weeks ago      Up 24 seconds                 8096-8099/tcp, 9000/tcp                                                                                  pinpoint-docker_pinot-server-0_1
+f9cebcb8d9b0   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   6 weeks ago      Up 25 seconds                 8096-8099/tcp, 9000/tcp                                                                                  pinpoint-docker_pinot-broker-0_1
+de689047901b   apachepinot/pinot:1.0.0-11-amazoncorretto         "./bin/pinot-admin.s…"   6 weeks ago      Up 24 seconds                 8096-8099/tcp, 0.0.0.0:9000->9000/tcp                                                                    pinpoint-docker_pinot-controller_1
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker ps --format '{{.Names}}\t{{.Status}}'
+pinpoint-flink-taskmanager      Up 20 seconds
+pinpoint-web    Up 20 seconds
+pinpoint-flink-jobmanager       Up 20 seconds
+pinpoint-collector      Up 20 seconds
+pinpoint-hbase  Up 20 seconds
+pinpoint-docker-zoo2-1  Up 20 seconds
+pinpoint-docker-redis-1 Up 20 seconds
+pinpoint-docker-zoo3-1  Up 20 seconds
+pinpoint-docker-zoo1-1  Up 20 seconds
+prometheus      Up 29 minutes
+node-exporter   Up 29 minutes
+nextcloud       Up 29 minutes
+collabora_online        Up 29 minutes
+pinpoint-docker_pinot-server-0_1        Up 37 seconds
+pinpoint-docker_pinot-broker-0_1        Up 37 seconds
+pinpoint-docker_pinot-controller_1      Up 37 seconds
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker logs pinpoint-collector --tail 20 2>&1 | grep -iE 'kafka|error|connection|broker'
