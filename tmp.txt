@@ -1,44 +1,27 @@
-curl -X POST "https://wave.sec.samsung.net/wcs/api/allocOrderService/allocDr" \
-  -H "Content-Type: application/json;charset=UTF-8" \
-  -H "Accept: application/json" \
-  -d '{
-  "MENU_ID" : "WCS440200",
-  "DS_SAVE" : [ {
-    "WH_ID" : "1340",
-    "OUTB_NO" : "0000000063",
-    "OUTB_DETL_NO" : 1,
-    "OUTB_TCD" : "010",
-    "OUTB_DETL_SCD" : "0",
-    "ALLOC_SCD" : "0",
-    "OWNER_ID" : "001",
-    "ITEM_ID" : "DV20CB8600BW",
-    "ITEM_NM" : "FCD,KOREA,KR,20",
-    "OUTB_ECT_QTY" : 8,
-    "ALLOC_QTY" : 0,
-    "PICK_QTY" : 0,
-    "OUTB_CMPT_QTY" : 0,
-    "OUTB_CANCL_QTY" : 0,
-    "SHIPTO_ID" : "NONE",
-    "SHIPTO_NM" : "",
-    "PRDT_LOT_NO" : "",
-    "PRDT_DATE" : "",
-    "VALID_DATE" : "",
-    "EXPIRY_DATE" : "",
-    "BEST_DATE" : "",
-    "MARK" : "",
-    "INB_NO" : "",
-    "INB_DATE" : "",
-    "LOT_ATTR_1" : "",
-    "LOT_ATTR_2" : "",
-    "LOT_ATTR_3" : "",
-    "LOT_ATTR_4" : "",
-    "LOT_ATTR_5" : "",
-    "SES_OWNER_ROLE" : "002,001",
-    "SES_WH_ID" : "1340",
-    "SES_USER_ID" : "changsub.sin",
-    "SES_WH_ROLE" : "1340,1750",
-    "SES_LANG" : "KO",
-    "SES_OWNER_ID" : null,
-    "SES_USERGROUP" : "ADM"
-  } ]
-}'
+wcsadmin@scp-wcsdchb1:/var/lib$ df
+Filesystem     1K-blocks      Used Available Use% Mounted on
+tmpfs            6374904      2592   6372312   1% /run
+/dev/vda1      104539632 102774048   1749200  99% /
+tmpfs           31874516         0  31874516   0% /dev/shm
+tmpfs               5120         0      5120   0% /run/lock
+/dev/vda16        901520    173200    665192  21% /boot
+/dev/vda15        106832      6250    100582   6% /boot/efi
+tmpfs            6374900        16   6374884   1% /run/user/1102
+/dev/vdb       618149024   8047112 578628248   2% /data
+wcsadmin@scp-wcsdchb1:/var/lib$ sudo sh -c 'du -h /var/lib/docker/containers/*/*-json.log 2>/dev/null | sort -rh | head -20'
+[sudo] password for wcsadmin:
+41G     /var/lib/docker/containers/01c3627ec7dcc04625a52022b186a002ca15bf21dd1ad77ac4e11e9f1747f6cf/01c3627ec7dcc04625a52022b186a002ca15bf21dd1ad77ac4e11e9f1747f6cf-json.log
+6.2G    /var/lib/docker/containers/de689047901b2f576cd8568f7969599f905668eaad8a0f5ff901d1da88105ca6/de689047901b2f576cd8568f7969599f905668eaad8a0f5ff901d1da88105ca6-json.log
+4.2G    /var/lib/docker/containers/f9cebcb8d9b09e170d788ab91c9f7d5bfefd235f3eaf2b9d85cf1f1debd44f57/f9cebcb8d9b09e170d788ab91c9f7d5bfefd235f3eaf2b9d85cf1f1debd44f57-json.log
+2.2G    /var/lib/docker/containers/d96ad851f242e7ab3120361760b62441c96a28dcd8b6e785e02275ad6e4a7976/d96ad851f242e7ab3120361760b62441c96a28dcd8b6e785e02275ad6e4a7976-json.log
+419M    /var/lib/docker/containers/b6b73a205bd4e58f1e0e5a02fed4b5d8dedbc3a0fde43f426d3bd8f85442906d/b6b73a205bd4e58f1e0e5a02fed4b5d8dedbc3a0fde43f426d3bd8f85442906d-json.log
+223M    /var/lib/docker/containers/4495ab53620053ee3a372d04953d1a6ea31b7021195e111ce2b2163f42def37d/4495ab53620053ee3a372d04953d1a6ea31b7021195e111ce2b2163f42def37d-json.log
+135M    /var/lib/docker/containers/616c4ec75c5c9e3c9cf6d74a4acef3013547a3b8174a4a785878bacad37e1927/616c4ec75c5c9e3c9cf6d74a4acef3013547a3b8174a4a785878bacad37e1927-json.log
+91M     /var/lib/docker/containers/3737162a2b746b3b94586ac9041f9d1706cf7d2c1b42217b4867a8dca6c4c09a/3737162a2b746b3b94586ac9041f9d1706cf7d2c1b42217b4867a8dca6c4c09a-json.log
+52M     /var/lib/docker/containers/de4c28cebae299c356c5ecdc8505732ed61d9b4a102878e4177228dd2194d164/de4c28cebae299c356c5ecdc8505732ed61d9b4a102878e4177228dd2194d164-json.log
+33M     /var/lib/docker/containers/37ed261d77c50d2d74fd6f29af0d8d56920803c633ddc6b035db1576a6e943f5/37ed261d77c50d2d74fd6f29af0d8d56920803c633ddc6b035db1576a6e943f5-json.log
+7.2M    /var/lib/docker/containers/93302e563ab8140f43ac596c23716b3310710950221ec7ea7c25bed1576d8dc6/93302e563ab8140f43ac596c23716b3310710950221ec7ea7c25bed1576d8dc6-json.log
+236K    /var/lib/docker/containers/583c00b81d4d0d0fd4174527e8f7b03de83e6a4e20e4a4134dfb8246401fdcdb/583c00b81d4d0d0fd4174527e8f7b03de83e6a4e20e4a4134dfb8246401fdcdb-json.log
+68K     /var/lib/docker/containers/b80b5b8312268a28f35be85486ecdb0fd90d282ed47faaa2fafa22f6f30c489a/b80b5b8312268a28f35be85486ecdb0fd90d282ed47faaa2fafa22f6f30c489a-json.log
+56K     /var/lib/docker/containers/c91e64d6188f08f2315867169ac749087b38034052ca8358a8648d0d957c535c/c91e64d6188f08f2315867169ac749087b38034052ca8358a8648d0d957c535c-json.log
+20K     /var/lib/docker/containers/dd588366827513ec4ff77c46f4af36937a42ff93260881bb100702fc182c21c4/dd588366827513ec4ff77c46f4af36937a42ff93260881bb10
