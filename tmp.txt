@@ -1,15 +1,5 @@
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker images | grep -iE 'pinpoint|pinot|kafka|zookeeper|telegraf|flink'
-WARNING: This output is designed for human readability. For machine-readable output, please use --format.
-apachepinot/pinot:1.0.0-11-amazoncorretto         4596038a4d22       3.31GB          1.2GB   U
-pinpointdocker/pinpoint-collector:latest-metric   b8fdbaa560ec        899MB          333MB
-pinpointdocker/pinpoint-flink:latest              a7684f001671        1.6GB          677MB
-pinpointdocker/pinpoint-hbase:latest              6bd1a44f01d9        918MB          360MB
-pinpointdocker/pinpoint-web:latest-metric         801665552256        894MB          331MB
-telegraf:1.25.0                                   04a396cd8674        538MB          136MB   U
-zookeeper:3.4.13                                  41cba58599fd        262MB         96.5MB
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ cd /data/pinpoint/pinpoint-docker
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose up -d --pull never
-[+] Building 30.3s (3/3) FINISHED
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose up -d --pull never --scale pinpoint-quickstart=0
+[+] Building 30.1s (3/3) FINISHED
  => [internal] load local bake definitions                                                                                                                                                                                         0.0s
  => => reading from stdin 619B                                                                                                                                                                                                     0.0s
  => [internal] load build definition from Dockerfile                                                                                                                                                                               0.0s
@@ -19,7 +9,7 @@ wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose up -d 
  > [internal] load metadata for docker.io/library/tomcat:8-jre8:
 ------
 [+] up 0/1
- ⠙ Image pinpointdocker/pinpoint-quickstart Building                                                                                                                                                                               30.4s
+ ⠙ Image pinpointdocker/pinpoint-quickstart Building                                                                                                                                                                               30.2s
 Dockerfile:1
 
 --------------------
@@ -32,5 +22,10 @@ Dockerfile:1
 
 --------------------
 
-failed to solve: DeadlineExceeded: tomcat:8-jre8: failed to resolve source metadata for docker.io/library/tomcat:8-jre8: failed to do request: Head "https://registry-1.docker.io/v2/library/tomcat/manifests/8-jre8": dial tcp 50.16.220.42:443: i/o timeout
+failed to solve: DeadlineExceeded: tomcat:8-jre8: failed to resolve source metadata for docker.io/library/tomcat:8-jre8: failed to do request: Head "https://registry-1.docker.io/v2/library/tomcat/manifests/8-jre8": dial tcp 44.196.217.182:443: i/o timeout
 
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ grep -n 'quickstart' docker-compose.yml
+156:  pinpoint-quickstart:
+158:      context: ./pinpoint-quickstart/
+161:    container_name: "pinpoint-quickstart"
+162:    image: "pinpointdocker/pinpoint-quickstart"
