@@ -1,14 +1,25 @@
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo vi /etc/docker/daemon.json
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo systemctl start docker
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ docker info | grep 'Docker Root Dir'
- Docker Root Dir: /data/docker
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ cd /data/pinpoint/pinpoint-docker
-wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose up -d
-[+] up 6/6
- ! Image p... failed to resolve reference "docker.io/pinpointdocker/pinpoint-quickstart:latest": failed to do request: Head "https://registry-1.docker.io/v2/pinpointdocker/pinpoint-quickstart/manifests/latest": dial tcp 3.212.101.7:443: i/o timeout 30.0sr/pinpoint-web:latest       Pulling                                                                                                                                                                          30.0s
- ! Image p... Interrupted                                                                                                                                                                                                          30.0s
- ! Image m... Interrupted                                                                                                                                                                                                          30.0s
- ! Image p... Interrupted                                                                                                                                                                                                          30.0s
- ✘ Image p... Error                                                                                                                                                                                                                30.0s
- ! Image p... Interrupted                                                                                                                                                                                                          30.0s
-Error response from daemon: failed to resolve reference "docker.io/pinpointdocker/pinpoint-agent:latest": failed to do request: Head "https://registry-1.docker.io/v2/pinpointdocker/pinpoint-agent/manifests/latest": dial tcp 3.212.101.7:443: i/o timeout
+wcsadmin@scp-wcsdchb1:/data/pinpoint/pinpoint-docker$ sudo docker compose up -d --pull never
+[+] Building 30.3s (3/3) FINISHED
+ => [internal] load local bake definitions                                                                                                                                                                                         0.0s
+ => => reading from stdin 619B                                                                                                                                                                                                     0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                                                                               0.0s
+ => => transferring dockerfile: 406B                                                                                                                                                                                               0.0s
+ => ERROR [internal] load metadata for docker.io/library/tomcat:8-jre8                                                                                                                                                            30.0s
+------
+ > [internal] load metadata for docker.io/library/tomcat:8-jre8:
+------
+[+] up 0/1
+ ⠙ Image pinpointdocker/pinpoint-quickstart Building                                                                                                                                                                               30.4s
+Dockerfile:1
+
+--------------------
+
+   1 | >>> FROM tomcat:8-jre8
+
+   2 |
+
+   3 |     COPY /build/pinpoint-quickstart-testapp.war quickstart.war
+
+--------------------
+
+failed to solve: DeadlineExceeded: tomcat:8-jre8: failed to resolve source metadata for docker.io/library/tomcat:8-jre8: failed to do request: Head "https://registry-1.docker.io/v2/library/tomcat/manifests/8-jre8": dial tcp 50.16.220.42:443: i/o timeout
