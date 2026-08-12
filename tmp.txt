@@ -1,25 +1,87 @@
-wcsadmin@scp-wcspwas1:~$ ss -tlnp | grep java
-wcsadmin@scp-wcspwas1:~$ netstat -tlnp | grep java
-(No info could be read for "-p": geteuid()=1102 but you should be root.)
-wcsadmin@scp-wcspwas1:~$ ss -tlnp
-State                 Recv-Q                Send-Q                                 Local Address:Port                                  Peer Address:Port                Process
-LISTEN                0                     2048                                   127.0.0.53%lo:53                                         0.0.0.0:*
-LISTEN                0                     2048                                      127.0.0.54:53                                         0.0.0.0:*
-LISTEN                0                     128                                        127.0.0.1:6011                                       0.0.0.0:*
-LISTEN                0                     128                                        127.0.0.1:6010                                       0.0.0.0:*
-LISTEN                0                     2048                                         0.0.0.0:10050                                      0.0.0.0:*
-LISTEN                0                     1000                                         0.0.0.0:8282                                       0.0.0.0:*
-LISTEN                0                     2048                                         0.0.0.0:22                                         0.0.0.0:*
-LISTEN                0                     100                                          0.0.0.0:8080                                       0.0.0.0:*
-LISTEN                0                     100                                          0.0.0.0:8081                                       0.0.0.0:*
-LISTEN                0                     1000                                         0.0.0.0:8082                                       0.0.0.0:*
-wcsadmin@scp-wcspwas1:~$ jps -l
-3161159 jdk.jcmd/sun.tools.jps.Jps
-3066167 /app/wcs/backend/current_wcs.jar
-3152793 /app/com/backend/current_route.jar
-3153950 /app/com/backend/current_com.jar
-wcsadmin@scp-wcspwas1:~$ ps -ef | grep java
-wcsadmin 3066167       1  0 Aug07 ?        00:31:35 /usr/bin/java -javaagent:/app/pinpoint-agent-wcs/pinpoint-bootstrap-3.1.0.jar -Dpinpoint.agentId=wcs-backend-71 -Dpinpoint.applicationName=wcs-backend -Dpinpoint.config=/app/pinpoint-agent-wcs/pinpoint-root.config -Dserver.port=8080 -jar /app/wcs/backend/current_wcs.jar --spring.profiles.active=prod
-wcsadmin 3152793       1  2 13:16 ?        00:00:33 /usr/bin/java -javaagent:/app/pinpoint-agent-route/pinpoint-bootstrap-3.1.0.jar -Dpinpoint.agentId=com-router-71 -Dpinpoint.applicationName=com-router -Dpinpoint.config=/app/pinpoint-agent-route/pinpoint-root.config -jar /app/com/backend/current_route.jar --spring.profiles.active=prod
-wcsadmin 3153950       1  3 13:17 ?        00:00:40 /usr/bin/java -javaagent:/app/pinpoint-agent-com/pinpoint-bootstrap-3.1.0.jar -Dpinpoint.agentId=com-backend-71 -Dpinpoint.applicationName=com-backend -Dpinpoint.config=/app/pinpoint-agent-com/pinpoint-root.config -Dserver.port=8081 -jar /app/com/backend/current_com.jar --spring.profiles.active=prod
-wcsadmin 3161267 3160523  0 13:35 pts/1    00:00:00 grep --color=auto java
+wcsadmin@scp-wcspmq2:/data/monitoring/prometheus$ cat prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'wcs backend'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['10.194.178.71:8080']
+        labels:
+          application: 'wcs'
+          instance_name: 'wcs-71'
+      - targets: ['10.194.178.72:8080']
+        labels:
+          application: 'wcs'
+          instance_name: 'wcs-72'
+
+  - job_name: 'com backend'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['10.194.178.71:8081']
+        labels:
+          application: 'com'
+          instance_name: 'com-71'
+      - targets: ['10.194.178.72:8081']
+        labels:
+          application: 'com'
+          instance_name: 'com-72'
+
+  - job_name: 'router'
+    metric_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['10.194.178.71:8082']
+        labels:
+          application: 'route'
+          instance_name: 'route-71'
+      - targets: ['10.194.178.72:8082']
+        labels:
+          application: 'route'
+          instance_name: 'route-72'
+
+  - job_name: 'web_nginx'
+    static_configs:
+      - targets: ['10.194.178.12:9100']
+        labels:
+          application: 'web'
+          instance_name: 'web-front-12'
+      - targets: ['10.194.178.13:9100']
+        labels:
+          application: 'web'
+          instance_name: 'web_front-13'
+wcsadmin@scp-wcspmq2:/data/monitoring/prometheus$ sudo docker logs --tail=30 prometheus
+time=2026-08-12T04:46:24.182Z level=INFO source=main.go:1275 msg="Stopping rule manager manager..."
+time=2026-08-12T04:46:24.182Z level=INFO source=manager.go:223 msg="Stopping rule manager..." component="rule manager"
+time=2026-08-12T04:46:24.182Z level=INFO source=manager.go:239 msg="Rule manager stopped" component="rule manager"
+time=2026-08-12T04:46:24.182Z level=INFO source=main.go:1299 msg="Stopping scrape manager..."
+time=2026-08-12T04:46:24.182Z level=INFO source=main.go:1242 msg="Scrape discovery manager stopped"
+time=2026-08-12T04:46:24.182Z level=INFO source=main.go:1256 msg="Notify discovery manager stopped"
+time=2026-08-12T04:46:24.182Z level=INFO source=main.go:1271 msg="Rule manager stopped"
+time=2026-08-12T04:46:33.580Z level=INFO source=main.go:1314 msg="Stopping tracing manager..."
+time=2026-08-12T04:46:33.580Z level=INFO source=main.go:1399 msg="Stopping reloaders..."
+time=2026-08-12T04:46:33.580Z level=INFO source=main.go:1291 msg="Scrape manager stopped"
+time=2026-08-12T04:46:33.580Z level=INFO source=main.go:1488 msg="Stopping storage..."
+time=2026-08-12T04:46:33.580Z level=INFO source=main.go:1391 msg="Reloaders stopped"
+time=2026-08-12T04:46:33.580Z level=INFO source=main.go:1310 msg="Tracing manager stopped"
+time=2026-08-12T04:46:33.588Z level=INFO source=main.go:1566 msg="Stopping web handler..."
+time=2026-08-12T04:46:33.588Z level=INFO source=main.go:1589 msg="Stopping notifier manager..."
+time=2026-08-12T04:46:33.588Z level=INFO source=manager.go:321 msg="Stopping notification manager..." component=notifier
+time=2026-08-12T04:46:33.588Z level=INFO source=main.go:1484 msg="TSDB stopped"
+time=2026-08-12T04:46:33.588Z level=INFO source=main.go:1585 msg="Notifier manager stopped"
+time=2026-08-12T04:46:33.588Z level=INFO source=main.go:1562 msg="Web handler stopped"
+time=2026-08-12T04:46:33.588Z level=INFO source=main.go:1600 msg="See you next time!"
+time=2026-08-12T04:46:34.074Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:46:34.529Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:46:35.016Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:46:35.642Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:46:36.667Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:46:38.486Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:46:41.924Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:46:48.540Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:47:01.581Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
+time=2026-08-12T04:47:27.434Z level=ERROR source=main.go:729 msg="Error loading config (--config.file=/etc/prometheus/prometheus.yml)" file=/etc/prometheus/prometheus.yml err="parsing YAML file /etc/prometheus/prometheus.yml: yaml: unmarshal errors:\n  line 35: field metric_path not found in type config.ScrapeConfig"
