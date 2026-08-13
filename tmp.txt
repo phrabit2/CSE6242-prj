@@ -1,8 +1,8 @@
+# [AI] GPU Server — 10.194.1xx.86 ⚠️IP 확정 필요
 
-# [운영] APM (Pinpoint) — 10.194.178.88
-
-> **문서 목적**: WCS 운영환경 APM(Pinpoint) 컨트롤러 및 모니터링 대상 서버 구성에 대한 인수인계
-> **작성자**: (작성자명) | **최종 수정일**: 2026-08-13 | **대상 독자**: 운영 인수자, 인프라 담당
+> **문서 목적**: VLM 파인튜닝·서빙 환경 및 수행 실험 인수인계
+> **작성자**: (작성자명) | **최종 수정일**: 2026-08-13
+> ⚠️ **IP 확인 필요**: 기존 작업 이력상 `10.194.179.86`(호스트명 `scp-wcsdgpu1`). 서버에서 `hostname -I`로 확정 후 기입.
 
 ---
 
@@ -10,565 +10,444 @@
 
 | 항목 | 내용 |
 |---|---|
-| IP | 10.194.178.88 |
-| 호스트명 | ⚠️ `hostname` 확인 후 기입 |
-| 역할 | Pinpoint **Controller** (Collector + Web + Storage 일체형) |
-| 제품/버전 | Pinpoint APM **3.1.0** |
-| 배포 방식 | Docker Compose (all-in-one) |
-| OS | ⚠️ `cat /etc/os-release` 확인 후 기입 |
-| 스펙 | ⚠️ vCPU / RAM / Disk 기입 |
-| 네트워크 | 에어갭(폐쇄망). 외부 인터넷 불가 |
-| 모니터링 대상 | WAS 2대(.71/.72) — 3개 애플리케이션 / PlantPulse ⚠️확인 필요 |
+| 호스트명 | `scp-wcsdgpu1` |
+| GPU | NVIDIA **A100-SXM4-80GB** × 1 |
+| 드라이버 | 570.195.03 (**CUDA 12.8 상한**) |
+| CPU / RAM | vCPU 16 / 234GB |
+| OS | Ubuntu 24.04 |
+| 계정 | `wcsadmin` |
+| 성격 | 운영 서비스가 아닌 **AI PoC·실험 환경** |
 
-**Pinpoint 데이터 흐름 (장애 판단 시 필수 이해)**
+### 1.1 디스크 ⚠️
+
+| 마운트 | 용량 | 비고 |
+|---|---|---|
+| `/dev/vda1` (`/`) | 100GB | **사용률 90%대 — Docker 기본 저장소가 여기** |
+| `/dev/vdb` (`/data`) | 590GB | 실제 작업 영역 |
+
+> **미해결 과제**: Docker data-root가 루트 파티션에 있어 용량 압박. `/data/docker`로 이전 검토 필요.
+> (88번 Pinpoint 서버는 동일 작업을 완료했으므로 절차 참고 가능)
+
+### 1.2 소프트웨어 계층
 
 ```
-[대상 서버 JVM]
-   └─ Pinpoint Agent (javaagent, 바이트코드 계측)
-        │  gRPC push (9991/9992/9993)
-        ▼
-[88번 Collector]
-        │
-        ├─→ HBase   : 트레이스(Span) 원본 저장
-        ├─→ Kafka   : 지표 스트림
-        ├─→ Pinot   : URI Stat / Inspector 집계
-        └─→ Zookeeper : HBase·Kafka 코디네이션
-        ▼
-[88번 Web UI :8080] ← 사용자 브라우저
+호스트 드라이버 570.195.03  ← 드라이버는 호스트에만
+  └─ nvidia-container-toolkit  (컨테이너 ↔ GPU 브릿지)
+       └─ Docker
+            ├─ vLLM 컨테이너      (CUDA 내장)
+            ├─ LLaMA-Factory 컨테이너 (CUDA 12.4 내장)
+            └─ Label Studio 컨테이너
+호스트 conda base  ← 커스텀 PyTorch 학습용 (별도)
 ```
 
-> **핵심**: Agent가 Collector로 **push**하는 구조. Collector가 Agent로 역방향 접속하지 않음.
-> → 장애 시 "Agent 쪽 발신 실패"인지 "Collector/Storage 수신 실패"인지 이 방향성으로 먼저 切分.
+> **원칙 1**: 드라이버는 호스트, CUDA/cuDNN은 컨테이너.
+> **원칙 2**: **모델·데이터는 `/data`에 고정, 컨테이너는 갈아끼운다.** 컨테이너 간 모델을 "옮기지" 않고 각자 마운트해서 읽음.
 
 ---
 
-## 2. 접속 방법
-
-### 2.1 SSH 접속
+## 2. 접속 및 반입
 
 ```bash
-ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa wcsadmin@10.194.178.88
+# SSH
+ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa wcsadmin@<IP>
+
+# conda 환경 활성화 (커스텀 학습 시)
+source /data/miniconda3/bin/activate
 ```
 
-> ⚠️ **`HostKeyAlgorithms` 옵션 필수.** 서버가 RSA/sha1만 지원하여 옵션 없이는 접속 실패.
-> 접속 허용 IP가 제한되어 있으므로 신규 담당자 PC는 **별도 등록 신청** 필요.
-
-### 2.2 Web UI 접속
-
-사내망에서 직접 접근 가능한 경우:
-
-```
-http://10.194.178.88:8080
-```
-
-직접 접근이 막힌 경우 SSH 포트포워딩:
+**에어갭 반입 경로**: `Mac/오피스PC → Google Drive → 오피스PC → SCP → 서버`
 
 ```bash
-ssh -o HostKeyAlgorithms=+ssh-rsa -L 8080:localhost:8080 wcsadmin@10.194.178.88
-# 세션 유지한 채 브라우저에서 http://localhost:8080
-```
-
-### 2.3 파일 반입 경로 (에어갭)
-
-```
-개인 Mac / 오피스 PC (인터넷 O)
-   → Google Drive
-      → 오피스 PC
-         → SCP → 10.194.178.88
-```
-
-```bash
-scp -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa \
-    <파일> wcsadmin@10.194.178.88:/data/
-```
-
-Docker 이미지 반입 시 **아키텍처 주의** (Apple Silicon → amd64 서버):
-
-```bash
-# Mac 에서
+# Mac(Apple Silicon)에서 이미지 반입 시 — 두 곳 모두 --platform 필수
 docker pull --platform linux/amd64 <image>
-docker image inspect <image> --format '{{.Architecture}}'   # amd64 확인 필수
+docker image inspect <image> --format '{{.Architecture}}'   # amd64 확인
 docker save --platform linux/amd64 -o image.tar <image>
 ```
 
-> ⚠️ Mac(Apple Silicon)에서 `--platform` 없이 pull 하면 arm64가 받아지고, 서버에서 `exec format error` 발생.
-> `docker save` 에도 `--platform`을 붙이지 않으면 containerd image store 이슈로 `content digest not found` 오류 발생.
+> ⚠️ `--platform` 누락 시: 서버에서 `exec format error` (pull 누락) 또는 `content digest not found` (save 누락)
+
+**포트 접속은 전부 SSH 터널링**
+
+```bash
+ssh -o HostKeyAlgorithms=+ssh-rsa \
+    -L 8000:localhost:8000 \
+    -L 7860:localhost:7860 \
+    -L 9080:localhost:9080 wcsadmin@<IP>
+```
 
 ---
 
 ## 3. 디렉토리 구조
 
-| 경로 | 용도 |
-|---|---|
-| `/data/pinpoint/pinpoint-docker/` | **compose 실행 디렉토리** (docker-compose.yml, .env) |
-| `/data/pinpoint/hbase/` | HBase 데이터 |
-| `/data/docker/` | **Docker data-root** (기본 경로에서 이전됨, 4.4 참조) |
-| ⚠️ 기타 | `docker compose config --volumes` 로 실제 볼륨 확인 후 보완 |
-
-> **모든 compose 명령은 반드시 `/data/pinpoint/pinpoint-docker` 에서 실행.**
+```
+/data/
+├── ai-models/
+│   └── Qwen2.5-VL-7B-Instruct/    # 베이스 모델 (safetensors)
+├── sample_train/                   # ★ 커스텀 PyTorch 학습·벤치마크
+│   ├── data/                       # images(200장), annotation.json, train.jsonl
+│   ├── src/                        # prepare_data.py, train_lora.py, bench.py, monitor.sh
+│   ├── outputs/                    # 기법·배치별 결과 (lora_b1, lora_b2, ...)
+│   └── results.csv                 # ★ 벤치마크 집계
+├── llamafactory/
+│   ├── start.sh
+│   ├── dataset_info.json
+│   └── output/damage_lora_v2/      # LoRA 어댑터 산출물
+├── damage-inspection/              # 5단계 커리큘럼용 구조
+├── vllm/                           # vLLM 이미지 tar
+└── miniconda3/
+~/vllm/start_vl.sh                  # vLLM 기동 스크립트
+```
 
 ---
 
-## 4. 설치 구성
+## 4. 전체 파이프라인
 
-### 4.1 컨테이너 구성
-
-| 컨테이너 | 역할 | 비고 |
-|---|---|---|
-| pinpoint-collector | Agent 데이터 수신 | 9991-9993 |
-| pinpoint-web | 조회 UI | 8080 |
-| pinpoint-hbase | 트레이스 저장소 | |
-| zoo1 / zoo2 / zoo3 | Zookeeper 앙상블 | |
-| pinpoint-flink-jobmanager | 지표 집계 | |
-| pinpoint-flink-taskmanager | 지표 집계 | |
-| Kafka / Pinot | URI Stat·Inspector 집계 | |
-| pinpoint-mysql / batch | 알람 기능용 | ⚠️ 사용 여부 확인 후 기입 |
-
-> 실제 기동 목록은 아래 명령 결과로 대체 기입:
-> ```bash
-> cd /data/pinpoint/pinpoint-docker && sudo docker compose ps
-> ```
-
-### 4.2 포트 매핑
-
-| 포트 | 프로토콜 | 용도 | 방향 |
-|---|---|---|---|
-| 9991 | TCP | Agent 등록 / 핑 / 커맨드(스레드 덤프 등) | 대상 서버 → 88 |
-| 9992 | TCP | Stat(지표) 데이터 | 대상 서버 → 88 |
-| 9993 | TCP | Span(트레이스) 데이터 | 대상 서버 → 88 |
-| 8080 | TCP | Web UI | 사용자 → 88 |
-
-> 참고: 레거시 Thrift 모드 사용 시 TCP 9994 / UDP 9995 / UDP 9996 이 필요하나, **본 환경은 gRPC(3.1.0 기본값)** 를 사용하므로 해당 없음.
-
-### 4.3 ⚠️ Docker Compose 버전 (매우 중요)
-
-| 서버 | Compose 버전 | 명령 형식 |
-|---|---|---|
-| **10.194.178.88 (본 서버)** | **v2 (플러그인)** | `sudo docker compose ...` (**스페이스**) |
-| 10.194.178.89 (Prometheus) | v1 (1.29.2) | `sudo docker-compose ...` (**하이픈**) |
-
-> **v1(하이픈)으로 본 서버를 조작하면 `KeyError: 'ContainerConfig'` / `KeyError: 'id'` 오류가 발생하며, 컨테이너가 좀비 상태로 남아 Docker 네트워크 DNS 해석 실패를 유발합니다.**
-> 두 모니터링 서버의 규칙이 서로 다르므로 반드시 구분할 것.
-
-`sudo` 사용 시 플러그인 경로 문제로 `unknown shorthand flag: 'd'` 가 발생하면:
-
-```bash
-sudo mkdir -p /usr/local/lib/docker/cli-plugins
-sudo cp /data/pinpoint/docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
-sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-sudo docker compose version   # 정상 출력 확인
+```
+[Label Studio :9080]  라벨링
+        │  annotation.json
+        ▼
+[prepare_data.py]  변환
+        │  train.jsonl / llamafactory_train.json (sharegpt)
+        ├──────────────┬──────────────────┐
+        ▼              ▼                  
+[커스텀 PyTorch]  [LLaMA-Factory :7860]
+ 자원 벤치마크      실제 파인튜닝
+        │              │  LoRA 어댑터
+        └──────┬───────┘
+               ▼
+        [vLLM :8000]  서빙 (--enable-lora 로 before/after 비교)
 ```
 
-### 4.4 Docker data-root 이전 이력
+> ⚠️ **GPU는 단일 공유 자원.** 학습 전 vLLM 중지 권장 (`sudo docker stop vllm`).
 
-루트 파티션(100GB) 용량 압박으로 Docker 저장소를 대용량 볼륨으로 이전함.
+---
 
-- 이전: `/var/lib/docker` → **`/data/docker`** (`rsync -aP` 사용)
-- `/etc/docker/daemon.json` 설정:
+## 5. 서비스별 구성 및 활용법
 
+### 5.1 Label Studio — 데이터 전처리/라벨링
+
+| 항목 | 내용 |
+|---|---|
+| 이미지 | `heartexlabs/label-studio:1.23.0` |
+| 포트 | 9080 |
+| 목적 | 파손 박스 이미지 라벨링 |
+
+**실제 활용 내용**
+- 라벨 스키마: **`damaged area`**, **`product area`** 2종 (bounding box)
+- 대상: 물류 창고 저해상도 이미지 **200장**
+- Export: `annotation.json` → `/data/sample_train/data/`
+- 후처리: `prepare_data.py`의 `has_damage()` 로직이 `damaged area` 박스 유무로 **파손 Y/N 라벨**을 도출
+  → 정상 이미지에는 `product area`만 존재
+
+**주의**
+- 어노테이션 유실 방지를 위해 Export 후 `annotation.json` 백업 필수
+- 태스크가 detection 포맷(bbox)이므로 VLM 학습에는 반드시 변환 단계 필요
+
+---
+
+### 5.2 vLLM — 추론/서빙
+
+| 항목 | 내용 |
+|---|---|
+| 이미지 | `vllm/vllm-openai` (⚠️ 실제 태그 확인 필요) |
+| 포트 | 8000 (OpenAI 호환 API) |
+| 기동 스크립트 | `~/vllm/start_vl.sh` |
+
+```bash
+sudo docker run -d --name vllm \
+  --gpus all --ipc=host \
+  -v /data/ai-models:/models \
+  -p 8000:8000 \
+  -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1 \
+  vllm/vllm-openai:<버전> \
+  --model /models/Qwen2.5-VL-7B-Instruct \
+  --served-model-name qwen2.5-vl \
+  --gpu-memory-utilization 0.28 \
+  --max-model-len 16384 \
+  --limit-mm-per-prompt '{"image":2,"video":0}' \
+  --trust-remote-code
+```
+
+**실제 활용 내용**
+- Qwen2.5-VL-7B zero-shot 베이스라인 확보 (파인튜닝 전 성능 비교 기준)
+- `--gpu-memory-utilization 0.28` — **의도적으로 28%만 점유.** 나머지를 학습용으로 남겨 학습·서빙 동시 운용
+- `--limit-mm-per-prompt` — 멀티모달 입력 시 프롬프트당 이미지 2장 상한
+- LoRA 어댑터 서빙 시 `--enable-lora` 옵션으로 **베이스 vs 파인튜닝 A/B 비교** 가능
+
+**주의**
+- 컨테이너명 충돌 시: `sudo docker rm -f vllm` 후 재실행
+- 에어갭이므로 `HF_HUB_OFFLINE=1` 필수 (미설정 시 HuggingFace 접속 시도로 기동 실패)
+- 모델 로딩에 1~3분 소요. `Application startup complete` 로그 확인 후 사용
+
+---
+
+### 5.3 LLaMA-Factory — 프레임워크 기반 파인튜닝
+
+| 항목 | 내용 |
+|---|---|
+| 이미지 | `hiyouga/llamafactory:latest` (CUDA 12.4 / Python 3.11 / PyTorch 2.6) |
+| 포트 | 7860 (Gradio WebUI) |
+| 기동 스크립트 | `/data/llamafactory/start.sh` |
+
+**Docker를 쓴 이유** — 호스트 conda base의 `transformers 5.12.1`이 LLaMA-Factory 요구 상한(`≤5.8.0`)을 초과하여 의존성 격리가 필요했음. 호스트 환경은 변경하지 않음.
+
+```bash
+sudo docker run -d --name llamafactory \
+  --gpus all --ipc=host \
+  -p 7860:7860 \
+  -v /data/ai-models:/models \
+  -v /data/sample_train:/data/sample_train \
+  -v /data/llamafactory/output:/output \
+  -v /data/llamafactory/dataset_info.json:/app/data/dataset_info.json \
+  -e GRADIO_SERVER_NAME=0.0.0.0 -e GRADIO_SERVER_PORT=7860 \
+  -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1 \
+  hiyouga/llamafactory:latest \
+  llamafactory-cli webui
+```
+
+**볼륨 마운트 규칙**
+
+| 호스트 | 컨테이너 | 용도 |
+|---|---|---|
+| `/data/ai-models` | `/models` | 베이스 모델 |
+| `/data/sample_train` | **`/data/sample_train`** | 학습 데이터 — **호스트와 동일 경로 유지** |
+| `/data/llamafactory/output` | `/output` | 산출물 |
+| `/data/llamafactory/dataset_info.json` | `/app/data/dataset_info.json` | 데이터셋 등록 |
+
+> ⚠️ 학습 데이터 경로를 컨테이너와 다르게 잡으면 **JSON 안의 이미지 경로가 깨져 로드 실패**합니다. 반드시 동일 경로로 마운트.
+
+**데이터셋 등록** (`dataset_info.json`)
 ```json
 {
-  "data-root": "/data/docker",
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m",
-    "max-file": "3"
+  "damage_vl": {
+    "file_name": "/data/sample_train/data/llamafactory_train.json",
+    "formatting": "sharegpt",
+    "columns": { "messages": "messages", "images": "images" }
   }
 }
 ```
 
-> ⚠️ 이전 작업 당시 **Pinot 테이블 데이터가 유실**되어 재생성한 이력이 있음. data-root 재이전이 필요한 경우 반드시 사전 백업할 것.
-
----
-
-## 5. 기동 / 중지 절차
-
-### 5.1 기동
-
+**학습 실행**
 ```bash
-cd /data/pinpoint/pinpoint-docker
-sudo docker compose up -d
-sudo docker compose ps
+# CLI
+sudo docker exec -it llamafactory llamafactory-cli train <config>.yaml
+# WebUI: 7860 터널링 후 Model path 에 /models/Qwen2.5-VL-7B-Instruct 직접 입력
 ```
 
-특정 서비스만 기동:
+**학습 설정 및 결과 (실제 수행분)**
 
-```bash
-sudo docker compose up -d pinpoint-hbase pinpoint-collector pinpoint-web \
-     pinpoint-flink-jobmanager pinpoint-flink-taskmanager zoo1 zoo2 zoo3
-```
-
-### 5.2 중지
-
-```bash
-cd /data/pinpoint/pinpoint-docker
-sudo docker compose stop          # 정지 (컨테이너 유지)
-sudo docker compose down          # 정지 + 컨테이너 삭제 (볼륨은 유지)
-```
-
-> ⚠️ `down -v` 는 **볼륨까지 삭제**되어 HBase 트레이스 데이터가 전부 소실됩니다. 사용 금지.
-
-### 5.3 상태 확인
-
-```bash
-sudo docker compose ps                          # 전체 상태
-sudo docker logs -f pinpoint-collector          # Collector 로그
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080   # Web 헬스체크
-```
-
----
-
-## 6. 모니터링 대상 서버 연동
-
-### 6.1 대상 애플리케이션 매트릭스
-
-| 서버 | 애플리케이션 | 포트 | Spring Profile | systemd 서비스 | Agent 디렉토리 | applicationName | agentId |
-|---|---|---|---|---|---|---|---|
-| 10.194.178.71 | wcs-backend | 8080 | `prd` | `wcs.service` | `/app/pinpoint-agent-wcs` | `wcs-backend` | `wcs-71` |
-| 10.194.178.72 | wcs-backend | 8080 | `prd` | `wcs.service` | `/app/pinpoint-agent-wcs` | `wcs-backend` | `wcs-72` |
-| 10.194.178.71 | com-backend | 8081 | `prod` | `com.service` | `/app/pinpoint-agent-com` | `com-backend` | `com-71` |
-| 10.194.178.72 | com-backend | 8081 | `prod` | `com.service` | `/app/pinpoint-agent-com` | `com-backend` | `com-72` |
-| 10.194.178.71 | com-router | 8082 / 8282 | `prod` | `route.service` | `/app/pinpoint-agent-route` | `com-router` | `route-71` |
-| 10.194.178.72 | com-router | 8082 / 8282 | `prod` | `route.service` | `/app/pinpoint-agent-route` | `com-router` | `route-72` |
-| ⚠️ PlantPulse | ⚠️ 확인 필요 | | | | | | |
-
-> ⚠️ **PlantPulse 서버 번호 확인 필요.** 과거 이력상 `.81/.82` 와 `.82/.83` 이 혼재되어 있음.
-> 아래 명령으로 실제 agent 부착 서버를 확정한 후 표를 확정할 것.
-> ```bash
-> ps -ef | grep javaagent
-> ```
-
-### 6.2 Agent 바이너리 위치
-
-- Agent 파일: `pinpoint-bootstrap-3.1.0.jar`
-- **Collector 버전(3.1.0)과 Agent 버전이 반드시 일치**해야 함. 버전 확인:
-  ```bash
-  sudo docker ps --format '{{.Image}}' | grep pinpoint
-  ```
-
-### 6.3 부착 확인 방법
-
-```bash
-# 대상 서버에서 javaagent 옵션이 실제로 붙었는지 확인
-ps -ef | grep javaagent
-
-# Agent 로그에서 Collector 연결 상태 확인
-tail -f /app/pinpoint-agent-<앱>/logs/pinpoint-*.log
-
-# 서비스 로그
-journalctl -u wcs.service -n 200 --no-pager
-```
-
-Web UI 좌측 애플리케이션 목록에 `wcs-backend` / `com-backend` / `com-router` 가 노출되면 정상.
-
----
-
-## 7. 방화벽 (Security Group) 정책
-
-### 7.1 Agent → Collector (데이터 수집 경로)
-
-| src | dst | port | proto | 용도 |
-|---|---|---|---|---|
-| 10.194.178.71 | 10.194.178.88 | 9991-9993 | TCP | Agent 데이터 전송 |
-| 10.194.178.72 | 10.194.178.88 | 9991-9993 | TCP | Agent 데이터 전송 |
-| ⚠️ PlantPulse #1 | 10.194.178.88 | 9991-9993 | TCP | Agent 데이터 전송 |
-| ⚠️ PlantPulse #2 | 10.194.178.88 | 9991-9993 | TCP | Agent 데이터 전송 |
-
-### 7.2 사용자 → Web UI
-
-| src | dst | port | proto |
-|---|---|---|---|
-| 사내망 / 사용자 PC | 10.194.178.88 | 8080 | TCP |
-
-### 7.3 정책 설계 원칙
-
-- **Pinpoint는 push 방식** → 인바운드를 여는 쪽은 **항상 Collector(88)**. 대상 서버에는 인바운드 개방 불필요.
-- ⚠️ **Prometheus(89번 서버)는 pull 방식으로 방향이 정반대**입니다. SG 신청 시 두 제품을 혼동하지 말 것.
-  - Pinpoint: `대상 → 88` (인바운드 to 88)
-  - Prometheus: `89 → 대상` (인바운드 to 대상)
-- Storage(HBase/Kafka/Pinot/Zookeeper)가 88번에 all-in-one으로 구성되어 있으므로 **크로스 서버 포트 불필요**. 향후 스토리지를 분리 배치할 경우 별도 신청 대상.
-
-### 7.4 도달성 점검
-
-```bash
-# 대상 서버(71/72)에서 실행
-nc -zv 10.194.178.88 9991
-nc -zv 10.194.178.88 9992
-nc -zv 10.194.178.88 9993
-```
-
----
-
-## 8. 운영 체크리스트
-
-### 8.1 일상 점검 (주 1회 권장)
-
-- [ ] `sudo docker compose ps` — 전 컨테이너 `Up` 상태
-- [ ] Web UI 접속 및 애플리케이션 6종 노출 확인
-- [ ] 최근 1시간 트레이스 수집 여부 (Servermap에 노드 표시)
-- [ ] Inspector 탭에서 CPU/Memory 지표 수집 확인
-- [ ] `df -h` — `/` 및 `/data` 사용률 (특히 `/data/docker`)
-- [ ] `docker logs` 에 반복 에러 없는지 확인
-
-### 8.2 장애 1차 대응 플로우
-
-```
-증상: Web UI에서 특정 애플리케이션이 안 보임
-  │
-  ├─ 대상 서버에서 프로세스에 javaagent 옵션이 있는가?
-  │     NO → systemd unit 확인 (기타-1 참조)
-  │
-  ├─ Agent 로그에 Collector 접속 실패가 찍히는가?
-  │     └─ 접속 대상 IP가 127.0.0.1 인가?
-  │           YES → collector.ip 설정 누락 (기타-3 참조) ★ 최다 발생
-  │
-  ├─ nc -zv 로 9991-9993 도달 가능한가?
-  │     NO → SG 정책 확인/신청 (7장)
-  │
-  └─ Collector 컨테이너가 정상인가?
-        NO → HBase/Zookeeper 상태 확인 (9장)
-```
-
-```
-증상: Web UI 자체가 안 뜸 / 전체 컨테이너 이상
-  │
-  ├─ sudo docker compose ps 로 Restarting 반복 컨테이너 확인
-  ├─ pinpoint-hbase 로그 확인 → HBase Master 기동 실패 시 9.2 절차
-  └─ 해시 접두어 컨테이너명이 보이면 좀비 컨테이너 → 9.3 절차
-```
-
----
-
-## 9. Known Issue / 주의사항
-
-### 9.1 ⚠️ com-router (Apache Camel) 트랜잭션 미계측 — **미해결**
-
-| 항목 | 내용 |
+| 항목 | 값 |
 |---|---|
-| 증상 | `com-router` 애플리케이션의 트랜잭션이 Pinpoint에 수집되지 않음 |
-| 원인 | Camel이 `camel-undertow` 로 자체 HTTP 핸들러(`DefaultUndertowHost`)를 기동. Pinpoint의 Undertow 플러그인이 Camel의 `UndertowConsumer.handleRequest` 체인을 후킹하지 못함 |
-| 시도한 조치 | `profiler.undertow.enable=true`, `profiler.undertow.deploy.servlet=false` 설정 → 효과 없음 |
-| 구조적 한계 | **`pinpoint.config` 는 이미 컴파일된 플러그인의 on/off·튜닝만 가능하며, 신규 계측 대상을 선언할 수 없음.** 설정만으로는 해결 불가 |
-| 대안 | ① Camel transport 를 Tomcat 기반으로 전환 ② 커스텀 Pinpoint 플러그인 개발 ③ 설정 기반 커스텀 계측을 지원하는 APM(예: New Relic) 검토 |
-| 참고 엔드포인트 | `POST /api/ESP_WCS_REPL_WT_EWM_SEND`, `/wcs/api/inner/com/v1/...` |
+| 모델 / 템플릿 | Qwen2.5-VL-7B-Instruct / `qwen2_vl` |
+| stage / type | sft / **lora** |
+| lora_target | `all` (언어 레이어 7종, 비전 타워 제외) |
+| batch / grad accum | 2 / 8 (**실효 배치 16**) |
+| epochs / LR | 3 / 1e-4 (cosine) |
+| precision | bf16 |
+| trainable params | **20.2M / 8.31B (0.24%)** |
+| 학습 시간 | 약 **5분 30초** (39 step) |
+| loss | **1.57 → 0.0002** (수렴 확인) |
+| 산출물 | `/data/llamafactory/output/damage_lora_v2/` |
 
-### 9.2 HBase Master 기동 실패 복구
+> ⚠️ loss가 0에 수렴한 것은 데이터 200장·라벨 2종(예/아니오)의 단순 태스크 특성. **성능 지표가 아니라 파이프라인 동작 확인 결과**로 해석할 것.
 
-볼륨 재생성 등으로 Zookeeper 상태와 HBase 데이터 디렉토리가 불일치하면 HBase Master 가 기동 실패함.
-
-```bash
-# 1) Zookeeper 컨테이너 진입 후 hbase znode 삭제
-sudo docker exec -it zoo1 bash
-zkCli.sh
-rmr /hbase
-quit
-
-# 2) HBase 데이터 정리
-sudo rm -rf /data/pinpoint/hbase/*
-
-# 3) 재기동
-cd /data/pinpoint/pinpoint-docker
-sudo docker compose up -d pinpoint-hbase
-```
-
-> ⚠️ 기존 트레이스 데이터가 삭제됩니다. 최후 수단으로만 사용.
-
-### 9.3 좀비 컨테이너 (해시 접두 컨테이너명)
-
-Compose v1/v2 혼용 시 `<해시>_pinpoint-collector` 형태의 컨테이너가 잔존하며, Docker 네트워크 내 **DNS 해석 실패**를 반복 유발함.
-
-```bash
-sudo docker ps -a | grep -E '^[0-9a-f]{6,}_'   # 좀비 확인
-sudo docker rm -f <container_id>
-sudo docker compose up -d
-```
-
-→ 근본 대책: **본 서버에서는 v2(`docker compose`)만 사용** (4.3 참조)
-
-### 9.4 Pinot 관련
-
-- Docker data-root 이전 시 Pinot 테이블 데이터 유실 → 테이블 재생성 필요
-- Pinot 노드가 2대 구성이므로 `replicasPerPartition` 을 **3 → 2** 로 조정함. 테이블 재생성 시 동일하게 설정할 것
-- 멀티스테이지 쿼리 엔진 활성화: 클러스터 config API로 `pinot.multistage.engine.enabled: true` 설정됨
-
-### 9.5 에어갭 관련
-
-- 일부 컨테이너(특히 mysql 초기화)가 기동 시 GitHub에서 파일을 받으려다 실패할 수 있음 → 해당 기능 미사용 시 컨테이너를 기동하지 않는 방식으로 회피
-- Docker 소켓 권한 오류(`permission denied ... docker.sock`) 발생 시: `sudo` 사용 또는 `sudo usermod -aG docker $USER && newgrp docker`
+**주의**
+- `output_dir`은 **반드시 절대경로(`/output/...`)**. 상대경로 지정 시 컨테이너 내부에 저장되어 컨테이너 삭제와 함께 유실
+- 산출물은 LoRA **어댑터**이므로 단독 실행 불가. 추론 시 베이스 모델 + 어댑터를 함께 로드하거나 merge 필요
+- 필수 산출물: `adapter_model.safetensors`, `adapter_config.json`, `trainer_state.json`, tokenizer/processor 파일 세트
 
 ---
 
-## 10. 신규 모니터링 대상 추가 절차
+## 6. ★ 커스텀 PyTorch 배치 벤치마크 (핵심 실험)
 
-새 애플리케이션에 Agent를 부착할 때 아래 순서로 진행합니다.
+### 6.1 실험 목적
 
-| 단계 | 작업 | 참조 |
+파인튜닝 기법·배치 크기별 **GPU/CPU 자원 소모량과 시간**을 측정.
+**모델 성능(정확도) 측정이 아니라 리소스 프로파일링이 목적**이며, A100 80GB에서 사용 가능한 최대 배치 크기를 실측으로 찾는 것이 최종 목표.
+
+### 6.2 실험 조건 (고정 변수)
+
+| 항목 | 값 | 비고 |
 |---|---|---|
-| 1 | 대상 JVM 정보 확인 (jar 경로, systemd 서비스명, 실행 계정, 포트, profile) | — |
-| 2 | SG 신청: `대상 → 88 / TCP 9991-9993` | 7장 |
-| 3 | Agent 디렉토리 복사 및 소유권 부여 (**JVM 별로 반드시 분리**) | 기타-2 |
-| 4 | `collector.ip` 설정 (모든 profile 경로에 적용) | 기타-3 |
-| 5 | systemd unit 의 ExecStart 에 `-javaagent` 옵션 추가 | 기타-1 |
-| 6 | `daemon-reload` → `restart` → 프로세스 옵션 확인 | 기타-1 |
-| 7 | Agent 로그에서 Collector 접속 성공 확인 | 6.3 |
-| 8 | Web UI 애플리케이션 목록 노출 확인 | 6.3 |
-| 9 | 본 문서 6.1 매트릭스에 신규 행 추가 | — |
+| 모델 | Qwen2.5-VL-7B-Instruct | |
+| 데이터 | 200장 (파손 Y/N) | 초기 예비실험은 20장 |
+| epochs | **3 고정** | `--epochs` 인자 미지정 시 default=3 |
+| gradient accumulation | **1 고정** | LLaMA-Factory(GA=8)와 조건 다름 |
+| `MAX_PIXELS` | `512*28*28` | **이미지 토큰 수 = VRAM 직결. 전 기법 동일 고정 필수** |
+| gradient checkpointing | 활성화 | `enable_input_require_grads()` 동반 필수 |
+| loss 마스킹 | 프롬프트 `-100` 마스킹 | 정답 토큰만 학습 |
+| 변수 | **batch size만 변경** | |
 
----
+> **Trainer 미사용, 커스텀 학습 루프 채택 이유**: `bench.start_train()`/`end_train()`으로 학습 구간을 정확히 감싸 **모델 로딩 시간을 제외한 순수 학습 시간**만 측정하기 위함.
 
-## 11. 기타 항목 (상세 설정 가이드)
+### 6.3 측정 도구 3종
 
-> 6~10장에서 참조하는 실무 상세 절차입니다. **인수자가 실제로 손을 대게 될 부분이므로 반드시 숙지 후 작업**하십시오.
-
-### 기타-1. Agent 부착 방법 (systemd)
-
-Pinpoint Agent 는 **애플리케이션 코드 수정 없이** JVM 옵션(`-javaagent`)만으로 부착됩니다.
-
-**① 원본 백업 (필수)**
-
-```bash
-sudo cp /etc/systemd/system/wcs.service /etc/systemd/system/wcs.service.bak_$(date +%Y%m%d)
-```
-
-**② unit 파일 편집**
-
-```bash
-sudo vi /etc/systemd/system/wcs.service
-```
-
-`ExecStart` 라인의 `java` 와 `-jar` 사이에 아래 3개 옵션을 삽입합니다.
-
-```
--javaagent:/app/pinpoint-agent-wcs/pinpoint-bootstrap-3.1.0.jar \
--Dpinpoint.agentId=wcs-71 \
--Dpinpoint.applicationName=wcs-backend
-```
-
-적용 예시 (wcs-backend, 71번 서버):
-
-```
-ExecStart=/usr/bin/java \
-  -javaagent:/app/pinpoint-agent-wcs/pinpoint-bootstrap-3.1.0.jar \
-  -Dpinpoint.agentId=wcs-71 \
-  -Dpinpoint.applicationName=wcs-backend \
-  -Dserver.port=8080 \
-  -jar /app/wcs/backend/current_wcs.jar --spring.profiles.active=prd
-```
-
-> 파일이 readonly 로 열리면 `vi` 에서 `:w!` 로 강제 저장.
-
-**③ 반영 및 재기동**
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl restart wcs.service
-sudo systemctl status wcs.service
-ps -ef | grep javaagent        # 옵션 반영 확인
-```
-
-**④ 명명 규칙**
-
-| 항목 | 규칙 | 예시 |
+| 도구 | 측정 항목 | 출력 |
 |---|---|---|
-| `applicationName` | 애플리케이션 단위 (인스턴스 간 동일) | `wcs-backend` |
-| `agentId` | `<앱약칭>-<서버 마지막 옥텟>` (**전체 고유해야 함**) | `wcs-71`, `wcs-72` |
+| `bench.py` | peak VRAM (torch allocated/reserved), 파라미터 수, step/throughput | `results.csv` |
+| `monitor.sh` | nvidia-smi 기반 GPU/CPU 시계열 | `gpu_log.csv`, `cpu_log.csv` |
+| `/usr/bin/time -v` | wall-clock, 최대 RSS(CPU 메모리) | `time.txt` |
 
-> ⚠️ `agentId` 가 중복되면 Web UI에서 인스턴스가 겹쳐 표시되거나 데이터가 섞입니다.
-> ⚠️ `applicationName` 을 인스턴스별로 다르게 주면 Servermap 에서 하나의 서비스로 묶이지 않습니다.
+> `bench.py`의 `peak_vram_alloc_gb`(PyTorch가 텐서에 쓴 양)와 `nvidia-smi`의 `memory.used`(예약분 포함 실제 점유)는 관점이 다릅니다. **"80GB 중 얼마나 차는가"는 nvidia-smi 값이 현실적**입니다.
 
----
-
-### 기타-2. Agent 디렉토리를 JVM 별로 분리하는 이유
-
-**한 서버에서 여러 JVM 을 운영할 경우, Agent 디렉토리를 반드시 애플리케이션별로 분리해야 합니다.**
-
-| 서버 | 애플리케이션 | Agent 디렉토리 |
-|---|---|---|
-| .71 / .72 | wcs-backend | `/app/pinpoint-agent-wcs` |
-| .71 / .72 | com-backend | `/app/pinpoint-agent-com` |
-| .71 / .72 | com-router | `/app/pinpoint-agent-route` |
-
-**분리하지 않을 경우 발생하는 문제**
-
-- 여러 JVM 이 동일한 `logs/` 디렉토리에 동시 기록 → **로그 충돌·유실**, 장애 분석 불가
-- `pinpoint.config` 를 공유하므로 애플리케이션별 개별 설정(플러그인 on/off, 샘플링률 등) 불가
-
-**디렉토리 생성 절차**
+### 6.4 실행 절차
 
 ```bash
-sudo cp -a /app/pinpoint-agent /app/pinpoint-agent-com
-sudo chown -R wcsadmin:wcsadmin /app/pinpoint-agent-com
+cd /data/sample_train
+source /data/miniconda3/bin/activate
+sudo docker stop vllm                      # GPU 확보
+
+# 1) 데이터 변환
+python3 src/prepare_data.py                # annotation.json → train.jsonl
+
+# 2) 배치별 계단식 실험
+for BS in 1 2 4 8 16; do
+  ./src/monitor.sh lora_b${BS}
+  /usr/bin/time -v python3 src/train_lora.py --batch_size ${BS} \
+    2> outputs/lora_b${BS}/time.txt
+  ./src/stop_monitor.sh lora_b${BS}
+done
+
+# 3) 결과 확인
+cat results.csv
 ```
 
-> 실행 계정(`wcsadmin` 등)에 대한 소유권 부여를 누락하면 Agent 가 로그를 쓰지 못해 조용히 실패합니다.
+### 6.5 측정 결과
 
----
+**results.csv 컬럼**
+```
+method, total_params_M, trainable_params_M, trainable_pct,
+vram_baseline_gb, vram_after_load_gb, peak_vram_alloc_gb, peak_vram_reserved_gb,
+total_time_s, num_steps, sec_per_step, samples_per_sec
+```
 
-### 기타-3. Collector IP 설정 위치 ★ 최다 장애 원인
+#### ① 예비 측정 — 20샘플 / batch=1
 
-Pinpoint 3.1.0 은 **profile 기반 설정 구조**(`profiles/release/`, `profiles/local/`)를 사용합니다.
-루트의 `pinpoint.config` 만 수정하면 **활성 profile 의 설정이 그대로 남아 기본값 `127.0.0.1` 로 접속을 시도**하며, 서비스는 정상 기동되지만 Pinpoint 에는 나타나지 않습니다.
+| 항목 | 값 |
+|---|---|
+| Peak VRAM | **18.7GB** (80GB 중 23%) |
+| Peak CPU 메모리 (max RSS) | 약 16.4GB |
+| 순수 학습 시간 | **46.1초** (60 step) |
+| 학습 파라미터 | 47.6M / 8,339.8M (**0.571%**) |
 
-**① 설정이 박혀 있는 위치를 전부 탐색**
+> **해석**: 모델 로딩분이 16.78GB이므로 **LoRA 학습 오버헤드는 약 2GB에 불과**. A100 80GB 기준 여유가 매우 큼.
+
+#### ② 본 측정 — 200샘플 / batch=3 (5회 반복, 재현성 확인)
+
+| 회차 | peak_vram_alloc | peak_vram_reserved | total_time_s | num_steps | sec/step | samples/sec |
+|---|---|---|---|---|---|---|
+| 1 | 18.659 GB | 19.162 GB | 161.56 | 201 | 0.804 | 3.714 |
+| 2 | 18.659 GB | 19.162 GB | 162.02 | 201 | 0.806 | 3.703 |
+| 3 | 18.659 GB | 19.162 GB | 162.18 | 201 | 0.807 | 3.700 |
+| 4 | 18.659 GB | 19.162 GB | 161.49 | 201 | 0.803 | 3.715 |
+| 5 | 18.659 GB | 19.162 GB | 161.37 | 201 | 0.803 | 3.718 |
+
+- 공통값: `total_params 8,339.8M` / `trainable 47.6M (0.571%)` / `vram_after_load 16.776GB`
+- **편차 0.5% 이내로 재현성 확보** → 측정 하네스 신뢰 가능
+
+> ⚠️ **이 5회는 batch 인자가 반영되지 않아 전부 batch=3으로 실행된 결과**입니다 (6.6 참조). 재현성 검증 자료로는 유효하나 **배치 비교 자료로는 무효**입니다.
+
+#### ③ 배치별 비교 — ⚠️ 최종 결과 기입 필요
+
+인자 전달 버그 수정 후 재실행한 결과를 `results.csv`에서 옮겨 아래 표를 완성하십시오.
+
+| batch | 예상 num_steps | peak_vram_alloc_gb | peak_vram_reserved_gb | total_time_s | sec_per_step | samples_per_sec | nvidia-smi 최대 memory.used |
+|---|---|---|---|---|---|---|---|
+| 1 | 600 | | | | | | |
+| 2 | 300 | | | | | | |
+| 4 | 150 | | | | | | |
+| 8 | 75 | | | | | | |
+| 16 | 38 | | | | | | |
+| 32 | 19 | (OOM 여부 기록) | | | | | |
 
 ```bash
-grep -rn "collector.ip" /app/pinpoint-agent-<앱>/
+# nvidia-smi 기준 최대 점유 추출
+awk -F',' 'NR>1 && $2+0>0 {print $2}' outputs/lora_b8/gpu_log.csv | sort -n | tail -1
+# CPU 메모리·wall-clock
+grep -E "wall clock|Maximum resident" outputs/lora_b8/time.txt
 ```
 
-**② 검색된 모든 파일에서 아래 값을 수정**
-
-```properties
-profiler.transport.grpc.collector.ip=10.194.178.88
+**참고 — step 수 산식 (검증용)**
+```
+num_steps = ceil(200 / batch_size) × 3 epoch
 ```
 
-**③ 재기동 후 접속 대상 검증**
+### 6.6 결과 해석 기준
+
+1. **peak VRAM이 80GB의 80~90%(64~72GB)에 닿는 batch = 안전한 최대치.** 100% 근접은 불안정·OOM 위험
+2. **OOM이 발생한 batch의 바로 아래가 실전 상한.** OOM은 실패가 아니라 **찾고자 한 경계선**
+3. **`samples_per_sec`이 정체되는 지점 = 효율 최적점.** 그 이상은 VRAM만 소모하고 속도 이득 없음
+4. 배치별 시간 비교는 `sec_per_step`이 아니라 **`total_time_s`로** 해야 공정 (batch가 크면 step 수가 줄기 때문)
+
+### 6.7 ⚠️ 실험 시 반드시 알아야 할 함정 2가지
+
+**함정 ①. batch_size 인자가 반영되지 않는 케이스 — 실제 발생**
+
+`--batch_size`를 넘겨도 코드 내 `BATCH_SIZE` 하드코딩이 남아 있으면 인자가 무시됩니다.
+5회 실행이 전부 batch=3으로 돌았음에도 에러 없이 완주하여 **발견이 늦어졌습니다.**
+
+**검증법**: `num_steps`를 확인하십시오. 6.5의 산식과 일치하지 않으면 인자가 안 먹힌 것입니다.
+`num_steps`와 `peak_vram`이 배치를 바꿔도 동일하다면 100% 이 문제입니다.
 
 ```bash
-sudo systemctl restart <서비스>
-journalctl -u <서비스> -n 200 --no-pager | grep -i collector
+grep -n "batch_size\|BATCH_SIZE\|add_argument" src/train_lora.py
 ```
 
-> 로그에 `127.0.0.1:9991` 이 보이면 **설정 미반영** 상태입니다. ①로 돌아가 누락된 파일을 찾으십시오.
-> `10.194.178.88:9991` 로 나오면 정상입니다.
+**함정 ②. outputs 폴더에 로그만 생기고 어댑터가 없는 케이스 — 실제 발생**
+
+`outputs/lora_bN/`에 `time.txt`, `cpu.csv`, `gpu.csv`만 있고 `.safetensors`·`tokenizer.json`이 없다면,
+**학습 루프가 `model.save_pretrained()` 도달 전에 종료된 것**입니다.
+
+- 로그 3종은 `monitor.sh`·`/usr/bin/time`이 **학습 스크립트 바깥에서** 만들므로 학습이 실패해도 생성됨
+- 어댑터 파일은 학습이 **끝까지 완주해야만** 생성됨
+- → `results.csv`에 행이 추가됐는지로 완주 여부를 먼저 판별
+
+**함정 ③. stderr 리다이렉트로 에러가 숨는 현상**
+
+`2> outputs/.../time.txt`로 stderr를 파일에 돌리므로 **Python traceback이 터미널에 안 보입니다.**
+"에러가 없었는데 결과가 없다"면 반드시 `cat time.txt`로 traceback을 확인하십시오.
 
 ---
 
-### 기타-4. 주요 pinpoint.config 설정값
+## 7. 프로젝트 배경 및 진행 상태
 
-| 설정 | 값 | 설명 |
+**과제**: 물류 파손 박스 판별 VLM 파인튜닝 (검수 스테이션 적용 목표)
+
+**5단계 커리큘럼 진행 현황**
+
+| Phase | 내용 | 상태 |
 |---|---|---|
-| `profiler.transport.module` | `GRPC` | 3.1.0 기본값. Thrift 로 변경 시 SG 포트가 완전히 달라짐 |
-| `profiler.transport.grpc.collector.ip` | `10.194.178.88` | 기타-3 참조 |
-| `profiler.span.collected.uri.type` | `RAW` | **실제 URI 경로 표시.** 미설정 시 Spring MVC 템플릿(`/api/{id}`) 형태로만 표시되어 개별 요청 추적 곤란 |
-| `profiler.undertow.enable` | `true` | com-router 대상 설정 (단, 9.1 한계 존재) |
-| `profiler.undertow.deploy.servlet` | `false` | 상동 |
+| 0 | 평가 하네스 · 데이터 준비 (`manifest.csv` 기반 고정 테스트셋) | 완료 |
+| 1 | ResNet50 전이학습 이진 분류 베이스라인 | ⚠️ 확인 필요 |
+| 2 | VLM zero-shot 베이스라인 + 프롬프트 엔지니어링 | 완료 (vLLM) |
+| 3 | **VLM LoRA/QLoRA SFT** | 완료 (LLaMA-Factory) |
+| 4 | 양자화 · 서빙 최적화 | 미착수 |
+| 5 | 에이전트 · RAG 통합 | 미착수 |
 
-**Web UI 활성화 기능**
-
-- **Inspector** — CPU / Memory / Heap / GC 등 JVM 리소스 지표
-- **URI Stat** — URI 별 응답시간·호출량 통계 (Pinot 기반)
-- **Servermap** — 서비스 간 호출 관계도
+> 설계 원칙: 전 Phase가 **단일 고정 테스트셋(`manifest.csv`)**을 공유하여 단계 간 직접 비교가 가능하도록 구성됨.
 
 ---
 
-### 기타-5. 참고 — Jennifer APM 전환 시 포트 정책 (참고용)
+## 8. Known Issue / 주의사항
 
-동일 구성에서 APM 제품을 Jennifer 로 교체할 경우의 포트 정책입니다. 현재는 적용 대상이 아니며 검토 이력으로만 남깁니다.
-
-| 구분 | Pinpoint | Jennifer |
+| 항목 | 내용 | 상태 |
 |---|---|---|
-| Agent → 서버 | TCP 9991-9993 (3개) | TCP **5000** (1개) |
-| Web UI | TCP 8080 | TCP **7900** |
-| 방향성 | push (dst = 서버) | push (dst = 서버) — 동일 |
+| Docker data-root | 루트 파티션(100GB, 90%대) 사용 중 → 용량 부족 위험 | **미해결** |
+| GPU 단일 자원 | vLLM·LLaMA-Factory·커스텀 학습이 GPU 경합. 동시 실행 시 OOM | 운영 규칙 필요 |
+| torchaudio import 오류 | stub 모듈로 우회 처리함 | 우회 조치됨 |
+| transformers 버전 충돌 | 호스트 5.12.1 vs LLaMA-Factory ≤5.8.0 → Docker 격리로 해결 | 해결 |
+| 벤치마크 조건 상이 | 커스텀(GA=1) vs LLaMA-Factory(GA=8) → **수치 직접 비교 불가** | 문서화 |
+| SSH 접속 IP 제한 | 신규 담당자 PC는 별도 등록 신청 필요 | 신청 필요 |
 
 ---
 
-## 부록. 인수인계 후 확인(TODO)
+## 부록. 인수 후 TODO
 
-- [ ] PlantPulse 서버 IP 및 Agent 부착 현황 확정 (6.1)
-- [ ] 호스트명 / OS / 스펙 실측값 기입 (1장)
-- [ ] `docker compose ps` 실제 출력으로 컨테이너 목록 확정 (4.1)
-- [ ] `com-router` 포트 8082 / 8282 중 실제 사용 포트 확정
-- [ ] mysql / batch(알람 기능) 사용 여부 확정
-- [ ] Web UI 접근 권한 및 계정 인수
-- [ ] Docker data-root 용량 모니터링 기준 수립
+- [ ] **서버 IP 확정** (178.86 / 179.86)
+- [ ] `sudo docker ps -a` 실제 출력으로 컨테이너·이미지 태그 확정
+- [ ] vLLM 이미지 실제 태그 기입
+- [ ] **6.5-③ 배치별 최종 결과표 채우기** (`cat /data/sample_train/results.csv`)
+- [ ] `damage_lora_v2` 어댑터가 호스트 경로에 실제 존재하는지 검증
+- [ ] Docker data-root `/data` 이전 (88번 서버 절차 참고)
+- [ ] Phase 1(ResNet50) 진행 상태 확인 및 기록
+- [ ] GPU 사용 스케줄 규칙 수립 (학습 시 vLLM 중지 등)
