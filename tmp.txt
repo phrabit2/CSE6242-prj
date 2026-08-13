@@ -1,8 +1,7 @@
-# [AI] GPU Server — 10.194.1xx.86 ⚠️IP 확정 필요
+# [운영] Prometheus & Grafana — 10.194.178.89
 
-> **문서 목적**: VLM 파인튜닝·서빙 환경 및 수행 실험 인수인계
+> **문서 목적**: WCS 운영환경 메트릭 모니터링 스택 인수인계
 > **작성자**: (작성자명) | **최종 수정일**: 2026-08-13
-> ⚠️ **IP 확인 필요**: 기존 작업 이력상 `10.194.179.86`(호스트명 `scp-wcsdgpu1`). 서버에서 `hostname -I`로 확정 후 기입.
 
 ---
 
@@ -10,444 +9,216 @@
 
 | 항목 | 내용 |
 |---|---|
-| 호스트명 | `scp-wcsdgpu1` |
-| GPU | NVIDIA **A100-SXM4-80GB** × 1 |
-| 드라이버 | 570.195.03 (**CUDA 12.8 상한**) |
-| CPU / RAM | vCPU 16 / 234GB |
-| OS | Ubuntu 24.04 |
-| 계정 | `wcsadmin` |
-| 성격 | 운영 서비스가 아닌 **AI PoC·실험 환경** |
+| IP | 10.194.178.89 |
+| 역할 | Prometheus(수집·저장) + Grafana(시각화) 컨트롤러 |
+| 버전 | Prometheus **v3.12.0** / Grafana **13.1.0** / node-exporter v1.9.x |
+| 설치 경로 | **`/data/monitoring`** |
+| 네트워크 | 에어갭(폐쇄망) |
+| 비고 | 본 서버는 RabbitMQ 클러스터 노드(.89)를 겸함 |
 
-### 1.1 디스크 ⚠️
-
-| 마운트 | 용량 | 비고 |
-|---|---|---|
-| `/dev/vda1` (`/`) | 100GB | **사용률 90%대 — Docker 기본 저장소가 여기** |
-| `/dev/vdb` (`/data`) | 590GB | 실제 작업 영역 |
-
-> **미해결 과제**: Docker data-root가 루트 파티션에 있어 용량 압박. `/data/docker`로 이전 검토 필요.
-> (88번 Pinpoint 서버는 동일 작업을 완료했으므로 절차 참고 가능)
-
-### 1.2 소프트웨어 계층
-
-```
-호스트 드라이버 570.195.03  ← 드라이버는 호스트에만
-  └─ nvidia-container-toolkit  (컨테이너 ↔ GPU 브릿지)
-       └─ Docker
-            ├─ vLLM 컨테이너      (CUDA 내장)
-            ├─ LLaMA-Factory 컨테이너 (CUDA 12.4 내장)
-            └─ Label Studio 컨테이너
-호스트 conda base  ← 커스텀 PyTorch 학습용 (별도)
-```
-
-> **원칙 1**: 드라이버는 호스트, CUDA/cuDNN은 컨테이너.
-> **원칙 2**: **모델·데이터는 `/data`에 고정, 컨테이너는 갈아끼운다.** 컨테이너 간 모델을 "옮기지" 않고 각자 마운트해서 읽음.
+> **Pinpoint(88번)와의 관계**: Pinpoint는 트랜잭션·콜스택 추적(APM), Prometheus는 리소스·JVM 메트릭 수집. **데이터를 공유하지 않는 별개 스택**이며 상호 보완 관계.
 
 ---
 
-## 2. 접속 및 반입
+## 2. 접속 방법
 
 ```bash
 # SSH
-ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa wcsadmin@<IP>
+ssh -o HostKeyAlgorithms=+ssh-rsa wcsadmin@10.194.178.89
 
-# conda 환경 활성화 (커스텀 학습 시)
-source /data/miniconda3/bin/activate
+# 웹 접속 (직접 접근 불가 시 터널링)
+ssh -o HostKeyAlgorithms=+ssh-rsa -L 9090:localhost:9090 -L 3000:localhost:3000 wcsadmin@10.194.178.89
 ```
 
-**에어갭 반입 경로**: `Mac/오피스PC → Google Drive → 오피스PC → SCP → 서버`
-
-```bash
-# Mac(Apple Silicon)에서 이미지 반입 시 — 두 곳 모두 --platform 필수
-docker pull --platform linux/amd64 <image>
-docker image inspect <image> --format '{{.Architecture}}'   # amd64 확인
-docker save --platform linux/amd64 -o image.tar <image>
-```
-
-> ⚠️ `--platform` 누락 시: 서버에서 `exec format error` (pull 누락) 또는 `content digest not found` (save 누락)
-
-**포트 접속은 전부 SSH 터널링**
-
-```bash
-ssh -o HostKeyAlgorithms=+ssh-rsa \
-    -L 8000:localhost:8000 \
-    -L 7860:localhost:7860 \
-    -L 9080:localhost:9080 wcsadmin@<IP>
-```
+| 서비스 | URL | 계정 |
+|---|---|---|
+| Prometheus | `http://localhost:9090` | 없음 |
+| Grafana | `http://localhost:3000` | ⚠️ admin 계정/비밀번호 별도 인수 |
 
 ---
 
 ## 3. 디렉토리 구조
 
 ```
-/data/
-├── ai-models/
-│   └── Qwen2.5-VL-7B-Instruct/    # 베이스 모델 (safetensors)
-├── sample_train/                   # ★ 커스텀 PyTorch 학습·벤치마크
-│   ├── data/                       # images(200장), annotation.json, train.jsonl
-│   ├── src/                        # prepare_data.py, train_lora.py, bench.py, monitor.sh
-│   ├── outputs/                    # 기법·배치별 결과 (lora_b1, lora_b2, ...)
-│   └── results.csv                 # ★ 벤치마크 집계
-├── llamafactory/
-│   ├── start.sh
-│   ├── dataset_info.json
-│   └── output/damage_lora_v2/      # LoRA 어댑터 산출물
-├── damage-inspection/              # 5단계 커리큘럼용 구조
-├── vllm/                           # vLLM 이미지 tar
-└── miniconda3/
-~/vllm/start_vl.sh                  # vLLM 기동 스크립트
+/data/monitoring/
+├── docker-compose.yml
+├── prometheus/
+│   └── prometheus.yml              # 스크레이프 설정 (핵심 파일)
+└── grafana/
+    └── provisioning/
+        ├── datasources/datasource.yml
+        └── dashboards/             # 대시보드 JSON
 ```
 
 ---
 
-## 4. 전체 파이프라인
+## 4. ⚠️ 운영 시 반드시 알아야 할 3가지
 
-```
-[Label Studio :9080]  라벨링
-        │  annotation.json
-        ▼
-[prepare_data.py]  변환
-        │  train.jsonl / llamafactory_train.json (sharegpt)
-        ├──────────────┬──────────────────┐
-        ▼              ▼                  
-[커스텀 PyTorch]  [LLaMA-Factory :7860]
- 자원 벤치마크      실제 파인튜닝
-        │              │  LoRA 어댑터
-        └──────┬───────┘
-               ▼
-        [vLLM :8000]  서빙 (--enable-lora 로 before/after 비교)
-```
+### 4.1 Docker Compose 버전이 88번 서버와 다름
 
-> ⚠️ **GPU는 단일 공유 자원.** 학습 전 vLLM 중지 권장 (`sudo docker stop vllm`).
-
----
-
-## 5. 서비스별 구성 및 활용법
-
-### 5.1 Label Studio — 데이터 전처리/라벨링
-
-| 항목 | 내용 |
-|---|---|
-| 이미지 | `heartexlabs/label-studio:1.23.0` |
-| 포트 | 9080 |
-| 목적 | 파손 박스 이미지 라벨링 |
-
-**실제 활용 내용**
-- 라벨 스키마: **`damaged area`**, **`product area`** 2종 (bounding box)
-- 대상: 물류 창고 저해상도 이미지 **200장**
-- Export: `annotation.json` → `/data/sample_train/data/`
-- 후처리: `prepare_data.py`의 `has_damage()` 로직이 `damaged area` 박스 유무로 **파손 Y/N 라벨**을 도출
-  → 정상 이미지에는 `product area`만 존재
-
-**주의**
-- 어노테이션 유실 방지를 위해 Export 후 `annotation.json` 백업 필수
-- 태스크가 detection 포맷(bbox)이므로 VLM 학습에는 반드시 변환 단계 필요
-
----
-
-### 5.2 vLLM — 추론/서빙
-
-| 항목 | 내용 |
-|---|---|
-| 이미지 | `vllm/vllm-openai` (⚠️ 실제 태그 확인 필요) |
-| 포트 | 8000 (OpenAI 호환 API) |
-| 기동 스크립트 | `~/vllm/start_vl.sh` |
-
-```bash
-sudo docker run -d --name vllm \
-  --gpus all --ipc=host \
-  -v /data/ai-models:/models \
-  -p 8000:8000 \
-  -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1 \
-  vllm/vllm-openai:<버전> \
-  --model /models/Qwen2.5-VL-7B-Instruct \
-  --served-model-name qwen2.5-vl \
-  --gpu-memory-utilization 0.28 \
-  --max-model-len 16384 \
-  --limit-mm-per-prompt '{"image":2,"video":0}' \
-  --trust-remote-code
-```
-
-**실제 활용 내용**
-- Qwen2.5-VL-7B zero-shot 베이스라인 확보 (파인튜닝 전 성능 비교 기준)
-- `--gpu-memory-utilization 0.28` — **의도적으로 28%만 점유.** 나머지를 학습용으로 남겨 학습·서빙 동시 운용
-- `--limit-mm-per-prompt` — 멀티모달 입력 시 프롬프트당 이미지 2장 상한
-- LoRA 어댑터 서빙 시 `--enable-lora` 옵션으로 **베이스 vs 파인튜닝 A/B 비교** 가능
-
-**주의**
-- 컨테이너명 충돌 시: `sudo docker rm -f vllm` 후 재실행
-- 에어갭이므로 `HF_HUB_OFFLINE=1` 필수 (미설정 시 HuggingFace 접속 시도로 기동 실패)
-- 모델 로딩에 1~3분 소요. `Application startup complete` 로그 확인 후 사용
-
----
-
-### 5.3 LLaMA-Factory — 프레임워크 기반 파인튜닝
-
-| 항목 | 내용 |
-|---|---|
-| 이미지 | `hiyouga/llamafactory:latest` (CUDA 12.4 / Python 3.11 / PyTorch 2.6) |
-| 포트 | 7860 (Gradio WebUI) |
-| 기동 스크립트 | `/data/llamafactory/start.sh` |
-
-**Docker를 쓴 이유** — 호스트 conda base의 `transformers 5.12.1`이 LLaMA-Factory 요구 상한(`≤5.8.0`)을 초과하여 의존성 격리가 필요했음. 호스트 환경은 변경하지 않음.
-
-```bash
-sudo docker run -d --name llamafactory \
-  --gpus all --ipc=host \
-  -p 7860:7860 \
-  -v /data/ai-models:/models \
-  -v /data/sample_train:/data/sample_train \
-  -v /data/llamafactory/output:/output \
-  -v /data/llamafactory/dataset_info.json:/app/data/dataset_info.json \
-  -e GRADIO_SERVER_NAME=0.0.0.0 -e GRADIO_SERVER_PORT=7860 \
-  -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1 \
-  hiyouga/llamafactory:latest \
-  llamafactory-cli webui
-```
-
-**볼륨 마운트 규칙**
-
-| 호스트 | 컨테이너 | 용도 |
+| 서버 | Compose | 명령 |
 |---|---|---|
-| `/data/ai-models` | `/models` | 베이스 모델 |
-| `/data/sample_train` | **`/data/sample_train`** | 학습 데이터 — **호스트와 동일 경로 유지** |
-| `/data/llamafactory/output` | `/output` | 산출물 |
-| `/data/llamafactory/dataset_info.json` | `/app/data/dataset_info.json` | 데이터셋 등록 |
+| **10.194.178.89 (본 서버)** | **v1 (1.29.2)** | `sudo docker-compose` (**하이픈**) |
+| 10.194.178.88 (Pinpoint) | v2 | `sudo docker compose` (스페이스) |
 
-> ⚠️ 학습 데이터 경로를 컨테이너와 다르게 잡으면 **JSON 안의 이미지 경로가 깨져 로드 실패**합니다. 반드시 동일 경로로 마운트.
+- v1은 최신 Docker 이미지와 호환되지 않아 `KeyError: 'ContainerConfig'` / `KeyError: 'id'` 오류 발생
+- **일부 컨테이너는 `docker run`으로 기동**되어 있어 `docker-compose restart` 시 `No containers to restart` 반환
+- → **개별 컨테이너 제어 권장**
 
-**데이터셋 등록** (`dataset_info.json`)
-```json
-{
-  "damage_vl": {
-    "file_name": "/data/sample_train/data/llamafactory_train.json",
-    "formatting": "sharegpt",
-    "columns": { "messages": "messages", "images": "images" }
-  }
-}
-```
-
-**학습 실행**
 ```bash
-# CLI
-sudo docker exec -it llamafactory llamafactory-cli train <config>.yaml
-# WebUI: 7860 터널링 후 Model path 에 /models/Qwen2.5-VL-7B-Instruct 직접 입력
+sudo docker restart prometheus
+sudo docker restart grafana
+sudo docker kill -s SIGHUP prometheus   # 설정 리로드
 ```
 
-**학습 설정 및 결과 (실제 수행분)**
+### 4.2 설정 변경 시 반드시 검증 후 반영
 
-| 항목 | 값 |
+`prometheus.yml` 오타 하나로 **Prometheus 전체가 기동 실패하고 재시작 루프**에 빠집니다.
+(실제 장애 사례: `metrics_path` → `metric_path` 오타로 전체 다운)
+
+```bash
+sudo vi /data/monitoring/prometheus/prometheus.yml
+sudo docker exec prometheus promtool check config /etc/prometheus/prometheus.yml   # ← 필수
+sudo docker restart prometheus
+```
+
+### 4.3 Grafana는 에어갭 전용 설정이 걸려 있음
+
+```yaml
+environment:
+  - GF_INSTALL_PLUGINS=              # 빈 값 유지 (미설정 시 grafana.com 접속 시도 → 기동 타임아웃)
+  - GF_PLUGINS_PREINSTALL_DISABLED=true
+```
+
+- **대시보드 ID import 불가.** grafana.com에서 JSON을 받아 반입 후 `Dashboards → Import → Upload JSON`
+- macOS에서 파일 반입 시 `._datasource.yml` (AppleDouble) 동반 생성 주의 → `yaml: control characters are not allowed` 오류 원인. `ls -la`로 확인 후 삭제
+
+---
+
+## 5. 수집 대상 현황
+
+| 대상 | IP | 수집 방식 | 포트 | exporter 위치 | 상태 |
+|---|---|---|---|---|---|
+| WAS (wcs) | .71 / .72 | Actuator + Micrometer | 8080 `/actuator/prometheus` | 앱 내장 | ✅ 정상 |
+| Web Front (nginx) | .12 / .13 | node_exporter | 9100 | 대상 서버 | ⚠️ SG 미개방 |
+| Web Front (nginx) | .12 / .13 | nginx-exporter | 9113 | 대상 서버 | ⚠️ stub_status 불가 |
+| Redis Cluster | .124 / .104 / .123 | redis_exporter (노드별) | 9121 | 각 노드 | ⚠️ 확인 필요 |
+| Kafka (관리형) | .93 / .87 / .85 | kafka_exporter (클라이언트) | 9092/9093 | **89번 로컬** | ⚠️ 확인 필요 |
+| RabbitMQ | .81 / .88 / .89 | rabbitmq_prometheus 플러그인 | 15692 | 대상 서버 | ⚠️ 확인 필요 |
+| PlantPulse | .82 / .83 | 미정 | — | — | ⚠️ 미적용 |
+| router | .71 / .72 | Actuator | **8082 / 8282 ⚠️** | 앱 내장 | ⚠️ 포트 불일치 |
+
+### 5.1 대상별 특이사항
+
+**WAS (앱 계열) — 인프라가 아닌 앱 배포와 엮임**
+- `micrometer-registry-prometheus` 의존성이 **`pom.xml`과 `pom_jar.xml` 양쪽**에 필요
+  (Jenkins 파이프라인이 `-f pom_jar.xml` 사용)
+- `application-prd.yml` 의 `management.endpoints.web.exposure.include` 에 `prometheus` 포함 필수
+- → **앱 재빌드·재배포가 필요한 작업.** 인프라 설정만으로 해결 불가
+
+**nginx (.12 / .13)**
+- `/app/nginx` 는 소스 컴파일 설치이며 `--with-http_stub_status_module` 미포함
+  ```bash
+  /app/nginx/sbin/nginx -V 2>&1 | tr ' ' '\n' | grep stub_status   # 결과 없음
+  ```
+- → stub_status 사용 불가. nginx 재빌드 또는 access log 기반 exporter 우회 필요
+- node_exporter(9100)는 배포됐으나 **SG 미개방 상태**
+
+**Kafka (관리형 서비스)**
+- 호스트 직접 접근 불가 → 89번에서 클라이언트 방식으로만 수집
+- 수집 가능: consumer lag, offset / 수집 불가: JMX·브로커 내부 지표
+
+**Redis**
+- 6379 외부 노출을 피하기 위해 **노드별 redis_exporter(9121)** 방식 채택
+
+---
+
+## 6. 방화벽(SG) 정책 — ⚠️ Pinpoint와 방향이 정반대
+
+| 제품 | 방식 | 인바운드를 여는 쪽 |
+|---|---|---|
+| **Pinpoint** | push (Agent → Collector) | **88번(수집 서버)** |
+| **Prometheus** | **pull (Prometheus → 대상)** | **각 대상 서버** |
+
+신청 형식: `10.194.178.89 → <대상 IP> / TCP <exporter 포트> (inbound to 대상)`
+
+도달성 확인:
+```bash
+# 89번에서 실행
+nc -zv 10.194.178.12 9100
+nc -zv 10.194.178.71 8080
+```
+
+---
+
+## 7. 신규 타겟 추가 절차
+
+```
+① 대상 서버에 exporter 기동 (또는 앱에 actuator 노출)
+② 대상 서버 로컬에서 curl 로 /metrics 응답 확인
+③ SG 신청: 89 → 대상 / exporter 포트
+④ 89번에서 nc -zv 도달성 확인
+⑤ prometheus.yml 에 job 추가
+⑥ promtool check config  ← 생략 금지
+⑦ sudo docker restart prometheus
+⑧ Status → Targets 에서 UP 확인
+⑨ Grafana 대시보드 연결
+```
+
+**job 작성 예시** (들여쓰기·라벨 규칙 준수)
+
+```yaml
+  - job_name: 'node'
+    static_configs:
+      - targets: ['10.194.178.12:9100']
+        labels:
+          instance_name: 'web-front-12'
+          application: 'wcs'          # Grafana 대시보드 호환용
+```
+
+> `metrics_path` 철자 주의 (기본값 `/metrics` 외의 경로일 때만 명시)
+
+---
+
+## 8. 운영 체크리스트 / 장애 대응
+
+**일상 점검**
+- [ ] `http://localhost:9090` → Status → Targets 전체 UP
+- [ ] Grafana 대시보드 데이터 갱신 확인
+- [ ] `df -h` — TSDB 용량
+- [ ] `sudo docker ps` — prometheus / grafana / exporter 컨테이너 Up
+
+**장애 1차 대응**
+
+| 증상 | 확인 순서 |
 |---|---|
-| 모델 / 템플릿 | Qwen2.5-VL-7B-Instruct / `qwen2_vl` |
-| stage / type | sft / **lora** |
-| lora_target | `all` (언어 레이어 7종, 비전 타워 제외) |
-| batch / grad accum | 2 / 8 (**실효 배치 16**) |
-| epochs / LR | 3 / 1e-4 (cosine) |
-| precision | bf16 |
-| trainable params | **20.2M / 8.31B (0.24%)** |
-| 학습 시간 | 약 **5분 30초** (39 step) |
-| loss | **1.57 → 0.0002** (수렴 확인) |
-| 산출물 | `/data/llamafactory/output/damage_lora_v2/` |
-
-> ⚠️ loss가 0에 수렴한 것은 데이터 200장·라벨 2종(예/아니오)의 단순 태스크 특성. **성능 지표가 아니라 파이프라인 동작 확인 결과**로 해석할 것.
-
-**주의**
-- `output_dir`은 **반드시 절대경로(`/output/...`)**. 상대경로 지정 시 컨테이너 내부에 저장되어 컨테이너 삭제와 함께 유실
-- 산출물은 LoRA **어댑터**이므로 단독 실행 불가. 추론 시 베이스 모델 + 어댑터를 함께 로드하거나 merge 필요
-- 필수 산출물: `adapter_model.safetensors`, `adapter_config.json`, `trainer_state.json`, tokenizer/processor 파일 세트
+| Prometheus 재시작 반복 | `docker logs prometheus` → 대부분 **prometheus.yml 문법 오류** → `promtool check config` |
+| 특정 타겟만 DOWN | Targets 화면에서 에러 사유 → ① 대상 로컬 curl ② `nc -zv` 도달성 ③ SG 정책 |
+| Grafana 기동 타임아웃 | 플러그인 자동설치 시도 여부 확인 (4.3 참조) |
+| Grafana provisioning 실패 | `ls -la` 로 `._` 접두 숨김파일 확인 후 삭제 |
+| WAS 지표만 404 | 앱의 actuator 노출 설정 미반영 → 재배포 필요 (5.1 참조) |
 
 ---
 
-## 6. ★ 커스텀 PyTorch 배치 벤치마크 (핵심 실험)
-
-### 6.1 실험 목적
-
-파인튜닝 기법·배치 크기별 **GPU/CPU 자원 소모량과 시간**을 측정.
-**모델 성능(정확도) 측정이 아니라 리소스 프로파일링이 목적**이며, A100 80GB에서 사용 가능한 최대 배치 크기를 실측으로 찾는 것이 최종 목표.
-
-### 6.2 실험 조건 (고정 변수)
-
-| 항목 | 값 | 비고 |
-|---|---|---|
-| 모델 | Qwen2.5-VL-7B-Instruct | |
-| 데이터 | 200장 (파손 Y/N) | 초기 예비실험은 20장 |
-| epochs | **3 고정** | `--epochs` 인자 미지정 시 default=3 |
-| gradient accumulation | **1 고정** | LLaMA-Factory(GA=8)와 조건 다름 |
-| `MAX_PIXELS` | `512*28*28` | **이미지 토큰 수 = VRAM 직결. 전 기법 동일 고정 필수** |
-| gradient checkpointing | 활성화 | `enable_input_require_grads()` 동반 필수 |
-| loss 마스킹 | 프롬프트 `-100` 마스킹 | 정답 토큰만 학습 |
-| 변수 | **batch size만 변경** | |
-
-> **Trainer 미사용, 커스텀 학습 루프 채택 이유**: `bench.start_train()`/`end_train()`으로 학습 구간을 정확히 감싸 **모델 로딩 시간을 제외한 순수 학습 시간**만 측정하기 위함.
-
-### 6.3 측정 도구 3종
-
-| 도구 | 측정 항목 | 출력 |
-|---|---|---|
-| `bench.py` | peak VRAM (torch allocated/reserved), 파라미터 수, step/throughput | `results.csv` |
-| `monitor.sh` | nvidia-smi 기반 GPU/CPU 시계열 | `gpu_log.csv`, `cpu_log.csv` |
-| `/usr/bin/time -v` | wall-clock, 최대 RSS(CPU 메모리) | `time.txt` |
-
-> `bench.py`의 `peak_vram_alloc_gb`(PyTorch가 텐서에 쓴 양)와 `nvidia-smi`의 `memory.used`(예약분 포함 실제 점유)는 관점이 다릅니다. **"80GB 중 얼마나 차는가"는 nvidia-smi 값이 현실적**입니다.
-
-### 6.4 실행 절차
-
-```bash
-cd /data/sample_train
-source /data/miniconda3/bin/activate
-sudo docker stop vllm                      # GPU 확보
-
-# 1) 데이터 변환
-python3 src/prepare_data.py                # annotation.json → train.jsonl
-
-# 2) 배치별 계단식 실험
-for BS in 1 2 4 8 16; do
-  ./src/monitor.sh lora_b${BS}
-  /usr/bin/time -v python3 src/train_lora.py --batch_size ${BS} \
-    2> outputs/lora_b${BS}/time.txt
-  ./src/stop_monitor.sh lora_b${BS}
-done
-
-# 3) 결과 확인
-cat results.csv
-```
-
-### 6.5 측정 결과
-
-**results.csv 컬럼**
-```
-method, total_params_M, trainable_params_M, trainable_pct,
-vram_baseline_gb, vram_after_load_gb, peak_vram_alloc_gb, peak_vram_reserved_gb,
-total_time_s, num_steps, sec_per_step, samples_per_sec
-```
-
-#### ① 예비 측정 — 20샘플 / batch=1
-
-| 항목 | 값 |
-|---|---|
-| Peak VRAM | **18.7GB** (80GB 중 23%) |
-| Peak CPU 메모리 (max RSS) | 약 16.4GB |
-| 순수 학습 시간 | **46.1초** (60 step) |
-| 학습 파라미터 | 47.6M / 8,339.8M (**0.571%**) |
-
-> **해석**: 모델 로딩분이 16.78GB이므로 **LoRA 학습 오버헤드는 약 2GB에 불과**. A100 80GB 기준 여유가 매우 큼.
-
-#### ② 본 측정 — 200샘플 / batch=3 (5회 반복, 재현성 확인)
-
-| 회차 | peak_vram_alloc | peak_vram_reserved | total_time_s | num_steps | sec/step | samples/sec |
-|---|---|---|---|---|---|---|
-| 1 | 18.659 GB | 19.162 GB | 161.56 | 201 | 0.804 | 3.714 |
-| 2 | 18.659 GB | 19.162 GB | 162.02 | 201 | 0.806 | 3.703 |
-| 3 | 18.659 GB | 19.162 GB | 162.18 | 201 | 0.807 | 3.700 |
-| 4 | 18.659 GB | 19.162 GB | 161.49 | 201 | 0.803 | 3.715 |
-| 5 | 18.659 GB | 19.162 GB | 161.37 | 201 | 0.803 | 3.718 |
-
-- 공통값: `total_params 8,339.8M` / `trainable 47.6M (0.571%)` / `vram_after_load 16.776GB`
-- **편차 0.5% 이내로 재현성 확보** → 측정 하네스 신뢰 가능
-
-> ⚠️ **이 5회는 batch 인자가 반영되지 않아 전부 batch=3으로 실행된 결과**입니다 (6.6 참조). 재현성 검증 자료로는 유효하나 **배치 비교 자료로는 무효**입니다.
-
-#### ③ 배치별 비교 — ⚠️ 최종 결과 기입 필요
-
-인자 전달 버그 수정 후 재실행한 결과를 `results.csv`에서 옮겨 아래 표를 완성하십시오.
-
-| batch | 예상 num_steps | peak_vram_alloc_gb | peak_vram_reserved_gb | total_time_s | sec_per_step | samples_per_sec | nvidia-smi 최대 memory.used |
-|---|---|---|---|---|---|---|---|
-| 1 | 600 | | | | | | |
-| 2 | 300 | | | | | | |
-| 4 | 150 | | | | | | |
-| 8 | 75 | | | | | | |
-| 16 | 38 | | | | | | |
-| 32 | 19 | (OOM 여부 기록) | | | | | |
-
-```bash
-# nvidia-smi 기준 최대 점유 추출
-awk -F',' 'NR>1 && $2+0>0 {print $2}' outputs/lora_b8/gpu_log.csv | sort -n | tail -1
-# CPU 메모리·wall-clock
-grep -E "wall clock|Maximum resident" outputs/lora_b8/time.txt
-```
-
-**참고 — step 수 산식 (검증용)**
-```
-num_steps = ceil(200 / batch_size) × 3 epoch
-```
-
-### 6.6 결과 해석 기준
-
-1. **peak VRAM이 80GB의 80~90%(64~72GB)에 닿는 batch = 안전한 최대치.** 100% 근접은 불안정·OOM 위험
-2. **OOM이 발생한 batch의 바로 아래가 실전 상한.** OOM은 실패가 아니라 **찾고자 한 경계선**
-3. **`samples_per_sec`이 정체되는 지점 = 효율 최적점.** 그 이상은 VRAM만 소모하고 속도 이득 없음
-4. 배치별 시간 비교는 `sec_per_step`이 아니라 **`total_time_s`로** 해야 공정 (batch가 크면 step 수가 줄기 때문)
-
-### 6.7 ⚠️ 실험 시 반드시 알아야 할 함정 2가지
-
-**함정 ①. batch_size 인자가 반영되지 않는 케이스 — 실제 발생**
-
-`--batch_size`를 넘겨도 코드 내 `BATCH_SIZE` 하드코딩이 남아 있으면 인자가 무시됩니다.
-5회 실행이 전부 batch=3으로 돌았음에도 에러 없이 완주하여 **발견이 늦어졌습니다.**
-
-**검증법**: `num_steps`를 확인하십시오. 6.5의 산식과 일치하지 않으면 인자가 안 먹힌 것입니다.
-`num_steps`와 `peak_vram`이 배치를 바꿔도 동일하다면 100% 이 문제입니다.
-
-```bash
-grep -n "batch_size\|BATCH_SIZE\|add_argument" src/train_lora.py
-```
-
-**함정 ②. outputs 폴더에 로그만 생기고 어댑터가 없는 케이스 — 실제 발생**
-
-`outputs/lora_bN/`에 `time.txt`, `cpu.csv`, `gpu.csv`만 있고 `.safetensors`·`tokenizer.json`이 없다면,
-**학습 루프가 `model.save_pretrained()` 도달 전에 종료된 것**입니다.
-
-- 로그 3종은 `monitor.sh`·`/usr/bin/time`이 **학습 스크립트 바깥에서** 만들므로 학습이 실패해도 생성됨
-- 어댑터 파일은 학습이 **끝까지 완주해야만** 생성됨
-- → `results.csv`에 행이 추가됐는지로 완주 여부를 먼저 판별
-
-**함정 ③. stderr 리다이렉트로 에러가 숨는 현상**
-
-`2> outputs/.../time.txt`로 stderr를 파일에 돌리므로 **Python traceback이 터미널에 안 보입니다.**
-"에러가 없었는데 결과가 없다"면 반드시 `cat time.txt`로 traceback을 확인하십시오.
-
----
-
-## 7. 프로젝트 배경 및 진행 상태
-
-**과제**: 물류 파손 박스 판별 VLM 파인튜닝 (검수 스테이션 적용 목표)
-
-**5단계 커리큘럼 진행 현황**
-
-| Phase | 내용 | 상태 |
-|---|---|---|
-| 0 | 평가 하네스 · 데이터 준비 (`manifest.csv` 기반 고정 테스트셋) | 완료 |
-| 1 | ResNet50 전이학습 이진 분류 베이스라인 | ⚠️ 확인 필요 |
-| 2 | VLM zero-shot 베이스라인 + 프롬프트 엔지니어링 | 완료 (vLLM) |
-| 3 | **VLM LoRA/QLoRA SFT** | 완료 (LLaMA-Factory) |
-| 4 | 양자화 · 서빙 최적화 | 미착수 |
-| 5 | 에이전트 · RAG 통합 | 미착수 |
-
-> 설계 원칙: 전 Phase가 **단일 고정 테스트셋(`manifest.csv`)**을 공유하여 단계 간 직접 비교가 가능하도록 구성됨.
-
----
-
-## 8. Known Issue / 주의사항
+## 9. Known Issue
 
 | 항목 | 내용 | 상태 |
 |---|---|---|
-| Docker data-root | 루트 파티션(100GB, 90%대) 사용 중 → 용량 부족 위험 | **미해결** |
-| GPU 단일 자원 | vLLM·LLaMA-Factory·커스텀 학습이 GPU 경합. 동시 실행 시 OOM | 운영 규칙 필요 |
-| torchaudio import 오류 | stub 모듈로 우회 처리함 | 우회 조치됨 |
-| transformers 버전 충돌 | 호스트 5.12.1 vs LLaMA-Factory ≤5.8.0 → Docker 격리로 해결 | 해결 |
-| 벤치마크 조건 상이 | 커스텀(GA=1) vs LLaMA-Factory(GA=8) → **수치 직접 비교 불가** | 문서화 |
-| SSH 접속 IP 제한 | 신규 담당자 PC는 별도 등록 신청 필요 | 신청 필요 |
+| nginx stub_status | 바이너리에 모듈 미포함 → nginx 지표 수집 불가 | 미해결 |
+| .12 / .13 node_exporter | SG 9100 미개방 | 신청 필요 |
+| router job 포트 | prometheus.yml은 8082, 실제 nc 성공은 8282 | **확정 필요** |
+| PlantPulse (.82/.83) | 구동 서비스 미확인, 수집 미적용 | 미착수 |
+| Kafka JMX 지표 | 관리형 서비스라 브로커 내부 지표 수집 불가 | 제약사항 |
+| docker-compose v1 | v2 플러그인 미설치 상태 | 개선 권장 |
 
 ---
 
 ## 부록. 인수 후 TODO
 
-- [ ] **서버 IP 확정** (178.86 / 179.86)
-- [ ] `sudo docker ps -a` 실제 출력으로 컨테이너·이미지 태그 확정
-- [ ] vLLM 이미지 실제 태그 기입
-- [ ] **6.5-③ 배치별 최종 결과표 채우기** (`cat /data/sample_train/results.csv`)
-- [ ] `damage_lora_v2` 어댑터가 호스트 경로에 실제 존재하는지 검증
-- [ ] Docker data-root `/data` 이전 (88번 서버 절차 참고)
-- [ ] Phase 1(ResNet50) 진행 상태 확인 및 기록
-- [ ] GPU 사용 스케줄 규칙 수립 (학습 시 vLLM 중지 등)
+- [ ] `prometheus.yml` 전문을 본 문서에 첨부
+- [ ] router job 실제 포트(8082/8282) 확정 및 수정
+- [ ] .12 / .13 SG 9100 신청
+- [ ] Redis / Kafka / RabbitMQ exporter 실제 기동 상태 검증
+- [ ] Grafana admin 계정 인수 및 비밀번호 변경
+- [ ] TSDB retention 정책 수립 (`--storage.tsdb.retention.time`)
+- [ ] Alertmanager 도입 검토 (현재 미구성)
